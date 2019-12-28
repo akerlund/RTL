@@ -1,0 +1,59 @@
+`default_nettype none
+
+module axi4s_demux #(
+    // User parameters
+    parameter int nr_of_streams_p    = -1,
+    parameter int tdata_byte_width_p = -1,
+    // Internally used parameters
+    parameter int byte_width_p       = nr_of_streams_p * tdata_byte_width_p,
+    parameter int tid_bit_width_p    = nr_of_streams_p * $clog2(nr_of_streams_p)
+  )(
+    input  wire                                clk,
+    input  wire                                rst_n,
+
+    // AXI4-S master side
+    output logic                               axi4s_i_tready,
+    input  wire       [tdata_byte_width_p-1:0] axi4s_i_tdata,
+    input  wire                                axi4s_i_tvalid,
+    input  wire                                axi4s_i_tlast,
+    input  wire  [$clog2(nr_of_streams_p)-1:0] axi4s_i_tid,
+
+    // AXI4-S slave side
+    input  wire          [nr_of_streams_p-1:0] axi4s_o_tready,
+    output logic            [byte_width_p-1:0] axi4s_o_tdata,
+    output logic         [nr_of_streams_p-1:0] axi4s_o_tvalid,
+    output logic         [nr_of_streams_p-1:0] axi4s_o_tlast,
+    output logic         [tid_bit_width_p-1:0] axi4s_o_tid
+  );
+
+  always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      axi4s_i_tready <= '0;
+      axi4s_o_tdata  <= '0;
+      axi4s_o_tvalid <= '0;
+      axi4s_o_tlast  <= '0;
+      axi4s_o_tid    <= '0;
+    end
+    else begin
+
+      // Reset all outputs
+      axi4s_o_tdata  <= '0;
+      axi4s_o_tvalid <= '0;
+      axi4s_o_tlast  <= '0;
+      axi4s_o_tid    <= '0;
+
+      // Demux tready
+      axi4s_i_tready <= axi4s_o_tready[axi4s_i_tid];
+
+      // Demux output
+      axi4s_o_tdata[axi4s_i_tid*tdata_byte_width_p +: tdata_byte_width_p] <= axi4s_i_tdata;
+      axi4s_o_tvalid[axi4s_i_tid]                                         <= axi4s_i_tvalid;
+      axi4s_o_tlast[axi4s_i_tid]                                          <= axi4s_i_tlast;
+      axi4s_o_tid[axi4s_i_tid*tid_bit_width_p +: tid_bit_width_p]         <= axi4s_i_tid;
+
+    end
+  end
+
+endmodule
+
+`default_nettype wire
