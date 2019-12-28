@@ -1,0 +1,4 @@
+*.pyc
+*.*~
+
+math/fft/generate/__pycache__
