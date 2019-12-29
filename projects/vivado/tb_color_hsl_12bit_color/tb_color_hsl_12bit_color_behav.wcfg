@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="tb_color_hsl_12bit_color_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="glbl" />
+            <top_module name="tb_color_hsl_12bit_color" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="0fs"></ZoomStartTime>
+      <ZoomEndTime time="140001fs"></ZoomEndTime>
+      <Cursor1Time time="140000fs"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="175"></NameColumnWidth>
+      <ValueColumnWidth column_width="146"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="20" />
+   <wvobject type="logic" fp_name="/tb_color_hsl_12bit_color/clk_125">
+      <obj_property name="ElementShortName">clk_125</obj_property>
+      <obj_property name="ObjectShortName">clk_125</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_color_hsl_12bit_color/res_n">
+      <obj_property name="ElementShortName">res_n</obj_property>
+      <obj_property name="ObjectShortName">res_n</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_color_hsl_12bit_color/valid_hue">
+      <obj_property name="ElementShortName">valid_hue</obj_property>
+      <obj_property name="ObjectShortName">valid_hue</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_color_hsl_12bit_color/hue">
+      <obj_property name="ElementShortName">hue[11:0]</obj_property>
+      <obj_property name="ObjectShortName">hue[11:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_color_hsl_12bit_color/saturation">
+      <obj_property name="ElementShortName">saturation[11:0]</obj_property>
+      <obj_property name="ObjectShortName">saturation[11:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_color_hsl_12bit_color/brightness">
+      <obj_property name="ElementShortName">brightness[11:0]</obj_property>
+      <obj_property name="ObjectShortName">brightness[11:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_color_hsl_12bit_color/valid_rgb">
+      <obj_property name="ElementShortName">valid_rgb</obj_property>
+      <obj_property name="ObjectShortName">valid_rgb</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_color_hsl_12bit_color/color_red">
+      <obj_property name="ElementShortName">color_red[11:0]</obj_property>
+      <obj_property name="ObjectShortName">color_red[11:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_color_hsl_12bit_color/color_green">
+      <obj_property name="ElementShortName">color_green[11:0]</obj_property>
+      <obj_property name="ObjectShortName">color_green[11:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_color_hsl_12bit_color/color_blue">
+      <obj_property name="ElementShortName">color_blue[11:0]</obj_property>
+      <obj_property name="ObjectShortName">color_blue[11:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_color_hsl_12bit_color/clk_125">
+      <obj_property name="ElementShortName">clk_125</obj_property>
+      <obj_property name="ObjectShortName">clk_125</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_color_hsl_12bit_color/res_n">
+      <obj_property name="ElementShortName">res_n</obj_property>
+      <obj_property name="ObjectShortName">res_n</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_color_hsl_12bit_color/valid_hue">
+      <obj_property name="ElementShortName">valid_hue</obj_property>
+      <obj_property name="ObjectShortName">valid_hue</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_color_hsl_12bit_color/hue">
+      <obj_property name="ElementShortName">hue[11:0]</obj_property>
+      <obj_property name="ObjectShortName">hue[11:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_color_hsl_12bit_color/saturation">
+      <obj_property name="ElementShortName">saturation[11:0]</obj_property>
+      <obj_property name="ObjectShortName">saturation[11:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_color_hsl_12bit_color/brightness">
+      <obj_property name="ElementShortName">brightness[11:0]</obj_property>
+      <obj_property name="ObjectShortName">brightness[11:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_color_hsl_12bit_color/valid_rgb">
+      <obj_property name="ElementShortName">valid_rgb</obj_property>
+      <obj_property name="ObjectShortName">valid_rgb</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_color_hsl_12bit_color/color_red">
+      <obj_property name="ElementShortName">color_red[11:0]</obj_property>
+      <obj_property name="ObjectShortName">color_red[11:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_color_hsl_12bit_color/color_green">
+      <obj_property name="ElementShortName">color_green[11:0]</obj_property>
+      <obj_property name="ObjectShortName">color_green[11:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_color_hsl_12bit_color/color_blue">
+      <obj_property name="ElementShortName">color_blue[11:0]</obj_property>
+      <obj_property name="ObjectShortName">color_blue[11:0]</obj_property>
+   </wvobject>
+</wave_config>

@@ -1,6 +1,6 @@
 `default_nettype none
 
-//import gamma_12bit_lut_pkg::*;
+import gamma_12bit_lut_pkg::*;
 
 module color_hsl_12bit_color #(
     parameter int color_width = 12
