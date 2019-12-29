@@ -183,12 +183,12 @@ module color_hsl_12bit_color #(
           ready     <= 1;
 
           valid_rgb   <= 1;
-        //color_red   <= gamma_lut_table_c[hue_red];
-        //color_green <= gamma_lut_table_c[hue_green];
-        //color_blue  <= gamma_lut_table_c[hue_blue];
-          color_red   <= hue_red;
-          color_green <= hue_green;
-          color_blue  <= hue_blue;
+          color_red   <= gamma_lut_table_c[hue_red];
+          color_green <= gamma_lut_table_c[hue_green];
+          color_blue  <= gamma_lut_table_c[hue_blue];
+          //color_red   <= hue_red;
+          //color_green <= hue_green;
+          //color_blue  <= hue_blue;
         end
 
         default: begin

@@ -52,4 +52,4 @@ def colorHSL(hue, sat, light):
   print("green = %d" % gt.gamma_table[tG])
   print("blue = %d" % gt.gamma_table[tB])
 
-colorHSL(2000,  2500,  2500)
+colorHSL(4095, 4095, 2500)

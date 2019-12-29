@@ -85,16 +85,16 @@ module tb_color_hsl_12bit_color;
       $error("Red is %0d, but should be 4095", color_red);
     end
 
-    if ( color_green == 12'd4095 ) begin
+    if ( color_green == 12'd67 ) begin
       $display("Green is correct");
     end else begin
-      $error("Green is %0d, but should be 4095", color_green);
+      $error("Green is %0d, but should be 67", color_green);
     end
 
-    if ( color_blue == 12'd4095 ) begin
+    if ( color_blue == 12'd68 ) begin
       $display("Blue is correct");
     end else begin
-      $error("Blue is %0d, but should be 4095", color_blue);
+      $error("Blue is %0d, but should be 68", color_blue);
     end
 
 
