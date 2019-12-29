@@ -110,7 +110,7 @@ module tb_color_hsl_12bit_color;
     @(posedge valid_rgb);
     valid_hue  <= 1'b0;
 
-    if ( color_red == 12'd1521) begin
+    if ( color_red == 12'd1521 ) begin
       $display("Red is correct");
     end else begin
       $error("Red is %0d, but should be 1521", color_red);
@@ -127,8 +127,6 @@ module tb_color_hsl_12bit_color;
     end else begin
       $error("Blue is %0d, but should be 1449", color_blue);
     end
-
-
 
     $display("Finished");
     $finish;

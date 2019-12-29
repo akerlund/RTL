@@ -1,6 +1,6 @@
 import gamma_table as gt
 
-def colorHSL ( hue,  sat,  light):
+def colorHSL(hue, sat, light):
 
   tR   = 0
   tG   = 0
@@ -38,7 +38,7 @@ def colorHSL ( hue,  sat,  light):
     tG = 0
     tB = X
 
-	# Lightness.	
+	# Lightness.
   m = light - (C>>1)
   tR += m
   tG += m
@@ -52,4 +52,4 @@ def colorHSL ( hue,  sat,  light):
   print("green = %d" % gt.gamma_table[tG])
   print("blue = %d" % gt.gamma_table[tB])
 
-colorHSL( 1333,  2895,  3333)
+colorHSL(2000,  2500,  2500)
