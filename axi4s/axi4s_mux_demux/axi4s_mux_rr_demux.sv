@@ -76,7 +76,6 @@ module axi4s_mux_rr_demux #(
     .axi4s_o_tid        ( axi4s_demux_o_tid    )
   );
 
-
 endmodule
 
 `default_nettype wire

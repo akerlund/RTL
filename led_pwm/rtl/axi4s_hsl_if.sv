@@ -1,7 +1,7 @@
 `default_nettype none
 
 module axi4s_hsl_if #(
-    parameter int tid_bit_width_p    = -1
+    parameter int tid_bit_width_pb = -1
   )(
     input  wire                        clk,
     input  wire                        rst_n,
@@ -26,17 +26,20 @@ module axi4s_hsl_if #(
   assign axi4s_o_transaction = axi4s_o_tready && axi4s_o_tvalid;
 
   color_hsl_12bit_color color_hsl_12bit_color_i0 (
-    .clk         ( clk                  ),
-    .rst_n       ( rst_n                ),
-    .ready       ( axi4s_i_tready       ),
-    .valid_hue   ( axi4s_i_transaction  ),
-    .hue         ( axi4s_i_tdata[7:0]   ),
-    .saturation  ( axi4s_i_tdata[15:8]  ),
-    .brightness  ( axi4s_i_tdata[23:16] ),
-    .valid_rgb   ( axi4s_o_tvalid       ),
-    .color_red   ( axi4s_o_tdata[7:0]   ),
-    .color_green ( axi4s_o_tdata[15:8]  ),
-    .color_blue  ( axi4s_o_tdata[23:16] )
+
+    .clk         ( clk                  ), // input
+    .rst_n       ( rst_n                ), // inout
+
+    .ready       ( axi4s_i_tready       ), // output
+    .valid_hue   ( axi4s_i_transaction  ), // input
+    .hue         ( axi4s_i_tdata[7:0]   ), // input
+    .saturation  ( axi4s_i_tdata[15:8]  ), // input
+    .brightness  ( axi4s_i_tdata[23:16] ), // input
+
+    .valid_rgb   ( axi4s_o_tvalid       ), // output
+    .color_red   ( axi4s_o_tdata[7:0]   ), // output
+    .color_green ( axi4s_o_tdata[15:8]  ), // output
+    .color_blue  ( axi4s_o_tdata[23:16] )  // output
   );
 
   always_ff @(posedge clk or negedge rst_n) begin
