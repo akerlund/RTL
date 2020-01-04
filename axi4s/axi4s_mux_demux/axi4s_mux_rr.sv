@@ -5,6 +5,7 @@ module axi4s_mux_rr #(
     parameter int tdata_width_p   = -1,
     parameter int tid_bit_width_p = $clog2(nr_of_streams_p)
   )(
+    // Clock and reset
     input  wire                                                clk,
     input  wire                                                rst_n,
 
