@@ -93,7 +93,6 @@ module tb_axi4s_mux_rr_demux;
     .axi4s_mux_rr_i_tdata  ( axi4s_mux_rr_i_tdata  ),
     .axi4s_mux_rr_i_tvalid ( axi4s_mux_rr_i_tvalid ),
     .axi4s_mux_rr_i_tlast  ( axi4s_mux_rr_i_tlast  ),
-    .axi4s_mux_rr_i_tid    ( axi4s_mux_rr_i_tid    ),
     .axi4s_mux_rr_o_tready ( axi4s_demux_i_tready  ),
     .axi4s_mux_rr_o_tdata  ( axi4s_mux_rr_o_tdata  ),
     .axi4s_mux_rr_o_tvalid ( axi4s_mux_rr_o_tvalid ),
