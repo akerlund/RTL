@@ -1,3 +1,3 @@
 #!/bin/bash
 
-vivado -nolog -nojournal -notrace -mode batch -source syn.tcl
+vivado -nolog -nojournal -notrace -mode batch -source vivado_synth.tcl
