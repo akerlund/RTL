@@ -19,7 +19,7 @@ module axi4s_demux #(
     input  wire                        [nr_of_streams_p-1 : 0] axi4s_o_tready,
     output logic                       [nr_of_streams_p-1 : 0] axi4s_o_tvalid,
     output logic                       [nr_of_streams_p-1 : 0] axi4s_o_tlast,
-    output logic [nr_of_streams_p-1 : 0] [tdata_width_p-1 : 0] axi4s_o_tdata,
+    output logic [nr_of_streams_p-1 : 0] [tdata_width_p-1 : 0] axi4s_o_tdata
   );
 
   always_ff @(posedge clk or negedge rst_n) begin
@@ -31,22 +31,20 @@ module axi4s_demux #(
     end
     else begin
 
-      // Reset all outputs
-      axi4s_o_tdata  <= '0;
-      axi4s_o_tvalid <= '0;
-      axi4s_o_tlast  <= '0;
-
-      // Demux tready
-      axi4s_i_tready <= axi4s_o_tready[axi4s_i_tid];
-
-      // Demux output
-      axi4s_o_tdata[axi4s_i_tid]  <= axi4s_i_tdata;
-      axi4s_o_tvalid[axi4s_i_tid] <= axi4s_i_tvalid;
-      axi4s_o_tlast[axi4s_i_tid]  <= axi4s_i_tlast;
-
+      if (axi4s_i_tvalid) begin
+        axi4s_i_tready              <= axi4s_o_tready[axi4s_i_tid];
+        axi4s_o_tvalid[axi4s_i_tid] <= axi4s_i_tvalid;
+        axi4s_o_tlast[axi4s_i_tid]  <= axi4s_i_tlast;
+        axi4s_o_tdata[axi4s_i_tid]  <= axi4s_i_tdata;
+      end
+      else begin
+        axi4s_i_tready              <= '0;
+        axi4s_o_tvalid[axi4s_i_tid] <= '0;
+        axi4s_o_tlast[axi4s_i_tid]  <= '0;
+        axi4s_o_tdata[axi4s_i_tid]  <= '0;
+      end
     end
   end
-
 endmodule
 
 `default_nettype wire
