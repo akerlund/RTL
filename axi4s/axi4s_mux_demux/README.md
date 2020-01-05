@@ -1,18 +1,24 @@
-# AXI4S
-This is work in progress
+# AXI4S Multiplexer and De-multiplexer
 
-## Preliminary Synthesis Results
+This folder contains one round robin AXI4-S multiplexer **(axi4s_mux_rr.sv)**\
+and one de-multiplexer **(axi4s_demux.sv)**.
 
-Synthesized *axi4s_mux_rr_demux* with the following paramters
+Another block (**axi4s_mux_rr_demux.sv**) contains one instance of each.
+
+
+## axi4s_mux_rr
+The multiplexer has no **tid** signal to the master side but have one to the slave\
+and the value is determined from the round robin counter, i.e., in what order\
+the master is connected to the multiplexer.
+
+### Vivado report_utilization
+Preliminary numbers as this is done before validation has been completed.\
+Synthesized with the following parameters:
 
 ```systemverilog
-    parameter int nr_of_streams_p = 4,
-    parameter int tdata_width_p   = 3,
+  parameter int nr_of_streams_p = 4
+  parameter int tdata_width_p   = 3
 ```
-
-Vivado report_utilization:
-
-### axi4s_mux_rr
 ```
 +-------------------------+------+-------+-----------+-------+
 |        Site Type        | Used | Fixed | Available | Util% |
@@ -28,7 +34,17 @@ Vivado report_utilization:
 +-------------------------+------+-------+-----------+-------+
 ```
 
-### axi4s_demux
+## axi4s_demux
+The de-multiplexer has no **tid** signal to the slave side but have one to the master which is used to terminate the AXI4S connection to either connected slave interface.
+
+### Vivado report_utilization
+Preliminary numbers  as this is done before validation has been completed.\
+Synthesized with the following parameters:
+
+```systemverilog
+  parameter int nr_of_streams_p = 4
+  parameter int tdata_width_p   = 3
+```
 ```
 +-------------------------+------+-------+-----------+-------+
 |        Site Type        | Used | Fixed | Available | Util% |
