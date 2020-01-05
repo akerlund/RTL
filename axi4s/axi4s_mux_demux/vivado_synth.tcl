@@ -11,3 +11,6 @@ synth_design -top $top -part $fpga_part
 write_checkpoint      -force $output_dir/post_synth.dcp
 report_timing_summary -file $output_dir/post_synth_timing_summary.rpt
 report_utilization    -file $output_dir/post_synth_util.rpt
+
+report_utilization -cells [get_cells axi4s_mux_rr_i0]
+report_utilization -cells [get_cells axi4s_demux_i0]
