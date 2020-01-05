@@ -28,29 +28,29 @@ module tb_axi4s_mux_rr_demux;
 
 
   // Output signals from the MUX
-  logic                       [nr_of_streams_c-1 : 0] axi4s_mux_rr_i_tready;
+  logic                         [nr_of_streams_c-1 : 0] axi4s_mux_rr_i_tready;
 
   // Input signals to the MUX
-  logic                       [nr_of_streams_c-1 : 0] axi4s_mux_rr_i_tvalid;
-  logic                       [nr_of_streams_c-1 : 0] axi4s_mux_rr_i_tlast;
-  logic [nr_of_streams_c-1 : 0] [tdata_width_p-1 : 0] axi4s_mux_rr_i_tdata;
+  logic                         [nr_of_streams_c-1 : 0] axi4s_mux_rr_i_tvalid;
+  logic                         [nr_of_streams_c-1 : 0] axi4s_mux_rr_i_tlast;
+  logic [nr_of_streams_c-1 : 0] [tdata_width_p*8-1 : 0] axi4s_mux_rr_i_tdata;
 
   // Signals from MUX to DEMUX
-  logic                                               axi4s_mux_rr_o_tvalid;
-  logic                                               axi4s_mux_rr_o_tlast;
-  logic               [$clog2(nr_of_streams_c)-1 : 0] axi4s_mux_rr_o_tid;
-  logic                         [tdata_width_p-1 : 0] axi4s_mux_rr_o_tdata;
+  logic                                                 axi4s_mux_rr_o_tvalid;
+  logic                                                 axi4s_mux_rr_o_tlast;
+  logic                 [$clog2(nr_of_streams_c)-1 : 0] axi4s_mux_rr_o_tid;
+  logic                         [tdata_width_p*8-1 : 0] axi4s_mux_rr_o_tdata;
 
   // Signals from DEMUX to MUX
-  logic                                               axi4s_demux_i_tready;
+  logic                                                 axi4s_demux_i_tready;
 
   // Output signals from the DEMUX
-  logic                       [nr_of_streams_c-1 : 0] axi4s_demux_o_tvalid;
-  logic                       [nr_of_streams_c-1 : 0] axi4s_demux_o_tlast;
-  logic [nr_of_streams_c-1 : 0] [tdata_width_p-1 : 0] axi4s_demux_o_tdata;
+  logic                         [nr_of_streams_c-1 : 0] axi4s_demux_o_tvalid;
+  logic                         [nr_of_streams_c-1 : 0] axi4s_demux_o_tlast;
+  logic [nr_of_streams_c-1 : 0] [tdata_width_p*8-1 : 0] axi4s_demux_o_tdata;
 
   // Input signals to the DEMUX
-  logic                       [nr_of_streams_c-1 : 0] axi4s_demux_o_tready;
+  logic                         [nr_of_streams_c-1 : 0] axi4s_demux_o_tready;
 
 
   // Main stimuli

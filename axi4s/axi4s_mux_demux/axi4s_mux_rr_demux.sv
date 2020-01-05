@@ -19,34 +19,34 @@ module axi4s_mux_rr_demux #(
     //--------------------------------------------------------------------------
 
     // AXI4-S master side
-    output logic                       [nr_of_streams_p-1 : 0] axi4s_mux_rr_i_tready,
-    input  wire                        [nr_of_streams_p-1 : 0] axi4s_mux_rr_i_tvalid,
-    input  wire                        [nr_of_streams_p-1 : 0] axi4s_mux_rr_i_tlast,
-    input  wire  [nr_of_streams_p-1 : 0] [tdata_width_p-1 : 0] axi4s_mux_rr_i_tdata,
+    output logic                         [nr_of_streams_p-1 : 0] axi4s_mux_rr_i_tready,
+    input  wire                          [nr_of_streams_p-1 : 0] axi4s_mux_rr_i_tvalid,
+    input  wire                          [nr_of_streams_p-1 : 0] axi4s_mux_rr_i_tlast,
+    input  wire  [nr_of_streams_p-1 : 0] [tdata_width_p*8-1 : 0] axi4s_mux_rr_i_tdata,
 
     // AXI4-S slave side
-    input  wire                                                axi4s_mux_rr_o_tready,
-    output logic                                               axi4s_mux_rr_o_tvalid,
-    output logic                                               axi4s_mux_rr_o_tlast,
-    output logic                       [tid_bit_width_p-1 : 0] axi4s_mux_rr_o_tid,
-    output logic                         [tdata_width_p-1 : 0] axi4s_mux_rr_o_tdata,
+    input  wire                                                  axi4s_mux_rr_o_tready,
+    output logic                                                 axi4s_mux_rr_o_tvalid,
+    output logic                                                 axi4s_mux_rr_o_tlast,
+    output logic                         [tid_bit_width_p-1 : 0] axi4s_mux_rr_o_tid,
+    output logic                         [tdata_width_p*8-1 : 0] axi4s_mux_rr_o_tdata,
 
     //--------------------------------------------------------------------------
     // DEMUX
     //--------------------------------------------------------------------------
 
     // AXI4-S master side
-    output logic                                               axi4s_demux_i_tready,
-    input  wire                                                axi4s_demux_i_tvalid,
-    input  wire                                                axi4s_demux_i_tlast,
-    input  wire                        [tid_bit_width_p-1 : 0] axi4s_demux_i_tid,
-    input  wire                          [tdata_width_p-1 : 0] axi4s_demux_i_tdata,
+    output logic                                                 axi4s_demux_i_tready,
+    input  wire                                                  axi4s_demux_i_tvalid,
+    input  wire                                                  axi4s_demux_i_tlast,
+    input  wire                          [tid_bit_width_p-1 : 0] axi4s_demux_i_tid,
+    input  wire                          [tdata_width_p*8-1 : 0] axi4s_demux_i_tdata,
 
     // AXI4-S slave side
-    input  wire                        [nr_of_streams_p-1 : 0] axi4s_demux_o_tready,
-    output logic                       [nr_of_streams_p-1 : 0] axi4s_demux_o_tvalid,
-    output logic                       [nr_of_streams_p-1 : 0] axi4s_demux_o_tlast,
-    output logic [nr_of_streams_p-1 : 0] [tdata_width_p-1 : 0] axi4s_demux_o_tdata
+    input  wire                          [nr_of_streams_p-1 : 0] axi4s_demux_o_tready,
+    output logic                         [nr_of_streams_p-1 : 0] axi4s_demux_o_tvalid,
+    output logic                         [nr_of_streams_p-1 : 0] axi4s_demux_o_tlast,
+    output logic [nr_of_streams_p-1 : 0] [tdata_width_p*8-1 : 0] axi4s_demux_o_tdata
   );
 
   // Round robin multiplexer, i.e.,

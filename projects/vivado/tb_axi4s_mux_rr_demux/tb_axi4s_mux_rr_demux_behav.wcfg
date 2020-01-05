@@ -11,13 +11,13 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="34fs"></ZoomStartTime>
-      <ZoomEndTime time="71835fs"></ZoomEndTime>
-      <Cursor1Time time="24834fs"></Cursor1Time>
+      <ZoomStartTime time="183000fs"></ZoomStartTime>
+      <ZoomEndTime time="419401fs"></ZoomEndTime>
+      <Cursor1Time time="380000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="291"></NameColumnWidth>
-      <ValueColumnWidth column_width="357"></ValueColumnWidth>
+      <ValueColumnWidth column_width="104"></ValueColumnWidth>
    </column_width_setting>
    <WVObjectSize size="24" />
    <wvobject type="array" fp_name="/tb_axi4s_mux_rr_demux/nr_of_streams_c">
@@ -64,8 +64,8 @@
       <obj_property name="ObjectShortName">axi4s_mux_rr_i_tlast[3:0]</obj_property>
    </wvobject>
    <wvobject type="array" fp_name="/tb_axi4s_mux_rr_demux/axi4s_mux_rr_i_tdata">
-      <obj_property name="ElementShortName">axi4s_mux_rr_i_tdata[3:0][2:0]</obj_property>
-      <obj_property name="ObjectShortName">axi4s_mux_rr_i_tdata[3:0][2:0]</obj_property>
+      <obj_property name="ElementShortName">axi4s_mux_rr_i_tdata[3:0][23:0]</obj_property>
+      <obj_property name="ObjectShortName">axi4s_mux_rr_i_tdata[3:0][23:0]</obj_property>
    </wvobject>
    <wvobject type="logic" fp_name="/tb_axi4s_mux_rr_demux/axi4s_mux_rr_o_tvalid">
       <obj_property name="ElementShortName">axi4s_mux_rr_o_tvalid</obj_property>
@@ -80,8 +80,8 @@
       <obj_property name="ObjectShortName">axi4s_mux_rr_o_tid[1:0]</obj_property>
    </wvobject>
    <wvobject type="array" fp_name="/tb_axi4s_mux_rr_demux/axi4s_mux_rr_o_tdata">
-      <obj_property name="ElementShortName">axi4s_mux_rr_o_tdata[2:0]</obj_property>
-      <obj_property name="ObjectShortName">axi4s_mux_rr_o_tdata[2:0]</obj_property>
+      <obj_property name="ElementShortName">axi4s_mux_rr_o_tdata[23:0]</obj_property>
+      <obj_property name="ObjectShortName">axi4s_mux_rr_o_tdata[23:0]</obj_property>
    </wvobject>
    <wvobject type="logic" fp_name="/tb_axi4s_mux_rr_demux/axi4s_demux_i_tready">
       <obj_property name="ElementShortName">axi4s_demux_i_tready</obj_property>
@@ -96,8 +96,8 @@
       <obj_property name="ObjectShortName">axi4s_demux_o_tlast[3:0]</obj_property>
    </wvobject>
    <wvobject type="array" fp_name="/tb_axi4s_mux_rr_demux/axi4s_demux_o_tdata">
-      <obj_property name="ElementShortName">axi4s_demux_o_tdata[3:0][2:0]</obj_property>
-      <obj_property name="ObjectShortName">axi4s_demux_o_tdata[3:0][2:0]</obj_property>
+      <obj_property name="ElementShortName">axi4s_demux_o_tdata[3:0][23:0]</obj_property>
+      <obj_property name="ObjectShortName">axi4s_demux_o_tdata[3:0][23:0]</obj_property>
    </wvobject>
    <wvobject type="array" fp_name="/tb_axi4s_mux_rr_demux/axi4s_demux_o_tready">
       <obj_property name="ElementShortName">axi4s_demux_o_tready[3:0]</obj_property>
@@ -142,25 +142,29 @@
       <wvobject fp_name="divider107" type="divider">
          <obj_property name="label">master</obj_property>
          <obj_property name="DisplayName">label</obj_property>
-         <obj_property name="BkColor">#F0E68C</obj_property>
+         <obj_property name="BkColor">#00FF00</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/tb_axi4s_mux_rr_demux/axi4s_mux_rr_demux_i0/axi4s_mux_rr_i0/axi4s_i_tready">
          <obj_property name="ElementShortName">axi4s_i_tready[3:0]</obj_property>
          <obj_property name="ObjectShortName">axi4s_i_tready[3:0]</obj_property>
          <obj_property name="CustomSignalColor">#FF00FF</obj_property>
          <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="isExpanded"></obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/tb_axi4s_mux_rr_demux/axi4s_mux_rr_demux_i0/axi4s_mux_rr_i0/axi4s_i_tvalid">
          <obj_property name="ElementShortName">axi4s_i_tvalid[3:0]</obj_property>
          <obj_property name="ObjectShortName">axi4s_i_tvalid[3:0]</obj_property>
+         <obj_property name="isExpanded"></obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/tb_axi4s_mux_rr_demux/axi4s_mux_rr_demux_i0/axi4s_mux_rr_i0/axi4s_i_tlast">
          <obj_property name="ElementShortName">axi4s_i_tlast[3:0]</obj_property>
          <obj_property name="ObjectShortName">axi4s_i_tlast[3:0]</obj_property>
+         <obj_property name="isExpanded"></obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/tb_axi4s_mux_rr_demux/axi4s_mux_rr_demux_i0/axi4s_mux_rr_i0/axi4s_i_tdata">
-         <obj_property name="ElementShortName">axi4s_i_tdata[3:0][2:0]</obj_property>
-         <obj_property name="ObjectShortName">axi4s_i_tdata[3:0][2:0]</obj_property>
+         <obj_property name="ElementShortName">axi4s_i_tdata[3:0][23:0]</obj_property>
+         <obj_property name="ObjectShortName">axi4s_i_tdata[3:0][23:0]</obj_property>
+         <obj_property name="isExpanded"></obj_property>
       </wvobject>
       <wvobject fp_name="divider108" type="divider">
          <obj_property name="label">slave</obj_property>
@@ -186,8 +190,8 @@
          <obj_property name="ObjectShortName">axi4s_o_tid[1:0]</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/tb_axi4s_mux_rr_demux/axi4s_mux_rr_demux_i0/axi4s_mux_rr_i0/axi4s_o_tdata">
-         <obj_property name="ElementShortName">axi4s_o_tdata[2:0]</obj_property>
-         <obj_property name="ObjectShortName">axi4s_o_tdata[2:0]</obj_property>
+         <obj_property name="ElementShortName">axi4s_o_tdata[23:0]</obj_property>
+         <obj_property name="ObjectShortName">axi4s_o_tdata[23:0]</obj_property>
       </wvobject>
    </wvobject>
    <wvobject fp_name="divider106" type="divider">
@@ -235,8 +239,8 @@
          <obj_property name="ObjectShortName">axi4s_i_tid[1:0]</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/tb_axi4s_mux_rr_demux/axi4s_mux_rr_demux_i0/axi4s_demux_i0/axi4s_i_tdata">
-         <obj_property name="ElementShortName">axi4s_i_tdata[2:0]</obj_property>
-         <obj_property name="ObjectShortName">axi4s_i_tdata[2:0]</obj_property>
+         <obj_property name="ElementShortName">axi4s_i_tdata[23:0]</obj_property>
+         <obj_property name="ObjectShortName">axi4s_i_tdata[23:0]</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/tb_axi4s_mux_rr_demux/axi4s_mux_rr_demux_i0/axi4s_demux_i0/axi4s_o_tready">
          <obj_property name="ElementShortName">axi4s_o_tready[3:0]</obj_property>
@@ -251,8 +255,8 @@
          <obj_property name="ObjectShortName">axi4s_o_tlast[3:0]</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/tb_axi4s_mux_rr_demux/axi4s_mux_rr_demux_i0/axi4s_demux_i0/axi4s_o_tdata">
-         <obj_property name="ElementShortName">axi4s_o_tdata[3:0][2:0]</obj_property>
-         <obj_property name="ObjectShortName">axi4s_o_tdata[3:0][2:0]</obj_property>
+         <obj_property name="ElementShortName">axi4s_o_tdata[3:0][23:0]</obj_property>
+         <obj_property name="ObjectShortName">axi4s_o_tdata[3:0][23:0]</obj_property>
       </wvobject>
    </wvobject>
 </wave_config>

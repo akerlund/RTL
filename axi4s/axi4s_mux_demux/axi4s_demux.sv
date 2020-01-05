@@ -6,21 +6,21 @@ module axi4s_demux #(
     parameter int tid_bit_width_p = $clog2(nr_of_streams_p)
   )(
     // Clock and reset
-    input  wire                                                clk,
-    input  wire                                                rst_n,
+    input  wire                                                  clk,
+    input  wire                                                  rst_n,
 
     // AXI4-S master side
-    output logic                                               axi4s_i_tready,
-    input  wire                                                axi4s_i_tvalid,
-    input  wire                                                axi4s_i_tlast,
-    input  wire                        [tid_bit_width_p-1 : 0] axi4s_i_tid,
-    input  wire                          [tdata_width_p-1 : 0] axi4s_i_tdata,
+    output logic                                                 axi4s_i_tready,
+    input  wire                                                  axi4s_i_tvalid,
+    input  wire                                                  axi4s_i_tlast,
+    input  wire                          [tid_bit_width_p-1 : 0] axi4s_i_tid,
+    input  wire                          [tdata_width_p*8-1 : 0] axi4s_i_tdata,
 
     // AXI4-S slave side
-    input  wire                        [nr_of_streams_p-1 : 0] axi4s_o_tready,
-    output logic                       [nr_of_streams_p-1 : 0] axi4s_o_tvalid,
-    output logic                       [nr_of_streams_p-1 : 0] axi4s_o_tlast,
-    output logic [nr_of_streams_p-1 : 0] [tdata_width_p-1 : 0] axi4s_o_tdata
+    input  wire                          [nr_of_streams_p-1 : 0] axi4s_o_tready,
+    output logic                         [nr_of_streams_p-1 : 0] axi4s_o_tvalid,
+    output logic                         [nr_of_streams_p-1 : 0] axi4s_o_tlast,
+    output logic [nr_of_streams_p-1 : 0] [tdata_width_p*8-1 : 0] axi4s_o_tdata
   );
 
   always_ff @(posedge clk or negedge rst_n) begin

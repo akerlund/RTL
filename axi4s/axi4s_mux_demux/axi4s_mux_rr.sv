@@ -6,21 +6,21 @@ module axi4s_mux_rr #(
     parameter int tid_bit_width_p = $clog2(nr_of_streams_p)
   )(
     // Clock and reset
-    input  wire                                                clk,
-    input  wire                                                rst_n,
+    input  wire                                                  clk,
+    input  wire                                                  rst_n,
 
     // AXI4-S master side
-    output logic                       [nr_of_streams_p-1 : 0] axi4s_i_tready,
-    input  wire                        [nr_of_streams_p-1 : 0] axi4s_i_tvalid,
-    input  wire                        [nr_of_streams_p-1 : 0] axi4s_i_tlast,
-    input  wire  [nr_of_streams_p-1 : 0] [tdata_width_p-1 : 0] axi4s_i_tdata,
+    output logic                         [nr_of_streams_p-1 : 0] axi4s_i_tready,
+    input  wire                          [nr_of_streams_p-1 : 0] axi4s_i_tvalid,
+    input  wire                          [nr_of_streams_p-1 : 0] axi4s_i_tlast,
+    input  wire  [nr_of_streams_p-1 : 0] [tdata_width_p*8-1 : 0] axi4s_i_tdata,
 
     // AXI4-S slave side
-    input  wire                                                axi4s_o_tready,
-    output logic                                               axi4s_o_tvalid,
-    output logic                                               axi4s_o_tlast,
-    output logic                       [tid_bit_width_p-1 : 0] axi4s_o_tid,
-    output logic                         [tdata_width_p-1 : 0] axi4s_o_tdata
+    input  wire                                                  axi4s_o_tready,
+    output logic                                                 axi4s_o_tvalid,
+    output logic                                                 axi4s_o_tlast,
+    output logic                         [tid_bit_width_p-1 : 0] axi4s_o_tid,
+    output logic                         [tdata_width_p*8-1 : 0] axi4s_o_tdata
   );
 
   logic                       bus_is_locked;
