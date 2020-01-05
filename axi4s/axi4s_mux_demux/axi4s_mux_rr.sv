@@ -39,7 +39,8 @@ module axi4s_mux_rr #(
     end
     else begin
 
-      axi4s_i_tready <= '0;
+      axi4s_i_tready[rr_counter] <= axi4s_o_tready;
+
       axi4s_o_tvalid <= axi4s_i_tvalid[rr_counter];
       axi4s_o_tdata  <= axi4s_i_tdata[rr_counter];
       axi4s_o_tlast  <= axi4s_i_tlast[rr_counter];
@@ -51,7 +52,6 @@ module axi4s_mux_rr #(
         // Lock the MUX if it is ready and tvalid from a master is high
         if (axi4s_i_tvalid[rr_counter]) begin
           bus_is_locked              <= '1;
-          axi4s_i_tready[rr_counter] <= axi4s_o_tready;
         end
         // Count up the round robin counter
         else if ( rr_counter == (nr_of_streams_p-1) ) begin
