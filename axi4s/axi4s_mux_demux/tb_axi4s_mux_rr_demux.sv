@@ -2,30 +2,26 @@
 
 module tb_axi4s_mux_rr_demux;
 
+  //////////////////////////////////////////////////////////////////////////////
+  // Testbench settings
+  //////////////////////////////////////////////////////////////////////////////
+
+  // How many connections there are to a MUX or from a DEMUX
+  localparam int nr_of_streams_c   = 4;
+  // AXI4-S tdata width in bytes
+  localparam int tdata_width_p     = 3;
+  // How many transfers there will be per stream
+  localparam int nr_of_transfers_c = 10;
+  // Either random data or counter data, i.e., 0, 1, 2, ..., (nr_of_streams_c * nr_of_transfers_c)
+  localparam int randomize_stream_data_c = 0;
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Signals
+  //////////////////////////////////////////////////////////////////////////////
+
+  // Clock and reset
   logic clk;
   logic rst_n;
-
-  // Clock generation
-  initial begin
-    clk = 1'b0;
-    forever clk = #4.0 ~clk;
-  end
-
-  // Reset logic
-  initial begin
-    rst_n       = 1'b0;
-    #10ns rst_n = 1'b1;
-  end
-
-  // Constant parameters
-  localparam int nr_of_streams_c   = 4;
-  localparam int tdata_width_p     = 3;
-  localparam int nr_of_transfers_c = 10;
-
-  // TB data vectors
-  logic [nr_of_streams_c-1 : 0] [tdata_width_p*8-1 : 0] axi4s_tdata_ingress [nr_of_transfers_c];
-  logic [nr_of_streams_c-1 : 0] [tdata_width_p*8-1 : 0] axi4s_tdata_egress  [nr_of_transfers_c];
-
 
   // Output signals from the MUX
   logic                         [nr_of_streams_c-1 : 0] axi4s_mux_rr_i_tready;
@@ -52,35 +48,62 @@ module tb_axi4s_mux_rr_demux;
   // Input signals to the DEMUX
   logic                         [nr_of_streams_c-1 : 0] axi4s_demux_o_tready;
 
+  //////////////////////////////////////////////////////////////////////////////
+  // Variables and logics
+  //////////////////////////////////////////////////////////////////////////////
 
+  // TB data matrix shape: (y-axis) stream_nr * (x-axis) transfer_data
+  logic [nr_of_streams_c-1 : 0] [nr_of_transfers_c-1 : 0] [tdata_width_p*8-1 : 0] axi4s_tdata_ingress;
+  logic [nr_of_streams_c-1 : 0] [nr_of_transfers_c-1 : 0] [tdata_width_p*8-1 : 0] axi4s_tdata_egress;
+
+  // Scoreboard variables
+  int nr_of_received;
+  int nr_of_mismatches;
+  int test_passed_ok;
+
+  // Egress variables
+  int stream_counter;
+  int transfer_counter;
+
+  //////////////////////////////////////////////////////////////////////////////
   // Main stimuli
+  //////////////////////////////////////////////////////////////////////////////
   initial begin
 
     $display("INFO [run] Running TB: tb_axi4s_mux_rr_demux");
 
-    // Generate ingress data for all streams
+    // Generate ingress data for all (nr_of_streams_c) streams
     for (int stream = 0; stream < nr_of_streams_c; stream++) begin
       for (int transfer = 0; transfer < nr_of_transfers_c; transfer++) begin
-        axi4s_tdata_ingress[transfer][stream] <= $urandom();
+        if (!randomize_stream_data_c) begin
+          axi4s_tdata_ingress[stream][transfer] <= stream*nr_of_transfers_c + transfer;
+        end
+        else begin
+          axi4s_tdata_ingress[stream][transfer] <= $urandom();
+        end
       end
     end
 
     // Reset
-    axi4s_tdata_egress = '{default:0};
-
+    axi4s_tdata_egress     = '{default:0};
     axi4s_mux_rr_i_tdata  <= '0;
     axi4s_mux_rr_i_tvalid <= '0;
     axi4s_mux_rr_i_tlast  <= '0;
-
     axi4s_demux_o_tready  <= '0;
+    nr_of_received         = 0;
+    nr_of_mismatches       = 0;
+    test_passed_ok         = 1;
+    stream_counter         = 0;
+    transfer_counter       = 0;
 
-    @(posedge rst_n); $display("INFO [rst_n] Reset complete");
+    @(posedge rst_n);
+    $display("INFO [rst_n] Reset complete");
 
     axi4s_demux_o_tready  <= '1;
 
+    // Start sending data to multiplexer and receiving from the de-multiplexer
     fork
-
-      // Ingress
+      // Ingress of multiplexer
       begin
 
         for (int stream = 0; stream < nr_of_streams_c; stream++) begin
@@ -92,7 +115,7 @@ module tb_axi4s_mux_rr_demux;
             wait (axi4s_mux_rr_i_tready);
             @(posedge clk)
 
-            axi4s_mux_rr_i_tdata[stream]  <= axi4s_tdata_ingress[transfer][stream];
+            axi4s_mux_rr_i_tdata[stream] <= axi4s_tdata_ingress[stream][transfer];
 
             if (transfer == nr_of_transfers_c-1) begin
               axi4s_mux_rr_i_tlast <= '1;
@@ -109,20 +132,61 @@ module tb_axi4s_mux_rr_demux;
           axi4s_mux_rr_i_tlast  <= '0;
           axi4s_mux_rr_i_tdata  <= '0;
           @(posedge clk);
-
         end
       end
 
-      // Egress
+      // Egress of de-multiplexer
       begin
+        while (nr_of_received != nr_of_streams_c*nr_of_transfers_c) begin
+          @(posedge clk);
+          if (axi4s_demux_o_tvalid) begin
+
+            nr_of_received++;
+
+            if (axi4s_tdata_ingress[stream_counter][transfer_counter] != axi4s_demux_o_tdata) begin
+              $display("WARNING [cmp] Data mismatch");
+              nr_of_mismatches++;
+            end
+
+            transfer_counter++;
+            if (transfer_counter == nr_of_transfers_c) begin
+              transfer_counter = 0;
+              stream_counter++;
+              if (stream_counter == nr_of_streams_c) begin
+                break;
+              end
+            end
+
+          end
+        end
       end
     join
 
-    $display("Finished");
+
+    if (nr_of_received != nr_of_streams_c*nr_of_transfers_c) begin
+      $error("ERROR [tb] Number of ingress transfers mismatches the number of egress transfers");
+      test_passed_ok = 0;
+    end
+
+    if (nr_of_mismatches != 0) begin
+      $error("ERROR [tb] There was (%0d) mismatching transfers", nr_of_mismatches);
+      test_passed_ok = 0;
+    end
+
+    if (test_passed_ok) begin
+      $display("INFO [tb] Finished: Successfully");
+    end
+    else begin
+      $display("ERROR [tb] Finished: Run generated errors");
+    end
+
     $finish;
 
   end
 
+  //////////////////////////////////////////////////////////////////////////////
+  // Tasks
+  //////////////////////////////////////////////////////////////////////////////
 
   task collect_egress_data;
     for (int i = 0; i < nr_of_streams_c; i++) begin
@@ -132,8 +196,26 @@ module tb_axi4s_mux_rr_demux;
     end
   endtask
 
+  //////////////////////////////////////////////////////////////////////////////
+  // Clock and reset
+  //////////////////////////////////////////////////////////////////////////////
 
+  // Clock generation
+  initial begin
+    clk = 1'b0;
+    forever clk = #4.0 ~clk;
+  end
+
+  // Reset logic
+  initial begin
+    rst_n       = 1'b0;
+    #10ns rst_n = 1'b1;
+  end
+
+  //////////////////////////////////////////////////////////////////////////////
   // DUT instantiation
+  //////////////////////////////////////////////////////////////////////////////
+
   axi4s_mux_rr_demux #(
     .nr_of_streams_p       ( nr_of_streams_c       ),
     .tdata_width_p         ( tdata_width_p         )
