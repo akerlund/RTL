@@ -1,76 +1,88 @@
 `default_nettype none
 
 module synchronous_fifo #(
-    parameter int data_width_p    = -1,
-    parameter int address_width_p = -1
+    parameter int DATA_WIDTH_P    = -1,
+    parameter int ADDRESS_WIDTH_P = -1
   )(
-    input  wire                      clk,
-    input  wire                      rst_n,
+    // Clock and reset
+    input  wire                        clk,
+    input  wire                        rst_n,
 
-    input  wire                      wp_write_en,
-    input  wire   [data_width_p-1:0] wp_data_in,
-    output logic                     wp_fifo_full,
+    // Write port
+    input  wire                        wp_write_enable,
+    input  wire   [DATA_WIDTH_P-1 : 0] wp_data,
+    output logic                       wp_fifo_full,
 
-    input  wire                      rp_read_en,
-    output logic  [data_width_p-1:0] rp_data_out,
-    output logic                     rp_fifo_empty,
+    // Read port
+    input  wire                        rp_read_enable,
+    output logic  [DATA_WIDTH_P-1 : 0] rp_data,
+    output logic                       rp_fifo_empty,
 
-    output logic [address_width_p:0] sr_fill_level,
-    output logic [address_width_p:0] sr_max_fill_level
+    // Configuration and status registers
+    output logic [ADDRESS_WIDTH_P : 0] sr_fill_level,
+    output logic [ADDRESS_WIDTH_P : 0] sr_max_fill_level,
+    input  wire  [ADDRESS_WIDTH_P : 0] cr_almost_full_level
   );
 
   // FPGA will use RAM if the memory is larger than 2048 bits
-  localparam bit generate_reg_fifo_c = data_width_p * 2**address_width_p <= 2048 ? 1'b1 : 1'b0;
+  localparam bit GENERATE_FIFO_REG_C = DATA_WIDTH_P * 2**ADDRESS_WIDTH_P <= 2048 ? 1'b1 : 1'b0;
 
   // Maximum fill level
-  localparam logic [address_width_p:0] fifo_max_level_c = 2**address_width_p;
+  localparam logic [ADDRESS_WIDTH_P : 0] FIFO_MAX_LEVEL_C = 2**ADDRESS_WIDTH_P - 1;
 
-  logic                       write_enable;
-  logic [address_width_p-1:0] write_address;
-  logic                       read_enable;
-  logic [address_width_p-1:0] read_address;
+  logic                         write_enable;
+  logic [ADDRESS_WIDTH_P-1 : 0] write_address;
+  logic                         read_enable;
+  logic [ADDRESS_WIDTH_P-1 : 0] read_address;
 
-  assign write_enable = wp_write_en && (!wp_fifo_full || rp_read_en);
-  assign read_enable  = rp_read_en  && !rp_fifo_empty;
+  assign write_enable = wp_write_enable && (!wp_fifo_full || rp_read_enable);
+  assign read_enable  = rp_read_enable  && !rp_fifo_empty;
 
   generate
-    if (generate_reg_fifo_c) begin : gen_sync_reg
+
+    if (GENERATE_FIFO_REG_C) begin : gen_sync_reg
 
       // Generate with registers
-
       synchronous_fifo_register #(
-        .data_width_p    ( data_width_p    ),
-        .address_width_p ( address_width_p )
+        .DATA_WIDTH_P    ( DATA_WIDTH_P    ),
+        .ADDRESS_WIDTH_P ( ADDRESS_WIDTH_P )
       ) synchronous_fifo_register_i0 (
+
+        // Clock and reset
         .clk             ( clk             ),
         .rst_n           ( rst_n           ),
-        .wp_write_en     ( write_enable    ),
-        .wp_data_in      ( wp_data_in      ),
+
+        // Write port
+        .wp_write_enable ( write_enable    ),
+        .wp_data         ( wp_data         ),
         .wp_fifo_full    (                 ),
-        .rp_read_en      ( read_enable     ),
-        .rp_data_out     ( rp_data_out     ),
+
+        // Read port
+        .rp_read_enable  ( read_enable     ),
+        .rp_data         ( rp_data         ),
         .rp_fifo_empty   ( rp_fifo_empty   ),
+
+        // Status registers
         .sr_fill_level   (                 )
       );
 
     end
-    else begin : gen_sync_ram
+    else begin : generate_synchronous_ram_fifo
 
       // Generate with RAM
+      logic [ADDRESS_WIDTH_P-1 : 0] ram_write_address;
+      logic [ADDRESS_WIDTH_P-1 : 0] ram_read_address;
+      logic    [DATA_WIDTH_P-1 : 0] ram_read_data;
+      logic [ADDRESS_WIDTH_P-1 : 0] ram_fill_level;
 
-      logic [address_width_p-1:0] ram_write_address;
-      logic [address_width_p-1:0] ram_read_address;
-      logic    [data_width_p-1:0] ram_read_data;
-      logic [address_width_p-1:0] ram_fill_level;
-
-      logic                       reg_write_enable;
-      logic                 [2:0] reg_fill_level;
+      logic                         reg_write_enable;
+      logic                 [2 : 0] reg_fill_level;
 
       assign ram_fill_level = ram_write_address >= ram_read_address ?
                               {1'b0, ram_write_address} - {1'b0, ram_read_address} :
-                              fifo_max_level_c - ({1'b0, ram_read_address} - {1'b0, ram_write_address});
+                              FIFO_MAX_LEVEL_C - ({1'b0, ram_read_address} - {1'b0, ram_write_address});
 
-      // Read and write process
+      // RAM read and write process
       always_ff @ (posedge clk or negedge rst_n) begin
         if (!rst_n) begin
           ram_write_address <='0;
@@ -93,13 +105,19 @@ module synchronous_fifo #(
 
       // Generate the FIFO's RAM
       fpga_ram_1c_1w_1r #(
-        .data_width_p    ( data_width_p      ),
-        .address_width_p ( address_width_p   )
+        .DATA_WIDTH_P    ( DATA_WIDTH_P      ),
+        .ADDRESS_WIDTH_P ( ADDRESS_WIDTH_P   )
       ) fpga_ram_1c_1w_1r_i0 (
+
+        // Clock
         .clk             ( clk               ),
+
+        // Port A
         .port_a_write_en ( write_enable      ),
         .port_a_address  ( ram_write_address ),
-        .port_a_data_in  ( wp_data_in        ),
+        .port_a_data_in  ( wp_data           ),
+
+        // Port B
         .port_b_address  ( ram_read_address  ),
         .port_b_data_out ( ram_read_data     )
       );
@@ -107,46 +125,67 @@ module synchronous_fifo #(
       // Register at the output removes the delay of 1 clk period
       // it takes for RAM memories to output data
       synchronous_fifo_register #(
-        .data_width_p    ( data_width_p     ),
-        .address_width_p ( address_width_p  )
+        .DATA_WIDTH_P    ( DATA_WIDTH_P     ),
+        .ADDRESS_WIDTH_P ( 2                )
       ) synchronous_fifo_register_i0 (
+
+        // Clock and reset
         .clk             ( clk              ),
         .rst_n           ( rst_n            ),
-        .wp_write_en     ( reg_write_enable ),
-        .wp_data_in      ( ram_read_data    ),
+
+        // Write port
+        .wp_write_enable ( reg_write_enable ),
+        .wp_data         ( ram_read_data    ),
         .wp_fifo_full    (                  ),
-        .rp_read_en      ( read_enable      ),
-        .rp_data_out     ( rp_data_out      ),
+
+        // Read port
+        .rp_read_enable  ( read_enable      ),
+        .rp_data         ( rp_data          ),
         .rp_fifo_empty   ( rp_fifo_empty    ),
+
+        // Status registers
         .sr_fill_level   ( reg_fill_level   )
       );
-
     end
   endgenerate
 
   // Status process
   always_ff @ (posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-      wp_fifo_full      <='0;
-      sr_fill_level     <='0;
-      sr_max_fill_level <='0;
+
+      wp_fifo_full        <= '0;
+      wp_fifo_almost_full <= '0;
+      sr_fill_level       <= '0;
+      sr_max_fill_level   <= '0;
+
     end
     else begin
 
-      if (sr_fill_level == fifo_max_level_c) begin
+      // Determine if the FIFO is full
+      if (sr_fill_level >= FIFO_MAX_LEVEL_C) begin
         wp_fifo_full <= '1;
       end
       else begin
         wp_fifo_full <= '0;
       end
 
+      // Determine if the FIFO is almost full
+      if (sr_fill_level >= cr_almost_full_level) begin
+        wp_fifo_almost_full <= '1;
+      end
+      else begin
+        wp_fifo_almost_full <= '0;
+      end
+
+      // Update the FIFO's fill level
       if (read_enable && !write_enable) begin
         sr_fill_level <= sr_fill_level - 1;
       end
-      else if (read_enable && !write_enable) begin
+      else if (write_enable && !read_enable) begin
         sr_fill_level <= sr_fill_level + 1;
       end
 
+      // Update the maximum fill level the FIFO has reached
       if (sr_fill_level >= sr_max_fill_level) begin
         sr_max_fill_level <= sr_fill_level;
       end

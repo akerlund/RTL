@@ -1,32 +1,32 @@
 `default_nettype none
 
 module synchronous_fifo_register #(
-    parameter int data_width_p    = -1,
-    parameter int address_width_p = -1
+    parameter int DATA_WIDTH_P    = -1,
+    parameter int ADDRESS_WIDTH_P = -1
   )(
-    input  wire                      clk,
-    input  wire                      rst_n,
+    input  wire                        clk,
+    input  wire                        rst_n,
 
-    input  wire                      wp_write_en,
-    input  wire   [data_width_p-1:0] wp_data_in,
-    output logic                     wp_fifo_full,
+    input  wire                        wp_write_enable,
+    input  wire   [DATA_WIDTH_P-1 : 0] wp_data_in,
+    output logic                       wp_fifo_full,
 
-    input  wire                      rp_read_en,
-    output logic  [data_width_p-1:0] rp_data_out,
-    output logic                     rp_fifo_empty,
+    input  wire                        rp_read_enable,
+    output logic  [DATA_WIDTH_P-1 : 0] rp_data_out,
+    output logic                       rp_fifo_empty,
 
-    output logic [address_width_p:0] sr_fill_level
+    output logic [ADDRESS_WIDTH_P : 0] sr_fill_level
   );
 
-  logic                       write_enable;
-  logic [address_width_p-1:0] write_address;
-  logic                       read_enable;
-  logic [address_width_p-1:0] read_address;
+  logic                         write_enable;
+  logic [ADDRESS_WIDTH_P-1 : 0] write_address;
+  logic                         read_enable;
+  logic [ADDRESS_WIDTH_P-1 : 0] read_address;
 
-  assign write_enable = wp_write_en && !wp_fifo_full;
-  assign read_enable  = rp_read_en  && !rp_fifo_empty;
+  assign write_enable = wp_write_enable && !wp_fifo_full;
+  assign read_enable  = rp_read_enable  && !rp_fifo_empty;
 
-  assign wp_fifo_full = sr_fill_level[address_width_p];
+  assign wp_fifo_full = sr_fill_level[ADDRESS_WIDTH_P];
 
   always_ff @ (posedge clk or negedge rst_n) begin
     if (!rst_n) begin
@@ -57,8 +57,8 @@ module synchronous_fifo_register #(
   end
 
   fpga_reg_1c_1w_1r #(
-    .data_width_p    ( data_width_p    ),
-    .address_width_p ( address_width_p )
+    .DATA_WIDTH_P    ( DATA_WIDTH_P    ),
+    .ADDRESS_WIDTH_P ( ADDRESS_WIDTH_P )
   ) fpga_reg_1c_1w_1r_i0 (
     .clk             ( clk             ),
     .port_a_write_en ( write_enable    ),
