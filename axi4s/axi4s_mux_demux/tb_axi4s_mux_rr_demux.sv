@@ -54,7 +54,6 @@ module tb_axi4s_mux_rr_demux;
 
   // TB data matrix shape: (y-axis) stream_nr * (x-axis) transfer_data
   logic [nr_of_streams_c-1 : 0] [nr_of_transfers_c-1 : 0] [tdata_width_p*8-1 : 0] axi4s_tdata_ingress;
-  logic [nr_of_streams_c-1 : 0] [nr_of_transfers_c-1 : 0] [tdata_width_p*8-1 : 0] axi4s_tdata_egress;
 
   // Scoreboard variables
   int nr_of_received;
@@ -76,7 +75,7 @@ module tb_axi4s_mux_rr_demux;
     for (int stream = 0; stream < nr_of_streams_c; stream++) begin
       for (int transfer = 0; transfer < nr_of_transfers_c; transfer++) begin
         if (!randomize_stream_data_c) begin
-          axi4s_tdata_ingress[stream][transfer] <= stream*nr_of_transfers_c + transfer;
+          axi4s_tdata_ingress[stream][transfer] <= stream*nr_of_transfers_c + transfer + 1;
         end
         else begin
           axi4s_tdata_ingress[stream][transfer] <= $urandom();
@@ -85,7 +84,6 @@ module tb_axi4s_mux_rr_demux;
     end
 
     // Reset
-    axi4s_tdata_egress     = '{default:0};
     axi4s_mux_rr_i_tdata  <= '0;
     axi4s_mux_rr_i_tvalid <= '0;
     axi4s_mux_rr_i_tlast  <= '0;
@@ -99,6 +97,7 @@ module tb_axi4s_mux_rr_demux;
     @(posedge rst_n);
     $display("INFO [rst_n] Reset complete");
 
+    @(posedge clk)
     axi4s_demux_o_tready  <= '1;
 
     // Start sending data to multiplexer and receiving from the de-multiplexer
@@ -108,14 +107,12 @@ module tb_axi4s_mux_rr_demux;
 
         for (int stream = 0; stream < nr_of_streams_c; stream++) begin
 
-          axi4s_mux_rr_i_tvalid[stream] <= '1;
-
           for (int transfer = 0; transfer < nr_of_transfers_c; transfer++) begin
 
-            wait (axi4s_mux_rr_i_tready);
-            @(posedge clk)
+            axi4s_mux_rr_i_tvalid[stream] <= '1;
+            axi4s_mux_rr_i_tdata[stream]  <= axi4s_tdata_ingress[stream][transfer];
 
-            axi4s_mux_rr_i_tdata[stream] <= axi4s_tdata_ingress[stream][transfer];
+            wait (axi4s_mux_rr_i_tready[stream] == '1);
 
             if (transfer == nr_of_transfers_c-1) begin
               axi4s_mux_rr_i_tlast <= '1;
@@ -123,6 +120,8 @@ module tb_axi4s_mux_rr_demux;
             else begin
               axi4s_mux_rr_i_tlast <= '0;
             end
+
+            @(posedge clk);
 
           end
 
@@ -183,18 +182,6 @@ module tb_axi4s_mux_rr_demux;
     $finish;
 
   end
-
-  //////////////////////////////////////////////////////////////////////////////
-  // Tasks
-  //////////////////////////////////////////////////////////////////////////////
-
-  task collect_egress_data;
-    for (int i = 0; i < nr_of_streams_c; i++) begin
-      wait (axi4s_demux_o_tvalid[i]);
-      axi4s_mux_rr_i_tvalid[i] <= '0;
-      axi4s_tdata_egress[i]    <= axi4s_tdata_egress[i] + (axi4s_demux_o_tdata << i);
-    end
-  endtask
 
   //////////////////////////////////////////////////////////////////////////////
   // Clock and reset
