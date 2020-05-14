@@ -1,12 +1,12 @@
 `default_nettype none
 
 module axi4s_m2s_2m_arbiter #(
-    parameter int AXI_DATA_WIDTH_P,
-    parameter int AXI_STRB_WIDTH_P,
-    parameter int AXI_KEEP_WIDTH_P,
-    parameter int AXI_ID_WIDTH_P,
-    parameter int AXI_DEST_WIDTH_P,
-    parameter int AXI_USER_WIDTH_P
+    parameter int AXI_DATA_WIDTH_P = -1,
+    parameter int AXI_STRB_WIDTH_P = -1,
+    parameter int AXI_KEEP_WIDTH_P = -1,
+    parameter int AXI_ID_WIDTH_P   = -1,
+    parameter int AXI_DEST_WIDTH_P = -1,
+    parameter int AXI_USER_WIDTH_P = -1
   )(
     // Clock and reset
     input  wire                           clk,
@@ -78,53 +78,53 @@ module axi4s_m2s_2m_arbiter #(
     case (selected_master)
 
       NO_SELECTED_E: begin
-        ing0_tready <= '0;
-        ing1_tready <= '0;
-        egr_tvalid  <= '0;
-        egr_tdata   <= '0;
-        egr_tstrb   <= '0;
-        egr_tkeep   <= '0;
-        egr_tlast   <= '0;
-        egr_tid     <= '0;
-        egr_tdest   <= '0;
-        egr_tuser   <= '0;
+        ing0_tready = '0;
+        ing1_tready = '0;
+        egr_tvalid  = '0;
+        egr_tdata   = '0;
+        egr_tstrb   = '0;
+        egr_tkeep   = '0;
+        egr_tlast   = '0;
+        egr_tid     = '0;
+        egr_tdest   = '0;
+        egr_tuser   = '0;
       end
 
       MASTER0_E: begin
-        egr_tvalid  <= ing0_tvalid;
-        ing0_tready <= egr_tready;
-        egr_tdata   <= ing0_tdata;
-        egr_tstrb   <= ing0_tstrb;
-        egr_tkeep   <= ing0_tkeep;
-        egr_tlast   <= ing0_tlast;
-        egr_tid     <= ing0_tid;
-        egr_tdest   <= ing0_tdest;
-        egr_tuser   <= ing0_tuser;
+        egr_tvalid  = ing0_tvalid;
+        ing0_tready = egr_tready;
+        egr_tdata   = ing0_tdata;
+        egr_tstrb   = ing0_tstrb;
+        egr_tkeep   = ing0_tkeep;
+        egr_tlast   = ing0_tlast;
+        egr_tid     = ing0_tid;
+        egr_tdest   = ing0_tdest;
+        egr_tuser   = ing0_tuser;
       end
 
       MASTER1_E: begin
-        egr_tvalid  <= ing1_tvalid;
-        ing1_tready <= egr_tready;
-        egr_tdata   <= ing1_tdata;
-        egr_tstrb   <= ing1_tstrb;
-        egr_tkeep   <= ing1_tkeep;
-        egr_tlast   <= ing1_tlast;
-        egr_tid     <= ing1_tid;
-        egr_tdest   <= ing1_tdest;
-        egr_tuser   <= ing1_tuser;
+        egr_tvalid  = ing1_tvalid;
+        ing1_tready = egr_tready;
+        egr_tdata   = ing1_tdata;
+        egr_tstrb   = ing1_tstrb;
+        egr_tkeep   = ing1_tkeep;
+        egr_tlast   = ing1_tlast;
+        egr_tid     = ing1_tid;
+        egr_tdest   = ing1_tdest;
+        egr_tuser   = ing1_tuser;
       end
 
       default: begin
-        ing0_tready <= '0;
-        ing1_tready <= '0;
-        egr_tvalid  <= '0;
-        egr_tdata   <= '0;
-        egr_tstrb   <= '0;
-        egr_tkeep   <= '0;
-        egr_tlast   <= '0;
-        egr_tid     <= '0;
-        egr_tdest   <= '0;
-        egr_tuser   <= '0;
+        ing0_tready = '0;
+        ing1_tready = '0;
+        egr_tvalid  = '0;
+        egr_tdata   = '0;
+        egr_tstrb   = '0;
+        egr_tkeep   = '0;
+        egr_tlast   = '0;
+        egr_tid     = '0;
+        egr_tdest   = '0;
+        egr_tuser   = '0;
       end
 
     endcase
@@ -176,6 +176,7 @@ module axi4s_m2s_2m_arbiter #(
       // -----------------------------------------------------------------------
 
       BURST_MST_0: begin
+        next_rr_priority_state = next_rr_priority_state;
         selected_master = MASTER0_E;
         if (ing0_tvalid && ing0_tready && ing0_tlast) begin
           next_rr_priority_state = RR_PRIO_MST_1;
@@ -183,10 +184,16 @@ module axi4s_m2s_2m_arbiter #(
       end
 
       BURST_MST_1: begin
+        next_rr_priority_state = next_rr_priority_state;
         selected_master = MASTER1_E;
         if (ing1_tvalid && ing1_tready && ing1_tlast) begin
           next_rr_priority_state = RR_PRIO_MST_0;
         end
+      end
+
+      default: begin
+        selected_master = NO_SELECTED_E;
+        next_rr_priority_state = RR_PRIO_MST_0;
       end
 
     endcase
