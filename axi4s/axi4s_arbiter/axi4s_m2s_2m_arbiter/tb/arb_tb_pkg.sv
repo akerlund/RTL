@@ -12,11 +12,11 @@ package arb_tb_pkg;
   // Configuration of the AXI4-S VIP
   localparam vip_axi4s_cfg_t vip_axi4s_cfg = '{
     AXI_DATA_WIDTH_P : 16,
-    AXI_STRB_WIDTH_P : 0,
+    AXI_STRB_WIDTH_P : 1,
     AXI_KEEP_WIDTH_P : 2,
     AXI_ID_WIDTH_P   : 1,
     AXI_DEST_WIDTH_P : 1,
-    AXI_USER_WIDTH_P : 0
+    AXI_USER_WIDTH_P : 1
   };
 
   `include "arb_config.sv"

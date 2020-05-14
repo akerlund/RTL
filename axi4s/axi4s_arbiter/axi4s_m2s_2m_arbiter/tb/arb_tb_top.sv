@@ -1,9 +1,9 @@
+
+import uvm_pkg::*;
+import arb_tb_pkg::*;
+import arb_tc_pkg::*;
+
 module arb_tb_top;
-
-  import uvm_pkg::*;
-
-  import arb_tb_pkg::*;
-  import arb_tc_pkg::*;
 
   bit clk;
   bit rst_n;
@@ -77,16 +77,16 @@ module arb_tb_top;
 
 
 
-  initial begin
+  // initial begin
 
-    // With recording detail you can switch on/off transaction recording.
-    if ($test$plusargs("RECORD")) begin
-      uvm_config_db #(uvm_verbosity)::set(null,"*", "recording_detail", UVM_FULL);
-    end
-    else begin
-      uvm_config_db #(uvm_verbosity)::set(null,"*", "recording_detail", UVM_NONE);
-    end
-  end
+  //   // With recording detail you can switch on/off transaction recording.
+  //   if ($test$plusargs("RECORD")) begin
+  //     uvm_config_db #(uvm_verbosity)::set(null,"*", "recording_detail", UVM_FULL);
+  //   end
+  //   else begin
+  //     uvm_config_db #(uvm_verbosity)::set(null,"*", "recording_detail", UVM_NONE);
+  //   end
+  // end
 
 
   // Generate reset

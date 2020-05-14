@@ -30,8 +30,8 @@ class tc_arb_simple_test extends arb_base_test;
     phase.raise_objection(this);
 
     arb_vseq0 = new();
-    arb_vseq0.nr_of_bursts            = 10;
-    arb_vseq0.max_idle_between_bursts = 10;
+    arb_vseq0.nr_of_bursts            = 1;
+    arb_vseq0.max_idle_between_bursts = 0;
     arb_vseq0.start(v_sqr);
 
     phase.drop_objection(this);
