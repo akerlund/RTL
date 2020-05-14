@@ -1,7 +1,7 @@
 class vip_axi4s_config extends uvm_object;
 
-  uvm_active_passive_enum is_active = UVM_ACTIVE;
-
+  uvm_active_passive_enum is_active            = UVM_ACTIVE;
+  vip_axi4s_agent_type_t  vip_axi4s_agent_type = VIP_AXI4S_MASTER_AGENT_E;
 
   //----------------------------------------------------------------------------
   // Slave configurations

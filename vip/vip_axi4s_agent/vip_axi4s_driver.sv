@@ -36,7 +36,12 @@ class vip_axi4s_driver #(
 
     fork
       reset_signals();
-      get_and_drive();
+      if (cfg.vip_axi4s_agent_type == VIP_AXI4S_MASTER_AGENT_E) begin
+        master_drive();
+      end
+      else begin
+        slave_drive();
+      end
     join
 
   endtask
@@ -46,28 +51,29 @@ class vip_axi4s_driver #(
   virtual protected task reset_signals();
 
     forever begin
+
       @(negedge vif.rst_n);
 
-      // Master
-      vif.tvalid <= '0;
-      vif.tdata  <= '0;
-      vif.tstrb  <= '0;
-      vif.tkeep  <= '0;
-      vif.tlast  <= '0;
-      vif.tid    <= '0;
-      vif.tdest  <= '0;
-      vif.tuser  <= '0;
-
-      // Slave
-      vif.tready <= '0;
-
+      if (cfg.vip_axi4s_agent_type == VIP_AXI4S_MASTER_AGENT_E) begin
+        vif.tvalid <= '0;
+        vif.tdata  <= '0;
+        vif.tstrb  <= '0;
+        vif.tkeep  <= '0;
+        vif.tlast  <= '0;
+        vif.tid    <= '0;
+        vif.tdest  <= '0;
+        vif.tuser  <= '0;
+      end
+      else begin
+        vif.tready <= '0;
+      end
     end
 
   endtask
 
 
 
-  virtual protected task get_and_drive();
+  virtual protected task master_drive();
 
     @(negedge vif.rst_n);
     @(posedge vif.rst_n);
@@ -91,6 +97,34 @@ class vip_axi4s_driver #(
         vif.tvalid <= '0;
 
       end
+
+    end
+
+  endtask
+
+
+
+  virtual protected task slave_drive();
+
+    @(negedge vif.rst_n);
+    @(posedge vif.rst_n);
+
+    `uvm_info(get_type_name(), $sformatf("Reset asserted"), UVM_HIGH)
+
+    forever begin
+
+      @(posedge vif.clk);
+
+      vif.tready <= '1;
+
+      @(posedge vif.clk);
+
+      // Wait for handshake
+      while(!(vif.tvalid && vif.tlast)) begin
+        @(posedge vif.clk);
+      end
+
+      vif.tready <= '0;
 
     end
 

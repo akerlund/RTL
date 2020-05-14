@@ -61,6 +61,8 @@ class axi4s_random_seq #(
 
     end
 
+    `uvm_info(get_type_name(), $sformatf("All (%0d) items sent", nr_of_bursts), UVM_LOW)
+
   endtask
 
 endclass

@@ -39,7 +39,7 @@ class vip_axi4s_item #(
 
   function void pre_randomize();
 
-    int burst_size = $urandom_range(1, AXI4S_MAX_BURST_LENGTH_C);
+    int burst_size = $urandom_range(1, AXI4S_MAX_BURST_LENGTH_C / cfg.AXI_DATA_WIDTH_P);
 
     tdata = new[burst_size];
     tstrb = new[burst_size];

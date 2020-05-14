@@ -23,7 +23,7 @@ package arb_tb_pkg;
   `include "arb_scoreboard.sv"
   `include "arb_virtual_sequencer.sv"
   `include "arb_env.sv"
-  //`include "arb_virtual_seq.sv"
+  `include "arb_vseq_lib.sv"
 
 endpackage
 

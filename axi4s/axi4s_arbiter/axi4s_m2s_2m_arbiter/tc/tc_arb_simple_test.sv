@@ -1,6 +1,8 @@
 class tc_arb_simple_test extends arb_base_test;
 
-  axi4s_random_seq #(vip_axi4s_cfg) random_seq;
+  //axi4s_random_seq #(vip_axi4s_cfg) random_seq;
+
+  arb_vseq #(vip_axi4s_cfg) arb_vseq0;
 
   `uvm_component_utils(tc_arb_simple_test)
 
@@ -27,8 +29,10 @@ class tc_arb_simple_test extends arb_base_test;
     super.run_phase(phase);
     phase.raise_objection(this);
 
-    random_seq = new();
-    random_seq.start(v_sqr.mst0_sequencer);
+    arb_vseq0 = new();
+    arb_vseq0.nr_of_bursts            = 10;
+    arb_vseq0.max_idle_between_bursts = 10;
+    arb_vseq0.start(v_sqr);
 
     phase.drop_objection(this);
 

@@ -45,6 +45,7 @@ class arb_env extends uvm_env;
     // Configurations
     vip_axi4s_config_mst = vip_axi4s_config::type_id::create("vip_axi4s_config_mst", this);
     vip_axi4s_config_slv = vip_axi4s_config::type_id::create("vip_axi4s_config_slv", this);
+    vip_axi4s_config_slv.vip_axi4s_agent_type = VIP_AXI4S_SLAVE_AGENT_E;
 
     // Create Agents
     vip_axi4s_agent_mst0 = vip_axi4s_agent #(vip_axi4s_cfg)::type_id::create("vip_axi4s_agent_mst0", this);
