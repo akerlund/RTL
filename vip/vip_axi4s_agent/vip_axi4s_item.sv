@@ -1,5 +1,5 @@
 class vip_axi4s_item #(
-  vip_axi4_cfg_t cfg = '{default: '0}
+  vip_axi4s_cfg_t cfg = '{default: '0}
   ) extends uvm_sequence_item;
 
   // ---------------------------------------------------------------------------

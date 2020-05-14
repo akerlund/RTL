@@ -16,7 +16,7 @@ class vip_axi4s_config extends uvm_object;
 
   // Set the period of when 'tready' is de-asserted
   int min_tready_deasserted_period = 10;
-  int max_tready_deasserted_period = AXI4_MAX_BURST_LENGTH_C;
+  int max_tready_deasserted_period = 55;
 
 
 

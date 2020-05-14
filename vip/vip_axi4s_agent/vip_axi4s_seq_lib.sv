@@ -22,9 +22,6 @@ class vip_axi4s_base_seq #(
 
     super.new(name);
 
-    // Calculating the max value of 'awlen' so the burst will not exceed the AXI4 boundry
-    max_awlen = AXI4_BURST_BIT_BOUNDARY_C / vip_cfg.AXI_DATA_WIDTH_P;
-
   endfunction
 
 endclass

@@ -1,5 +1,5 @@
 class vip_axi4s_monitor #(
-  vip_axi4_cfg_t vip_cfg = '{default: '0}
+  vip_axi4s_cfg_t vip_cfg = '{default: '0}
   ) extends uvm_monitor;
 
   // Virtual interface to the DUT
@@ -9,8 +9,8 @@ class vip_axi4s_monitor #(
   uvm_analysis_port #(vip_axi4s_item #(vip_cfg)) collected_port;
 
   // Monitor variables
-  protected int id;
-  axi4_write_config cfg;
+  protected int    id;
+  vip_axi4s_config cfg;
 
 
   // Ingress data is saved in dynamic lists. When 'tlast' is asserted the data
@@ -30,8 +30,8 @@ class vip_axi4s_monitor #(
   function new(string name, uvm_component parent);
 
     super.new(name, parent);
+    collected_port = new("collected_port", this);
 
-    collected_port  = new("collected_port", this);
   endfunction
 
 

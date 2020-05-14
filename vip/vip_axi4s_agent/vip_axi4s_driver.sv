@@ -4,8 +4,8 @@ class vip_axi4s_driver #(
 
   protected virtual vip_axi4s_if #(vip_cfg) vif;
 
-  protected int     id;
-  axi4_write_config cfg;
+  protected int    id;
+  vip_axi4s_config cfg;
 
 
   `uvm_component_param_utils_begin(vip_axi4s_driver #(vip_cfg))
@@ -106,7 +106,7 @@ class vip_axi4s_driver #(
     vif.tvalid <= '1;
     vif.tlast  <= '0;
     vif.tid    <= req.tid;
-    vif.dest   <= req.dest;
+    vif.tdest  <= req.tdest;
 
     while (transfer_counter != burst_length) begin
 
