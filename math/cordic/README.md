@@ -13,7 +13,7 @@ The CORDIC (COordinate Rotation Digital Computer) algorithm was developed by Jac
 
 where *i* denotes the stage number. The idea is that the values from the above equation are saved in a look-up table (LUT) and are used as the angles for rotating the input vector around the desired vector. Every rotation around or towards the desired angle will increase the accuracy of the approximation of the desired angle's vector as it will get closer every iteration.
 
-![alt text](https://github.com/akerlund/rtl_common_design/tree/master/math/cordic/cordic-vectors.png)
+![alt text](https://github.com/akerlund/rtl_common_design/blob/master/math/cordic/cordic-vectors.png)
 
 *Figure 1. Simplified example of an input vector used to approximate another.*
 
