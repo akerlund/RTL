@@ -15,7 +15,8 @@ module arb_tb_top;
   vip_axi4s_if #(vip_axi4s_cfg) mst1_vif(clk, rst_n);
   vip_axi4s_if #(vip_axi4s_cfg) slv0_vif(clk, rst_n);
 
-  axi4s_m2s_2m_arbiter #(
+
+  axi4s_retime #(
 
     .AXI_DATA_WIDTH_P ( vip_axi4s_cfg.AXI_DATA_WIDTH_P ),
     .AXI_STRB_WIDTH_P ( vip_axi4s_cfg.AXI_STRB_WIDTH_P ),
@@ -24,33 +25,22 @@ module arb_tb_top;
     .AXI_DEST_WIDTH_P ( vip_axi4s_cfg.AXI_DEST_WIDTH_P ),
     .AXI_USER_WIDTH_P ( vip_axi4s_cfg.AXI_USER_WIDTH_P )
 
-  ) axi4s_m2s_2m_arbiter_i0 (
+  ) axi4s_retime_i0 (
 
     // Clock and reset
     .clk              ( clk                            ), // input
     .rst_n            ( rst_n                          ), // input
 
-    // Ingress 0
-    .ing0_tvalid      ( mst0_vif.tvalid                ), // input
-    .ing0_tready      ( mst0_vif.tready                ), // output
-    .ing0_tdata       ( mst0_vif.tdata                 ), // input
-    .ing0_tstrb       ( mst0_vif.tstrb                 ), // input
-    .ing0_tkeep       ( mst0_vif.tkeep                 ), // input
-    .ing0_tlast       ( mst0_vif.tlast                 ), // input
-    .ing0_tid         ( mst0_vif.tid                   ), // input
-    .ing0_tdest       ( mst0_vif.tdest                 ), // input
-    .ing0_tuser       ( mst0_vif.tuser                 ), // input
-
-    // Ingress 1
-    .ing1_tvalid      ( mst1_vif.tvalid                ), // input
-    .ing1_tready      ( mst1_vif.tready                ), // output
-    .ing1_tdata       ( mst1_vif.tdata                 ), // input
-    .ing1_tstrb       ( mst1_vif.tstrb                 ), // input
-    .ing1_tkeep       ( mst1_vif.tkeep                 ), // input
-    .ing1_tlast       ( mst1_vif.tlast                 ), // input
-    .ing1_tid         ( mst1_vif.tid                   ), // input
-    .ing1_tdest       ( mst1_vif.tdest                 ), // input
-    .ing1_tuser       ( mst1_vif.tuser                 ), // input
+    // Ingress
+    .ing_tvalid       ( mst0_vif.tvalid                ), // input
+    .ing_tready       ( mst0_vif.tready                ), // output
+    .ing_tdata        ( mst0_vif.tdata                 ), // input
+    .ing_tstrb        ( mst0_vif.tstrb                 ), // input
+    .ing_tkeep        ( mst0_vif.tkeep                 ), // input
+    .ing_tlast        ( mst0_vif.tlast                 ), // input
+    .ing_tid          ( mst0_vif.tid                   ), // input
+    .ing_tdest        ( mst0_vif.tdest                 ), // input
+    .ing_tuser        ( mst0_vif.tuser                 ), // input
 
     // Egress
     .egr_tvalid       ( slv0_vif.tvalid                ), // output
@@ -63,6 +53,56 @@ module arb_tb_top;
     .egr_tdest        ( slv0_vif.tdest                 ), // output
     .egr_tuser        ( slv0_vif.tuser                 )  // output
   );
+
+
+  // axi4s_m2s_2m_arbiter #(
+
+  //   .AXI_DATA_WIDTH_P ( vip_axi4s_cfg.AXI_DATA_WIDTH_P ),
+  //   .AXI_STRB_WIDTH_P ( vip_axi4s_cfg.AXI_STRB_WIDTH_P ),
+  //   .AXI_KEEP_WIDTH_P ( vip_axi4s_cfg.AXI_KEEP_WIDTH_P ),
+  //   .AXI_ID_WIDTH_P   ( vip_axi4s_cfg.AXI_ID_WIDTH_P   ),
+  //   .AXI_DEST_WIDTH_P ( vip_axi4s_cfg.AXI_DEST_WIDTH_P ),
+  //   .AXI_USER_WIDTH_P ( vip_axi4s_cfg.AXI_USER_WIDTH_P )
+
+  // ) axi4s_m2s_2m_arbiter_i0 (
+
+  //   // Clock and reset
+  //   .clk              ( clk                            ), // input
+  //   .rst_n            ( rst_n                          ), // input
+
+  //   // Ingress 0
+  //   .ing0_tvalid      ( mst0_vif.tvalid                ), // input
+  //   .ing0_tready      ( mst0_vif.tready                ), // output
+  //   .ing0_tdata       ( mst0_vif.tdata                 ), // input
+  //   .ing0_tstrb       ( mst0_vif.tstrb                 ), // input
+  //   .ing0_tkeep       ( mst0_vif.tkeep                 ), // input
+  //   .ing0_tlast       ( mst0_vif.tlast                 ), // input
+  //   .ing0_tid         ( mst0_vif.tid                   ), // input
+  //   .ing0_tdest       ( mst0_vif.tdest                 ), // input
+  //   .ing0_tuser       ( mst0_vif.tuser                 ), // input
+
+  //   // Ingress 1
+  //   .ing1_tvalid      ( mst1_vif.tvalid                ), // input
+  //   .ing1_tready      ( mst1_vif.tready                ), // output
+  //   .ing1_tdata       ( mst1_vif.tdata                 ), // input
+  //   .ing1_tstrb       ( mst1_vif.tstrb                 ), // input
+  //   .ing1_tkeep       ( mst1_vif.tkeep                 ), // input
+  //   .ing1_tlast       ( mst1_vif.tlast                 ), // input
+  //   .ing1_tid         ( mst1_vif.tid                   ), // input
+  //   .ing1_tdest       ( mst1_vif.tdest                 ), // input
+  //   .ing1_tuser       ( mst1_vif.tuser                 ), // input
+
+  //   // Egress
+  //   .egr_tvalid       ( slv0_vif.tvalid                ), // output
+  //   .egr_tready       ( slv0_vif.tready                ), // input
+  //   .egr_tdata        ( slv0_vif.tdata                 ), // output
+  //   .egr_tstrb        ( slv0_vif.tstrb                 ), // output
+  //   .egr_tkeep        ( slv0_vif.tkeep                 ), // output
+  //   .egr_tlast        ( slv0_vif.tlast                 ), // output
+  //   .egr_tid          ( slv0_vif.tid                   ), // output
+  //   .egr_tdest        ( slv0_vif.tdest                 ), // output
+  //   .egr_tuser        ( slv0_vif.tuser                 )  // output
+  // );
 
   initial begin
 

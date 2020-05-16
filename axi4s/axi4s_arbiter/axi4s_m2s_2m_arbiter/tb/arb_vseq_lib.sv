@@ -33,7 +33,7 @@ class arb_vseq #(
 
     fork
       random_seq0.start(p_sequencer.mst0_sequencer);
-      random_seq1.start(p_sequencer.mst1_sequencer);
+      //random_seq1.start(p_sequencer.mst1_sequencer);
     join
 
   endtask
