@@ -53,5 +53,5 @@ close $outfile;
 #-------------------------------------------------------------------------------
 
 exec xvlog -sv -f compile_list.txt -L uvm
-exec xelab arb_tb_top -debug typical -relax -s top -timescale 1ns/1ps
-exec xsim top -maxdeltaid 100000 -testplusarg UVM_TESTNAME=$test_case -testplusarg UVM_VERBOSITY=UVM_LOW
+exec xelab -v 2 arb_tb_top -debug typical -relax -s top -timescale 1ns/1ps
+exec xsim top -maxdeltaid 100000 -testplusarg UVM_TESTNAME=$test_case -testplusarg UVM_VERBOSITY=UVM_LOW -runall
