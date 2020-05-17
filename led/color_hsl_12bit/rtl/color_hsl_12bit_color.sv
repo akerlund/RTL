@@ -5,20 +5,20 @@ import gamma_12bit_lut_pkg::*;
 module color_hsl_12bit_color #(
     parameter int color_width = 12
   )(
-    input  wire                    clk,
-    input  wire                    rst_n,
+    input  wire                      clk,
+    input  wire                      rst_n,
 
-    output logic                   ready,
-    input  wire                    valid_hue,
+    output logic                     ready,
+    input  wire                      valid_hue,
 
-    input  wire  [color_width-1:0] hue,
-    input  wire  [color_width-1:0] saturation,
-    input  wire  [color_width-1:0] brightness,
+    input  wire  [color_width-1 : 0] hue,
+    input  wire  [color_width-1 : 0] saturation,
+    input  wire  [color_width-1 : 0] brightness,
 
-    output logic                   valid_rgb,
-    output logic [color_width-1:0] color_red,
-    output logic [color_width-1:0] color_green,
-    output logic [color_width-1:0] color_blue
+    output logic                     valid_rgb,
+    output logic [color_width-1 : 0] color_red,
+    output logic [color_width-1 : 0] color_green,
+    output logic [color_width-1 : 0] color_blue
   );
 
   localparam int max_color_value_c = 4095;
@@ -32,21 +32,21 @@ module color_hsl_12bit_color #(
     adjust_gamma_e
   } state_t;
 
-  state_t                 hsl_state;
+  state_t                   hsl_state;
 
-  logic     signed [31:0] chroma_bright;
-  logic            [31:0] hue_normalized;
-  logic            [31:0] hue_prim;
+  logic     signed [31 : 0] chroma_bright;
+  logic            [31 : 0] hue_normalized;
+  logic            [31 : 0] hue_prim;
 
-  logic            [31:0] chroma;
-  logic            [31:0] intermediate_value_x0;
+  logic            [31 : 0] chroma;
+  logic            [31 : 0] intermediate_value_x0;
 
-  logic            [31:0] intermediate_value_x1;
-  logic            [31:0] m_brightness;
+  logic            [31 : 0] intermediate_value_x1;
+  logic            [31 : 0] m_brightness;
 
-  logic [color_width-1:0] hue_red;
-  logic [color_width-1:0] hue_green;
-  logic [color_width-1:0] hue_blue;
+  logic [color_width-1 : 0] hue_red;
+  logic [color_width-1 : 0] hue_green;
+  logic [color_width-1 : 0] hue_blue;
 
 
   always_ff @(posedge clk or negedge rst_n) begin

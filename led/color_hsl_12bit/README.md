@@ -1,8 +1,8 @@
-# RLT
-Working on a module that can control RGB LEDs.
-The goal is no use HSL setting for color, i.e.,
-Hue, Saturation and Light which shall be converted into
-RGB values for the timers that generates the PWM waveforms.
+# Color HSL 12-bit
+
+This module takes HSL color values, i.e.,Hue, Saturation and Light and outputs
+the corresponding RGB values which can be used by timers that generates 
+PWM waveforms for RGB LEDs.
 
 ## Scripts
 Contains a Python script which converts HSL into RGB.
@@ -12,7 +12,7 @@ It was used to hardcode values into the test bench.
 Just runs three different HSL values and compares the output with
 values generated from the Python script.
 
-## Synthesis
+## Vivado 2019.2 Synthesis
 These are the results after an out of context synthesis in Vivado.
 The FPGA used is 7z020clg484-1.
 

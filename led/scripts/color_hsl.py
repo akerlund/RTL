@@ -13,7 +13,7 @@ def colorHSL(hue, sat, light):
   X = (C * (4095 - abs((6*hue % 8192) - 4095))) >> 12
 
 	# Hue.
-  if(frac== 0):
+  if (frac== 0):
     tR = C
     tG = X
     tB = 0
