@@ -1,6 +1,11 @@
 # Color HSL 12-bit
 
-This module takes HSL color values, i.e.,Hue, Saturation and Light and outputs
+![Build Status](https://img.shields.io/badge/build-passing-green)
+![Build Status](https://img.shields.io/badge/test-failing-red)
+![Build Status](https://img.shields.io/badge/synthesis-passing-green)
+![Build Status](https://img.shields.io/badge/fpga-N/A-lightgrey)
+
+This module takes HSL color values, i.e., Hue, Saturation and Light and outputs
 the corresponding RGB values which can be used by timers that generates 
 PWM waveforms for RGB LEDs.
 
