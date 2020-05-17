@@ -1,10 +1,14 @@
 # Verification IP (VIP)
 
-![Test  Status](https://img.shields.io/badge/test-passes-green)
+![Test Status](https://img.shields.io/badge/test-passes-green)
 
 ## VIP for AXI4-S
 
 Generic and parameterizable UVM Agent for stimulating DUTs with AXI4-S interfaces.
+
+## VIP for APB3
+
+Generic and parameterizable UVM Agent for stimulating DUTs with APB3 interfaces.
 
 ## Misc
 
