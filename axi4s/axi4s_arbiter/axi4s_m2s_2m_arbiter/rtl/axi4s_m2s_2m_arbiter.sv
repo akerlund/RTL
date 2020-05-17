@@ -135,8 +135,6 @@ module axi4s_m2s_2m_arbiter #(
   always_comb begin
 
     // Standard assignments
-    selected_master        = NO_SELECTED_E;
-    next_rr_priority_state = current_rr_priority_state;
 
     case (current_rr_priority_state)
 
@@ -145,6 +143,7 @@ module axi4s_m2s_2m_arbiter #(
       // -----------------------------------------------------------------------
 
       RR_PRIO_MST_0: begin
+        selected_master        = NO_SELECTED_E;
 
         if (egr_tready) begin
 
@@ -155,10 +154,14 @@ module axi4s_m2s_2m_arbiter #(
             next_rr_priority_state = BURST_MST_1;
           end
         end
+        else begin
+          next_rr_priority_state = next_rr_priority_state;
+        end
       end
 
 
       RR_PRIO_MST_1: begin
+        selected_master        = NO_SELECTED_E;
 
         if (egr_tready) begin
 
@@ -169,6 +172,9 @@ module axi4s_m2s_2m_arbiter #(
             next_rr_priority_state = BURST_MST_0;
           end
         end
+        else begin
+          next_rr_priority_state = next_rr_priority_state;
+        end
       end
 
       // -----------------------------------------------------------------------
@@ -176,10 +182,12 @@ module axi4s_m2s_2m_arbiter #(
       // -----------------------------------------------------------------------
 
       BURST_MST_0: begin
-        next_rr_priority_state = next_rr_priority_state;
         selected_master = MASTER0_E;
         if (ing0_tvalid && ing0_tready && ing0_tlast) begin
           next_rr_priority_state = RR_PRIO_MST_1;
+        end
+        else begin
+          next_rr_priority_state = next_rr_priority_state;
         end
       end
 
@@ -188,6 +196,9 @@ module axi4s_m2s_2m_arbiter #(
         selected_master = MASTER1_E;
         if (ing1_tvalid && ing1_tready && ing1_tlast) begin
           next_rr_priority_state = RR_PRIO_MST_0;
+        end
+        else begin
+          next_rr_priority_state = next_rr_priority_state;
         end
       end
 

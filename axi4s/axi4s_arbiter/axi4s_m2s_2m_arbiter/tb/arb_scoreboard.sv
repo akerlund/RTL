@@ -102,6 +102,11 @@ class arb_scoreboard extends uvm_scoreboard;
 
     current_phase.raise_objection(this);
 
+    if (master_items.size() && slave_items.size()) begin
+      compare();
+      current_phase.drop_objection(this);
+    end
+
   endfunction
 
   virtual function void write_collected_port_mst1(vip_axi4s_item #(vip_axi4s_cfg) trans);
@@ -111,6 +116,11 @@ class arb_scoreboard extends uvm_scoreboard;
     all_master_items.push_back(trans);
 
     current_phase.raise_objection(this);
+
+    if (master_items.size() && slave_items.size()) begin
+      compare();
+      current_phase.drop_objection(this);
+    end
 
   endfunction
 
@@ -124,8 +134,10 @@ class arb_scoreboard extends uvm_scoreboard;
     slave_items.push_back(trans);
     all_slave_items.push_back(trans);
 
-    compare();
-    current_phase.drop_objection(this);
+    if (master_items.size() && slave_items.size()) begin
+      compare();
+      current_phase.drop_objection(this);
+    end
 
   endfunction
 

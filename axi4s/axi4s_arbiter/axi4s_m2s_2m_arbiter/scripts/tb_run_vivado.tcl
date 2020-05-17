@@ -1,9 +1,4 @@
 #-------------------------------------------------------------------------------
-# Select testcase
-#-------------------------------------------------------------------------------
-set test_case       "tc_arb_simple_test";
-
-#-------------------------------------------------------------------------------
 # Specify all the files of the test bench
 #-------------------------------------------------------------------------------
 
@@ -52,6 +47,11 @@ close $outfile;
 # Execute Vivado commands
 #-------------------------------------------------------------------------------
 
+puts "INFO \[xvlog\] Parsing the compile list"
 exec xvlog -sv -f compile_list.txt -L uvm
-exec xelab -v 2 arb_tb_top -debug typical -relax -s top -timescale 1ns/1ps
-exec xsim top -maxdeltaid 100000 -testplusarg UVM_TESTNAME=$test_case -testplusarg UVM_VERBOSITY=UVM_LOW -runall
+
+puts "INFO \[xelab\] Elaborating the design"
+exec xelab arb_tb_top -debug all -relax -s top -timescale 1ns/1ps
+
+# Debug, verbosity set to highest
+#exec xelab -v 2 arb_tb_top -debug all -relax -s top -timescale 1ns/1ps
