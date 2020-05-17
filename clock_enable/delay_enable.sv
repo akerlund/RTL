@@ -1,8 +1,8 @@
 `default_nettype none
 
 module delay_enable #(
-    parameter int clk_period_p = -1,
-    parameter int delay_ns_p   = -1
+    parameter int CLK_PERIOD_P = -1,
+    parameter int DELAY_NS_P   = -1
   )(
     input  wire  clk,
     input  wire  rst_n,
@@ -10,7 +10,7 @@ module delay_enable #(
     output logic delay_out
   );
 
-  localparam int nr_of_clk_periods_c = delay_ns_p / clk_period_p;
+  localparam int nr_of_clk_periods_c = DELAY_NS_P / CLK_PERIOD_P;
   localparam logic [$clog2(nr_of_clk_periods_c)-1 : 0] delay_counter;
 
   int delaying;

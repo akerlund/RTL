@@ -1,17 +1,17 @@
 `default_nettype none
 
 module clock_enable #(
-    parameter int clk_frequency_p = -1,
-    parameter int ena_frequency_p = -1
+    parameter int CLK_FREQUENCY_P = -1,
+    parameter int ENA_FREQUENCY_P = -1
   )(
     input  wire  clk,
     input  wire  rst_n,
     output logic enable
   );
 
-  localparam int nr_of_clk_periods_c = clk_frequency_p / ena_frequency_p;
+  localparam int NR_OF_CLK_PERIODS_C = CLK_FREQUENCY_P / ENA_FREQUENCY_P;
 
-  localparam logic [$clog2(nr_of_clk_periods_c)-1 : 0] clock_enable_counter;
+  localparam logic [$clog2(NR_OF_CLK_PERIODS_C)-1 : 0] clock_enable_counter;
 
 
   always_ff @(posedge clk or negedge rst_n) begin
@@ -21,7 +21,7 @@ module clock_enable #(
     end
     else begin
       enable <= '0;
-      if (clock_enable_counter >= nr_of_clk_periods_c-1) begin
+      if (clock_enable_counter >= NR_OF_CLK_PERIODS_C-1) begin
         enable               <= 1;
         clock_enable_counter <= '0;
       end

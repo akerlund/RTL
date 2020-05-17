@@ -8,8 +8,8 @@
 Arbiter which lets two AXI4-S Masters connect to one AXI4-S slave.
 
 ## Testbench
-Just runs three different HSL values and compares the output with
-values generated from the Python script.
+
+The testbench is written in UVM and use the AXI4-S agents located in the **vip** directory.
 
 ### tc_arb_simple_test
 
