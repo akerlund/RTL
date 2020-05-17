@@ -179,17 +179,17 @@ class hsl_scoreboard extends uvm_scoreboard;
 
     if (red_mst != red_slv) begin
       compare_ok = 0;
-      `uvm_error(get_name(), $sformatf("Red number (%0d) mismatches", number_of_compared))
+      `uvm_error(get_name(), $sformatf("Red number (%0d) mismatches: (%0d != %0d)", number_of_compared, red_mst, red_slv))
     end
 
     if (green_mst != green_slv) begin
       compare_ok = 0;
-      `uvm_error(get_name(), $sformatf("Green number (%0d) mismatches", number_of_compared))
+      `uvm_error(get_name(), $sformatf("Green number (%0d) mismatches: (%0d != %0d)", number_of_compared, green_mst, green_slv))
     end
 
     if (blue_mst != blue_slv) begin
       compare_ok = 0;
-      `uvm_error(get_name(), $sformatf("Blue number (%0d) mismatches", number_of_compared))
+      `uvm_error(get_name(), $sformatf("Blue number (%0d) mismatches: (%0d != %0d)", number_of_compared, blue_mst, blue_slv))
     end
 
 

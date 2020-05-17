@@ -1,9 +1,9 @@
 # Color HSL 12-bit
 
 ![Build Status](https://img.shields.io/badge/build-passing-green)
-![Build Status](https://img.shields.io/badge/test-failing-red)
-![Build Status](https://img.shields.io/badge/synthesis-passing-green)
-![Build Status](https://img.shields.io/badge/fpga-N/A-lightgrey)
+![Test  Status](https://img.shields.io/badge/test-failing-red)
+![Synth Status](https://img.shields.io/badge/synthesis-passing-green)
+![FPGA  Status](https://img.shields.io/badge/fpga-N/A-lightgrey)
 
 This module takes HSL color values, i.e., Hue, Saturation and Light and outputs
 the corresponding RGB values which can be used by timers that generates 
