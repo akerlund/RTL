@@ -17,6 +17,7 @@ class vip_axi4s_item #(
   // Constraints
   // ---------------------------------------------------------------------------
 
+  int burst_size;
   //constraint con_name {}
 
 
@@ -33,13 +34,16 @@ class vip_axi4s_item #(
   function new(string name = "vip_axi4s_item");
 
     super.new(name);
+    burst_size = -1;
 
   endfunction
 
 
   function void pre_randomize();
 
-    int burst_size = $urandom_range(1, AXI4S_MAX_BURST_LENGTH_C / cfg.AXI_DATA_WIDTH_P);
+    if (burst_size == -1) begin
+      burst_size = $urandom_range(1, AXI4S_MAX_BURST_LENGTH_C / cfg.AXI_DATA_WIDTH_P);
+    end
 
     tdata = new[burst_size];
     tstrb = new[burst_size];
@@ -47,6 +51,10 @@ class vip_axi4s_item #(
     tuser = new[burst_size];
 
     foreach (tstrb[i]) begin
+      tstrb[i] = '0;
+    end
+
+    foreach (tkeep[i]) begin
       tkeep[i] = '1;
     end
 
