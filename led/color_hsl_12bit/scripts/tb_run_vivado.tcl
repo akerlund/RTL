@@ -26,7 +26,6 @@ set header_files [list \
   "$module_path/tb/tb.svh" \
   "$git_root/vip/vip_axi4s_agent/vip_axi4s.svh"]
 
-
 set tb_files [list \
   "$module_path/tb/hsl_tb_pkg.sv" \
   "$module_path/tc/hsl_tc_pkg.sv" \

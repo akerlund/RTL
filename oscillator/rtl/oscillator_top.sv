@@ -46,26 +46,26 @@ module oscillator_top #(
     input  wire  [APB3_DATA_WIDTH_P-1 : 0] apb3_pwdata
   );
 
-  logic                  [1 : 0] cr_waveform_select;
-  logic  [COUNTER_WIDTH_P-1 : 0] cr_frequency;
-  logic  [COUNTER_WIDTH_P-1 : 0] cr_duty_cycle;
+  logic  [APB3_DATA_WIDTH_P-1 : 0] cr_waveform_select;
+  logic  [APB3_DATA_WIDTH_P-1 : 0] cr_frequency;
+  logic  [APB3_DATA_WIDTH_P-1 : 0] cr_duty_cycle;
 
 
   oscillator_core #(
-    .WAVE_WIDTH_P       ( WAVE_WIDTH_P       ), // Resolution of the waves
-    .COUNTER_WIDTH_P    ( COUNTER_WIDTH_P    )  // Resolution of the counters
+    .WAVE_WIDTH_P       ( WAVE_WIDTH_P                         ), // Resolution of the waves
+    .COUNTER_WIDTH_P    ( COUNTER_WIDTH_P                      )  // Resolution of the counters
   ) oscillator_core_i0 (
     // Clock and reset
-    .clk                ( clk                ),
-    .rst_n              ( rst_n              ),
+    .clk                ( clk                                  ),
+    .rst_n              ( rst_n                                ),
 
     // Waveform output
-    .waveform           ( waveform           ),
+    .waveform           ( waveform                             ),
 
     // Configuration registers
-    .cr_waveform_select ( cr_waveform_select ), // Selected waveform
-    .cr_frequency       ( cr_frequency       ), // Counter's max value
-    .cr_duty_cycle      ( cr_duty_cycle      )  // Determines when the wave goes from highest to lowest
+    .cr_waveform_select ( cr_waveform_select[1 : 0]            ), // Selected waveform
+    .cr_frequency       ( cr_frequency[COUNTER_WIDTH_P-1 : 0]  ), // Counter's max value
+    .cr_duty_cycle      ( cr_duty_cycle[COUNTER_WIDTH_P-1 : 0] )  // Determines when the wave goes from highest to lowest
   );
 
 

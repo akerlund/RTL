@@ -37,20 +37,12 @@ class vip_apb3_base_seq #(
 
   `uvm_object_param_utils(vip_apb3_base_seq #(vip_cfg))
 
-  string file_buffer [$];
-
-  string git_root;
-  string file_name;
-
   vip_apb3_item #(vip_cfg) apb_item;
 
 
   function new(string name = "vip_apb3_base_seq");
 
     super.new(name);
-
-    // git_root = get_git_root();
-    // `uvm_info(get_name(), $sformatf("Git root is: %s", git_root), UVM_HIGH);
 
   endfunction
 

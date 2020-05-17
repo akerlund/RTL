@@ -40,29 +40,29 @@ module osc_tb_top;
 
   oscillator_top #(
 
-    .WAVE_WIDTH_P      ( WAVE_WIDTH_C     ), // Resolution of the waves
-    .COUNTER_WIDTH_P   ( COUNTER_WIDTH_C  ), // Resolution of the counters
-    .APB3_BASE_ADDR_P  ( '0               ),
-    .APB3_ADDR_WIDTH_P ( vip_apb3_cfg     ),
-    .APB3_DATA_WIDTH_P ( vip_apb3_cfg     )
+    .WAVE_WIDTH_P      ( WAVE_WIDTH_C                  ), // Resolution of the waves
+    .COUNTER_WIDTH_P   ( COUNTER_WIDTH_C               ), // Resolution of the counters
+    .APB3_BASE_ADDR_P  ( '0                            ),
+    .APB3_ADDR_WIDTH_P ( vip_apb3_cfg.APB_ADDR_WIDTH_P ),
+    .APB3_DATA_WIDTH_P ( vip_apb3_cfg.APB_DATA_WIDTH_P )
 
   ) oscillator_top_i0 (
 
     // Clock and reset
-    .clk               ( clk              ),
-    .rst_n             ( rst_n            ),
+    .clk               ( clk                           ),
+    .rst_n             ( rst_n                         ),
 
     // Waveform output
-    .waveform          ( waveform         ),
+    .waveform          ( waveform                      ),
 
     // APB interface
-    .apb3_paddr        ( apb3_vif.paddr   ),
-    .apb3_psel         ( apb3_vif.psel    ),
-    .apb3_penable      ( apb3_vif.penable ),
-    .apb3_pwrite       ( apb3_vif.pwrite  ),
-    .apb3_pwdata       ( apb3_vif.pwdata  ),
-    .apb3_pready       ( apb3_vif.pready  ),
-    .apb3_prdata       ( apb3_vif.prdata  )
+    .apb3_paddr        ( apb3_vif.paddr                ),
+    .apb3_psel         ( apb3_vif.psel                 ),
+    .apb3_penable      ( apb3_vif.penable              ),
+    .apb3_pwrite       ( apb3_vif.pwrite               ),
+    .apb3_pwdata       ( apb3_vif.pwdata               ),
+    .apb3_pready       ( apb3_vif.pready               ),
+    .apb3_prdata       ( apb3_vif.prdata               )
   );
 
   initial begin

@@ -26,6 +26,12 @@ class osc_square_seq #(
 
   `uvm_object_param_utils(osc_square_seq #(vip_cfg))
 
+  logic [vip_cfg.APB_ADDR_WIDTH_P-1 : 0] paddr;
+  logic [vip_cfg.APB_DATA_WIDTH_P-1 : 0] pwdata;
+
+  logic [vip_cfg.APB_ADDR_WIDTH_P-1 : 0] CR_WAVEFORM_SELECT_ADDR_C = 0;
+  logic [vip_cfg.APB_ADDR_WIDTH_P-1 : 0] CR_FREQUENCY_ADDR_C       = 4;
+  logic [vip_cfg.APB_ADDR_WIDTH_P-1 : 0] CR_DUTY_CYCLE_ADDR_C      = 8;
 
   function new(string name = "osc_square_seq");
 
@@ -35,7 +41,23 @@ class osc_square_seq #(
 
 
   virtual task body();
-  
+
+    // Write waveform
+    paddr  = CR_WAVEFORM_SELECT_ADDR_C;
+    pwdata = '0;
+    write_word(paddr, pwdata);
+
+    // Write frequency
+    paddr  = CR_FREQUENCY_ADDR_C;
+    pwdata = 50; // Clocks
+    write_word(paddr, pwdata);
+
+    // Write duty cycle
+    paddr  = CR_DUTY_CYCLE_ADDR_C;
+    pwdata = 25; // Clocks
+    write_word(paddr, pwdata);
+
+    #1000;
 
   endtask
 

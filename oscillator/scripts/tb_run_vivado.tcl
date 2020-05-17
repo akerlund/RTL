@@ -5,6 +5,7 @@
 set top_module_name "osc_tb_top";
 set git_root        [exec git rev-parse --show-toplevel];
 set module_path     $git_root/oscillator
+set script_dir      [pwd]
 
 file mkdir "rundir"
 cd   rundir
@@ -54,3 +55,5 @@ exec xelab osc_tb_top -debug all -relax -s top -timescale 1ns/1ps
 
 # Debug, verbosity set to highest
 #exec xelab -v 2 osc_tb_top -debug all -relax -s top -timescale 1ns/1ps
+
+cd $script_dir

@@ -38,7 +38,7 @@ package osc_tb_pkg;
   };
 
   localparam int WAVE_WIDTH_C    = 16;
-  localparam int COUNTER_WIDTH_C = 16;
+  localparam int COUNTER_WIDTH_C = 32;
 
   `include "osc_config.sv"
   `include "osc_scoreboard.sv"

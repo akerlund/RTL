@@ -86,7 +86,7 @@ module oscillator_apb3_slave #(
               cr_frequency <= apb3_pwdata;
             end
 
-            if (apb3_paddr == CR_FREQUENCY_ADDR_C) begin
+            if (apb3_paddr == CR_DUTY_CYCLE_ADDR_C) begin
               cr_duty_cycle <= apb3_pwdata;
             end
 
