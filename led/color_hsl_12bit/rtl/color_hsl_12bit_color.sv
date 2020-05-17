@@ -1,57 +1,79 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2020 Fredrik Åkerlund
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License, or (at your option) any later version.
+//
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
+//
+// Description:
+//
+////////////////////////////////////////////////////////////////////////////////
+
 `default_nettype none
 
 import gamma_12bit_lut_pkg::*;
 
 module color_hsl_12bit_color #(
-    parameter int color_width = 12
+    parameter int COLOR_WIDTH_P = 12
   )(
-    input  wire                      clk,
-    input  wire                      rst_n,
+    input  wire                        clk,
+    input  wire                        rst_n,
 
-    output logic                     ready,
-    input  wire                      valid_hue,
+    output logic                       ready,
+    input  wire                        valid_hue,
 
-    input  wire  [color_width-1 : 0] hue,
-    input  wire  [color_width-1 : 0] saturation,
-    input  wire  [color_width-1 : 0] brightness,
+    input  wire  [COLOR_WIDTH_P-1 : 0] hue,
+    input  wire  [COLOR_WIDTH_P-1 : 0] saturation,
+    input  wire  [COLOR_WIDTH_P-1 : 0] brightness,
 
-    output logic                     valid_rgb,
-    output logic [color_width-1 : 0] color_red,
-    output logic [color_width-1 : 0] color_green,
-    output logic [color_width-1 : 0] color_blue
+    output logic                       valid_rgb,
+    output logic [COLOR_WIDTH_P-1 : 0] color_red,
+    output logic [COLOR_WIDTH_P-1 : 0] color_green,
+    output logic [COLOR_WIDTH_P-1 : 0] color_blue
   );
 
-  localparam int max_color_value_c = 4095;
-  localparam int mod_color_value_c = 8191;
+  localparam int MAX_COLOR_VALUE_C = 4095;
+  localparam int MOD_COLOR_VALUE_C = 8191;
 
   typedef enum {
-    calculate_chroma_e = 0,
-    calculate_x0_e,
-    calculate_x1_e,
-    set_hue_e,
-    adjust_gamma_e
+    CALCULATE_CHROMA_E,
+    CALCULATE_X0_E,
+    CALCULATE_X1_E,
+    SET_HUE_E,
+    ADJUST_GAMMA_E
   } state_t;
 
-  state_t                   hsl_state;
+  state_t hsl_state;
 
-  logic     signed [31 : 0] chroma_bright;
-  logic            [31 : 0] hue_normalized;
-  logic            [31 : 0] hue_prim;
+  logic       signed [31 : 0] chroma_bright;
+  logic              [31 : 0] hue_normalized;
+  logic              [31 : 0] hue_prim;
 
-  logic            [31 : 0] chroma;
-  logic            [31 : 0] intermediate_value_x0;
+  logic              [31 : 0] chroma;
+  logic              [31 : 0] intermediate_value_x0;
 
-  logic            [31 : 0] intermediate_value_x1;
-  logic            [31 : 0] m_brightness;
+  logic              [31 : 0] intermediate_value_x1;
+  logic              [31 : 0] m_brightness;
 
-  logic [color_width-1 : 0] hue_red;
-  logic [color_width-1 : 0] hue_green;
-  logic [color_width-1 : 0] hue_blue;
+  logic [COLOR_WIDTH_P-1 : 0] hue_red;
+  logic [COLOR_WIDTH_P-1 : 0] hue_green;
+  logic [COLOR_WIDTH_P-1 : 0] hue_blue;
 
 
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-      hsl_state             <= calculate_chroma_e;
+      hsl_state             <= CALCULATE_CHROMA_E;
 
       hue_normalized        <= '0;
       chroma_bright         <= '0;
@@ -78,22 +100,22 @@ module color_hsl_12bit_color #(
 
       case (hsl_state)
         // Step 1: Chroma (1/2) and H'
-        calculate_chroma_e: begin
+        CALCULATE_CHROMA_E: begin
 
           ready <= 1;
 
           if (valid_hue) begin
 
-            hsl_state <= calculate_x0_e;
+            hsl_state <= CALCULATE_X0_E;
             ready     <= '0;
 
             // Chroma = 1 - |2L - 1| * saturation
             // |2L - 1| = ...
-            if ( (brightness << 1) - max_color_value_c >= 0 ) begin
-              chroma_bright <= (brightness << 1) - max_color_value_c;
+            if ( (brightness << 1) - MAX_COLOR_VALUE_C >= 0 ) begin
+              chroma_bright <= (brightness << 1) - MAX_COLOR_VALUE_C;
             end
             else begin
-              chroma_bright <= -(brightness << 1) + max_color_value_c;
+              chroma_bright <= -(brightness << 1) + MAX_COLOR_VALUE_C;
             end
 
             hue_normalized <= 6*hue;
@@ -101,9 +123,9 @@ module color_hsl_12bit_color #(
         end
 
         // Step 2: Chroma (2/2) and x0
-        calculate_x0_e: begin
+        CALCULATE_X0_E: begin
 
-          hsl_state <= calculate_x1_e;
+          hsl_state <= CALCULATE_X1_E;
           ready     <= '0;
 
           // H' = H / 60�
@@ -111,24 +133,24 @@ module color_hsl_12bit_color #(
           hue_prim <= hue_normalized >> 12; // Min 0, Max 5
 
           // Chroma = 1 - |2L - 1| * saturation
-          chroma <= ((max_color_value_c - chroma_bright) * saturation) >> 12;
+          chroma <= ((MAX_COLOR_VALUE_C - chroma_bright) * saturation) >> 12;
 
-          if ( int'((hue_normalized % mod_color_value_c) - max_color_value_c) >= 0 ) begin
-            intermediate_value_x0 <= hue_normalized % mod_color_value_c - max_color_value_c;
+          if ( int'((hue_normalized % MOD_COLOR_VALUE_C) - MAX_COLOR_VALUE_C) >= 0 ) begin
+            intermediate_value_x0 <= hue_normalized % MOD_COLOR_VALUE_C - MAX_COLOR_VALUE_C;
           end
           else begin
-            intermediate_value_x0 <= -(hue_normalized % mod_color_value_c) + max_color_value_c;
+            intermediate_value_x0 <= -(hue_normalized % MOD_COLOR_VALUE_C) + MAX_COLOR_VALUE_C;
           end
         end
 
         // Step 3: x1 and m_brighness
-        calculate_x1_e: begin
+        CALCULATE_X1_E: begin
 
-          hsl_state <= set_hue_e;
+          hsl_state <= SET_HUE_E;
           ready     <= '0;
 
           // X = chroma * (1 - |(H' mod 2) - 1|)
-          intermediate_value_x1 <= (chroma * (max_color_value_c - intermediate_value_x0)) >> 12;
+          intermediate_value_x1 <= (chroma * (MAX_COLOR_VALUE_C - intermediate_value_x0)) >> 12;
 
           // Match brightness
           // m = L - C/2
@@ -137,9 +159,9 @@ module color_hsl_12bit_color #(
         end
 
         // Step 4: Set HUE
-        set_hue_e: begin
+        SET_HUE_E: begin
 
-          hsl_state <= adjust_gamma_e;
+          hsl_state <= ADJUST_GAMMA_E;
           ready     <= '0;
 
           case (hue_prim)
@@ -177,9 +199,9 @@ module color_hsl_12bit_color #(
         end
 
         // Step 5: Adjust gamma
-        adjust_gamma_e: begin
+        ADJUST_GAMMA_E: begin
 
-          hsl_state <= calculate_chroma_e;
+          hsl_state <= CALCULATE_CHROMA_E;
           ready     <= 1;
 
           valid_rgb   <= 1;
@@ -192,7 +214,7 @@ module color_hsl_12bit_color #(
         end
 
         default: begin
-          hsl_state <= calculate_chroma_e;
+          hsl_state <= CALCULATE_CHROMA_E;
         end
 
       endcase
