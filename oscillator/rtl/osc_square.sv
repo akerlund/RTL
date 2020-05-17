@@ -1,30 +1,55 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2020 Fredrik Åkerlund
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License, or (at your option) any later version.
+//
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
+//
+// Description:
+//
+////////////////////////////////////////////////////////////////////////////////
+
 `default_nettype none
 
 module osc_square #(
-    parameter int square_width_p  = -1
-    parameter int counter_width_p = -1
+    parameter int SQUARE_WIDTH_P  = -1, // Resolution of the wave
+    parameter int COUNTER_WIDTH_P = -1  // Resolution of the counter
   )(
-    input  wire                        clk,
-    input  wire                        rst_n,
+    // Clock and reset
+    input  wire                          clk,
+    input  wire                          rst_n,
 
-    output logic [square_width_p-1:0]  osc_square,
+    // Waveform output
+    output logic  [SQUARE_WIDTH_P-1 : 0] osc_square,
 
-    input  wire  [counter_width_p-1:0] cr_frequency,
-    input  wire  [counter_width_p-1:0] cr_duty_cycle
+    // Configuration registers
+    input  wire  [COUNTER_WIDTH_P-1 : 0] cr_frequency, // Counter's max value
+    input  wire  [COUNTER_WIDTH_P-1 : 0] cr_duty_cycle // Determines when the wave goes from highest to lowest
   );
 
-  localparam logic [counter_width_p-1:0] square_high_c = {1'b0,(counter_width_p-1){1'b1}};
-  localparam logic [counter_width_p-1:0] square_low_c  = {1'b1,(counter_width_p-1){1'b0}};
+  localparam logic [COUNTER_WIDTH_P-1 : 0] SQUARE_HIGH_C = {1'b0, {(COUNTER_WIDTH_P-2){1'b1}}}; // Highest signed integer
+  localparam logic [COUNTER_WIDTH_P-1 : 0] SQUARE_LOW_C  = {1'b1, {(COUNTER_WIDTH_P-2){1'b0}}}; // Lowest signed integer
 
   typedef enum {
-    reload_e = 0,
-    counting_e
+    RELOAD_E = 0,
+    COUNTING_E
   } state_t;
 
-  logic [counter_width_p-1:0] frequency;
-  logic [counter_width_p-1:0] duty_cycle;
+  logic [COUNTER_WIDTH_P-1 : 0] frequency;
+  logic [COUNTER_WIDTH_P-1 : 0] duty_cycle;
 
-  logic [counter_width_p-1:0] osc_counter;
+  logic [COUNTER_WIDTH_P-1 : 0] osc_counter;
 
   state_t state;
 
@@ -35,31 +60,31 @@ module osc_square #(
       frequency   <= '0;
       duty_cycle  <= '0;
       osc_counter <= '0;
-      state       <= reload_e;
+      state       <= RELOAD_E;
     end
     else begin
 
       case (state)
 
-        reload_e: begin
+        RELOAD_E: begin
 
           frequency   <= cr_frequency;
           duty_cycle  <= cr_duty_cycle;
-          osc_square  <= square_high_c;
-          state       <= counting_e;
+          osc_square  <= SQUARE_HIGH_C;
+          state       <= COUNTING_E;
           osc_counter <= '0;
         end
 
 
-        counting_e: begin
+        COUNTING_E: begin
 
           osc_counter <= osc_counter + 1;
 
           if (osc_counter == duty_cycle-1) begin
-            osc_square <= square_low_c;
+            osc_square <= SQUARE_LOW_C;
           end
           else if (osc_counter == frequency-1) begin
-            state      <= reload_e;
+            state      <= RELOAD_E;
           end
           else begin
           end
@@ -68,6 +93,8 @@ module osc_square #(
       endcase
 
     end
+  end
+
 endmodule
 
 `default_nettype wire

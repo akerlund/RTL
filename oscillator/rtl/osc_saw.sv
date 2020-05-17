@@ -1,60 +1,82 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2020 Fredrik Åkerlund
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License, or (at your option) any later version.
+//
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
+//
+// Description:
+//
+////////////////////////////////////////////////////////////////////////////////
+
 `default_nettype none
 
-module saw_square #(
-    parameter int saw_width_p     = -1
-    parameter int counter_width_p = -1
+module osc_saw #(
+    parameter int SAW_WIDTH_P     = -1
+    parameter int COUNTER_WIDTH_P = -1
   )(
-    input  wire                        clk,
-    input  wire                        rst_n,
+    input  wire                          clk,
+    input  wire                          rst_n,
 
-    output logic [saw_width_p-1:0]     saw_square,
-    input  wire  [counter_width_p-1:0] cr_frequency
+    output logic     [SAW_WIDTH_P-1 : 0] osc_saw,
+    input  wire  [COUNTER_WIDTH_P-1 : 0] cr_frequency
   );
 
-  localparam logic [counter_width_p-1:0] saw_high_c = {1'b0,(counter_width_p-1){1'b1}};
-  localparam logic [counter_width_p-1:0] saw_low_c  = {1'b1,(counter_width_p-1){1'b0}};
+  localparam logic [COUNTER_WIDTH_P-1 : 0] saw_high_c = {1'b0,{(COUNTER_WIDTH_P-1){1'b1}}};
+  localparam logic [COUNTER_WIDTH_P-1 : 0] saw_low_c  = {1'b1,{(COUNTER_WIDTH_P-1){1'b0}}};
 
   typedef enum {
-    reload_e = 0,
-    counting_e
+    RELOAD_E = 0,
+    COUNTING_E
   } state_t;
 
-  logic [counter_width_p-1:0] frequency;
-
-  logic [counter_width_p-1:0] osc_counter;
-
   state_t state;
+
+  logic [COUNTER_WIDTH_P-1 : 0] frequency;
+  logic [COUNTER_WIDTH_P-1 : 0] osc_counter;
+
 
 
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-      saw_square  <= '0;
+      osc_saw     <= '0;
       frequency   <= '0;
       osc_counter <= '0;
-      state       <= reload_e;
+      state       <= RELOAD_E;
     end
     else begin
 
       case (state)
 
-        reload_e: begin
+        RELOAD_E: begin
 
           frequency   <= cr_frequency;
-          saw_square  <= saw_high_c;
-          state       <= counting_e;
+          osc_saw     <= saw_high_c;
+          state       <= COUNTING_E;
           osc_counter <= '0;
         end
 
 
-        counting_e: begin
+        COUNTING_E: begin
 
           osc_counter <= osc_counter + 1;
 
           if (osc_counter == duty_cycle-1) begin
-            saw_square <= saw_low_c;
+            osc_saw <= saw_low_c;
           end
           else if (osc_counter == frequency-1) begin
-            state      <= reload_e;
+            state   <= RELOAD_E;
           end
           else begin
           end
@@ -63,6 +85,8 @@ module saw_square #(
       endcase
 
     end
+  end
+
 endmodule
 
 `default_nettype wire
