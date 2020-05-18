@@ -11,29 +11,28 @@ It needs a test bench and some documentation.
 
 ## CORDIC Theory
 
-The CORDIC (COordinate Rotation Digital Computer) algorithm was developed by Jack Volder in 1959[1, 2] to calculate trigonometric functions, i.e., sine and cosine. Its advantage when implemented in hardware is that, as an iterative algorithm, it only uses shift, add and subtract operations to convert between polar and Cartesian coordinates. In circular rotation mode the Cartesian coordinates of the vector V$_{0}$ can be found by rotating an input vector V$_{n}$ by an angle $\Theta$ = Z$_{0}$ towards the desired angle. The range of rotation differs from stage to stage and is described as
+The CORDIC (COordinate Rotation Digital Computer) algorithm was developed by Jack Volder in 1959[1, 2] to calculate trigonometric functions, i.e., sine and cosine. Its advantage when implemented in hardware is that, as an iterative algorithm, it only uses shift, add and subtract operations to convert between polar and Cartesian coordinates. In circular rotation mode the Cartesian coordinates of a desired vector can be found by rotating another vector around it and iterate towards the correct coordinates. The range of rotation differs from stage to stage and is described as
 
-(Eq. 1)          $\tan(\Theta)$ = ±$2^{-i}$, *i* $\geq$ 0
-
+*(Eq. 1)*          ![eq1](https://github.com/akerlund/rtl_common_design/blob/master/math/cordic/readme/equation_01.svg)
 
 where *i* denotes the stage number. The idea is that the values from the above equation are saved in a look-up table (LUT) and are used as the angles for rotating the input vector around the desired vector. Every rotation around or towards the desired angle will increase the accuracy of the approximation of the desired angle's vector as it will get closer every iteration.
 
-![alt text](https://github.com/akerlund/rtl_common_design/blob/master/math/cordic/cordic-vectors.png)
+![alt text](https://github.com/akerlund/rtl_common_design/blob/master/math/cordic/readme/cordic-vectors.png)
 
 *Figure 1. Simplified example of an input vector used to approximate another.*
 
 Recall that any vector like V$_{n}$ = [X$_{n}$ Y$_{n}$], illustrated in Fig. 1, can be described as in
 
 
-(Eq. 2)          $X_n$ = $X_0$ $\cos(\Theta)$ - $Y_0$ $\sin(\Theta)$ = $\cos(\Theta)$[$X_0$ - $Y_0$ $\tan(\Theta)$]
+*(Eq. 2)*          ![eq2](https://github.com/akerlund/rtl_common_design/blob/master/math/cordic/readme/equation_02.svg)
 
 and
 
-(Eq. 3)          $Y_n$ = $Y_0$ $\cos(\Theta)$ + $X_0$ $\sin(\Theta)$ = $\cos(\Theta)$[$Y_0$ + $X_0$ $\tan(\Theta)$].
+*(Eq. 3)*          ![eq3](https://github.com/akerlund/rtl_common_design/blob/master/math/cordic/readme/equation_03.svg)
 
 These equations include some trigonometric operations which will be reduced step by step. The *sin* term can be removed by dividing the expression with *cos* which in turn yields a new expression with only *cos* and *tan* terms. The first step towards further simplification is to consider if the tangent function is restricted as in (1), which essentially describes a shift operation. Deriving the first values from this method yields:
 
-$\tan(\Theta)$ = ±$2^{0}$, $2^{-1}$, $2^{-2}$, $2^{-3}$, ..., $2^{-i}$ = ±1, $\frac{1}{2}$, $\frac{1}{4}$, $\frac{1}{8}$, ..., $\frac{1}{i}$
+ ![tan_series](https://github.com/akerlund/rtl_common_design/blob/master/math/cordic/readme/tan_series.svg)
 
 Further calculations for the respective angles of the function are shown in Table 1.
 
@@ -75,38 +74,38 @@ Iteration | Angle  | tan($\Theta$) | Result                   |
 
 This means that the iterations of the input vector of the different stages are described in
 
-(Eq. 4)          $Z_{i+1}$ = $Z_{i}$ - $d_{i}$$\tan^{-1}(2^{-i})$, $d_{i}$ = ± 1,
+(Eq. 4)          ![eq4](https://github.com/akerlund/rtl_common_design/blob/master/math/cordic/readme/equation_04.svg)
 
 where $d_{i}$ represent the rotating direction by the comparison of Z$_{i}$ $\geq$ 0 for the $i^{th}$ stage. In other words, the angular accumulator decides the direction $d_{i}$ in each iteration. It should also be clear that since the values are shifted at each iteration it is not necessary, or possible, to perform more of them than the width of the words used to store the values.
 
 The expressions for all vectors V$_{i+1}$ in stages after the first *i = 0*, can be formulated as in
 
-(Eq. 5)          $X_{i+1} = K_{i}[X_{i} - Y_{i}d_{i}2^{-i}],~d_{i} = ± 1$
+(Eq. 5)          ![eq5](https://github.com/akerlund/rtl_common_design/blob/master/math/cordic/readme/equation_05.svg)
 
 and
 
-(Eq. 6)          $X_{i+1} = K_{i}[X_{i} - Y_{i}d_{i}2^{-i}],~d_{i} = ± 1$
+(Eq. 6)          ![eq6](https://github.com/akerlund/rtl_common_design/blob/master/math/cordic/readme/equation_06.svg)
 
 where the *$\cos(\Theta)$* term in front of (1) and (3) is denoted as ${K_{i}}$ instead. The vector $V_{i+1}$ is shifted right once by the term ($2^{-i}$) and also depends on the evaluation of the input angle.
 
 Since $cos(\Theta) = cos(-\Theta)$ *$K_{i}$* does not depend on the direction of rotation. Thus, it can be expressed as
 
-(Eq. 7)          A_$K_{i} = cos(\Theta) = cos(tan^{-1}(2^{-i})) = \frac{1}{\sqrt{1+2^{-2i}}}$.
+(Eq. 7)          ![eq7](https://github.com/akerlund/rtl_common_design/blob/master/math/cordic/readme/equation_07.svg)
 
 $K_{i}$ is a constant and can be considered to be the gain of the CORDIC stage.
 
 The total gain $A_{i}$ of all *i* stages is the sum of their products in
 
-(Eq. 8)          $A_{i} = \prod_{n}^{i-1} \frac{1}{\sqrt{1+2^{-2n}}}.$
+(Eq. 8)          ![eq8](https://github.com/akerlund/rtl_common_design/blob/master/math/cordic/readme/equation_08.svg)
 
 
 With an infinite amount of stages the acquired value of an angle will be exact, and the total gain will converge to
 
-(Eq. 9)          $\lim_{i\to\infty} A_{i} \approx 1.646760258.$
+(Eq. 9)         ![eq9](https://github.com/akerlund/rtl_common_design/blob/master/math/cordic/readme/equation_09.svg)
 
 Table 3 shows the gain $A_{i}$ of the 16 first stages. Only the first few stages show a lot of variation; after the fifth stage the gain has an accuracy up to three decimal places.
 
-| *i* | $A_{i}$        |
+| *i* | A_{i}          |
 | -   | :-             |
 | 0   | 1.414213562373 |
 | 1   | 1.581138830084 |
@@ -124,6 +123,7 @@ Table 3 shows the gain $A_{i}$ of the 16 first stages. Only the first few stages
 | 13  | 1.646760254031 |
 | 14  | 1.646760257099 |
 | 15  | 1.646760257865 |
+
 *Table 3. The first values of A$_{i}$.*
 
 
