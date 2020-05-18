@@ -5,9 +5,9 @@
 ![Synth Status](https://img.shields.io/badge/synthesis-passes-lightgrey)
 ![FPGA  Status](https://img.shields.io/badge/fpga-passes-lightgrey)
 
-I rewrote an old CORDIC I did in school to this. While at it I attempted to write down the algorithm for finding the angles of arctan in a Python script.
+This implementation of the CORDIC algorith can yield a simulation like this
 
-It needs a test bench and some documentation.
+![sim](https://github.com/akerlund/rtl_common_design/blob/master/math/cordic/readme/cordic_simulation.JPG)
 
 ## CORDIC Theory
 
