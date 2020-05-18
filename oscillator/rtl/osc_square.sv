@@ -43,6 +43,8 @@ module osc_square #(
 
   logic [COUNTER_WIDTH_P-1 : 0] osc_counter;
 
+
+
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
       osc_square  <= SQUARE_HIGH_C;

@@ -33,8 +33,8 @@ module osc_saw #(
     input  wire  [COUNTER_WIDTH_P-1 : 0] cr_frequency
   );
 
-  localparam logic [COUNTER_WIDTH_P-1 : 0] saw_high_c = {1'b0,{(COUNTER_WIDTH_P-1){1'b1}}};
-  localparam logic [COUNTER_WIDTH_P-1 : 0] saw_low_c  = {1'b1,{(COUNTER_WIDTH_P-1){1'b0}}};
+  localparam logic [COUNTER_WIDTH_P-1 : 0] SAW_HIGH_C = {1'b0, {(COUNTER_WIDTH_P-1){1'b1}}};
+  localparam logic [COUNTER_WIDTH_P-1 : 0] SAW_LOW_C  = {1'b1, {(COUNTER_WIDTH_P-1){1'b0}}};
 
   typedef enum {
     RELOAD_E = 0,
@@ -62,7 +62,7 @@ module osc_saw #(
         RELOAD_E: begin
 
           frequency   <= cr_frequency;
-          osc_saw     <= saw_high_c;
+          osc_saw     <= SAW_HIGH_C;
           state       <= COUNTING_E;
           osc_counter <= '0;
         end
@@ -73,7 +73,7 @@ module osc_saw #(
           osc_counter <= osc_counter + 1;
 
           if (osc_counter == duty_cycle-1) begin
-            osc_saw <= saw_low_c;
+            osc_saw <= SAW_LOW_C;
           end
           else if (osc_counter == frequency-1) begin
             state   <= RELOAD_E;

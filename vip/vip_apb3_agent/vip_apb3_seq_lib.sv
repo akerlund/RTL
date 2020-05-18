@@ -23,13 +23,10 @@
 // -----------------------------------------------------------------------------
 // Base Sequence
 //
-// Features:
-//  * Can provide the git root path of the repository so a user can define paths
-//  * Provides a function to read the contents of a file into a buffer
-//  * Functions for
-//    - Write one word
-//    - Write masked, i.e., write bits
-//    - Read one word
+// Functions for:
+//   - Write one word
+//   - Write masked, i.e., write bits
+//   - Read one word
 // -----------------------------------------------------------------------------
 class vip_apb3_base_seq #(
   vip_apb3_cfg_t vip_cfg = '{default: '0}
