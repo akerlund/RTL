@@ -25,26 +25,30 @@ import cordic_atan_table_pkg::*;
 `default_nettype none
 
 module cordic_core #(
-    parameter int DATA_WIDTH_P = 16
+    parameter int DATA_WIDTH_P   = 16,
+    parameter int NR_OF_STAGES_P = 16
   )(
     // Clock and reset
-    input  wire                       clk,
-    input  wire                       rst_n,
+    input  wire                              clk,
+    input  wire                              rst_n,
 
-    input  wire              [31 : 0] ing_angle_vector,
-    input  wire  [DATA_WIDTH_P-1 : 0] ing_x_vector,
-    input  wire  [DATA_WIDTH_P-1 : 0] ing_y_vector,
+    input  wire  signed             [31 : 0] ing_angle_vector,
+    input  wire  signed [DATA_WIDTH_P-1 : 0] ing_x_vector,
+    input  wire  signed [DATA_WIDTH_P-1 : 0] ing_y_vector,
 
-    output logic [DATA_WIDTH_P-1 : 0] egr_sine_vector,
-    output logic [DATA_WIDTH_P-1 : 0] egr_cosine_vector
+    output logic signed [DATA_WIDTH_P-1 : 0] egr_sine_vector,
+    output logic signed [DATA_WIDTH_P-1 : 0] egr_cosine_vector
  );
 
-  logic signed [DATA_WIDTH_P : 0] x_vector [0 : DATA_WIDTH_P-1];
-  logic signed [DATA_WIDTH_P : 0] y_vector [0 : DATA_WIDTH_P-1];
-  logic signed           [31 : 0] z_vector [0 : DATA_WIDTH_P-1];
+  logic signed [DATA_WIDTH_P : 0] x_vector [0 : NR_OF_STAGES_P-1];
+  logic signed [DATA_WIDTH_P : 0] y_vector [0 : NR_OF_STAGES_P-1];
+  logic signed           [31 : 0] z_vector [0 : NR_OF_STAGES_P-1];
   logic                   [1 : 0] quadrant;
 
   assign quadrant = ing_angle_vector[31 : 30];
+
+  assign egr_sine_vector   = y_vector[NR_OF_STAGES_P-1];
+  assign egr_cosine_vector = x_vector[NR_OF_STAGES_P-1];
 
   always_ff @(posedge clk) begin
 
@@ -73,7 +77,7 @@ module cordic_core #(
 
   genvar i;
   generate
-    for (i = 0; i < (DATA_WIDTH_P-1); i++) begin: cordic_pipeline
+    for (i = 0; i < (NR_OF_STAGES_P-1); i++) begin: cordic_pipeline
 
       logic                           z_sign;
       logic signed [DATA_WIDTH_P : 0] x_shr;
@@ -94,8 +98,6 @@ module cordic_core #(
     end
   endgenerate
 
-  assign egr_sine_vector   = y_vector[DATA_WIDTH_P-1];
-  assign egr_cosine_vector = x_vector[DATA_WIDTH_P-1];
 
 endmodule
 

@@ -25,7 +25,8 @@
 module cordic_axi4s_if #(
     parameter int AXI_DATA_WIDTH_P    = 16,
     parameter int AXI_ID_WIDTH_P      = 16,
-    parameter int CORDIC_DATA_WIDTH_P = 16
+    parameter int CORDIC_DATA_WIDTH_P = 16,
+    parameter int NR_OF_STAGES_P      = 16
   )(
     // Clock and reset
     input  wire                             clk,
@@ -43,21 +44,17 @@ module cordic_axi4s_if #(
  );
 
   // Used to shift the ing_tvalid which is used to assing egr_tvalid
-  logic [CORDIC_DATA_WIDTH_P-1 : 0] valid_shifter;
+  logic [NR_OF_STAGES_P-1 : 0] valid_shifter;
 
   // CORDIC signals
-  logic [CORDIC_DATA_WIDTH_P-1 : 0] ing_angle_vector;
   logic [CORDIC_DATA_WIDTH_P-1 : 0] egr_sine_vector;
   logic [CORDIC_DATA_WIDTH_P-1 : 0] egr_cosine_vector;
 
   // AXI4-S slave ports
-  assign egr_tvalid = valid_shifter[CORDIC_DATA_WIDTH_P-1];
-  assign egr_tdata  = egr_sine_vector;
-  assign egr_tid    = '0;
-
-  // CORDIC signals
-  assign ing_angle_vector = ing_tdata;
-
+  assign egr_tvalid = valid_shifter[NR_OF_STAGES_P-1];
+  assign egr_tdata[CORDIC_DATA_WIDTH_P-1 : 0]                = egr_sine_vector;
+  assign egr_tdata[AXI_DATA_WIDTH_P-1 : CORDIC_DATA_WIDTH_P] = '0;
+  assign egr_tid = '0;
 
   // Shift the ing_tvalid which is used to assing egr_tvalid
   always_ff @ (posedge clk or negedge rst_n) begin
@@ -72,7 +69,8 @@ module cordic_axi4s_if #(
 
 
   cordic_top #(
-    .DATA_WIDTH_P      ( CORDIC_DATA_WIDTH_P )
+    .DATA_WIDTH_P      ( CORDIC_DATA_WIDTH_P ),
+    .NR_OF_STAGES_P    ( NR_OF_STAGES_P      )
   ) cordic_top_i0 (
 
     // Clock and reset
@@ -80,7 +78,7 @@ module cordic_axi4s_if #(
     .rst_n             ( rst_n               ),
 
     // Vectors
-    .ing_angle_vector  ( ing_angle_vector    ),
+    .ing_angle_vector  ( ing_tdata           ),
     .egr_sine_vector   ( egr_sine_vector     ),
     .egr_cosine_vector ( egr_cosine_vector   )
   );

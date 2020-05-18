@@ -26,7 +26,7 @@
 package cordic_atan_table_pkg;
 
   // Generate table of atan values
-  logic signed [31 : 0] atan_table_31x32bit [0 : 30] = {
+  logic signed [31 : 0] atan_table_31x32bit [31] = {
     32'b00100000000000000000000000000000, // 45.000 degrees -> atan(2^0)
     32'b00010010111001000000010100011101, // 26.565 degrees -> atan(2^-1)
     32'b00001001111110110011100001011011, // 14.036 degrees -> atan(2^-2)

@@ -50,7 +50,6 @@ class cor_360_angles_seq #(
       req = axi4s_item;
       start_item(req);
       finish_item(req);
-
     end
 
   endtask

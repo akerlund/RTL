@@ -37,7 +37,7 @@ package cor_tb_pkg;
 
   // Configuration of the AXI4-S VIP
   localparam vip_axi4s_cfg_t vip_axi4s_cfg = '{
-    AXI_DATA_WIDTH_P : 16,
+    AXI_DATA_WIDTH_P : 32,
     AXI_STRB_WIDTH_P : 1,
     AXI_KEEP_WIDTH_P : 2,
     AXI_ID_WIDTH_P   : 1,
@@ -45,7 +45,7 @@ package cor_tb_pkg;
     AXI_USER_WIDTH_P : 1
   };
 
-  localparam int CORDIC_DATA_WIDTH_C = 32;
+  localparam int CORDIC_DATA_WIDTH_C = 16;
 
   `include "cor_config.sv"
   `include "cor_scoreboard.sv"

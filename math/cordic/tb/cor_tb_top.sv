@@ -39,16 +39,17 @@ module cor_tb_top;
   cordic_axi4s_if #(
     .AXI_DATA_WIDTH_P    ( vip_axi4s_cfg.AXI_DATA_WIDTH_P ),
     .AXI_ID_WIDTH_P      ( vip_axi4s_cfg.AXI_ID_WIDTH_P   ),
-    .CORDIC_DATA_WIDTH_P ( CORDIC_DATA_WIDTH_C            )
+    .CORDIC_DATA_WIDTH_P ( CORDIC_DATA_WIDTH_C            ),
+    .NR_OF_STAGES_P      ( 16                             )
   ) cordic_axi4s_if_i0 (
     .clk                 ( clk                            ),
     .rst_n               ( rst_n                          ),
     .ing_tvalid          ( axi4s_vif.tvalid               ),
     .ing_tdata           ( axi4s_vif.tdata                ),
     .ing_tid             ( axi4s_vif.tid                  ),
-    .egr_tvalid          ( axi4s_vif.tvalid               ),
-    .egr_tdata           ( axi4s_vif.tdata                ),
-    .egr_tid             ( axi4s_vif.tid                  )
+    .egr_tvalid          (                                ),
+    .egr_tdata           (                                ),
+    .egr_tid             (                                )
   );
 
 

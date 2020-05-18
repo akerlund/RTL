@@ -82,21 +82,12 @@ class vip_axi4s_driver #(
 
     forever begin
 
+      seq_item_port.get_next_item(req);
+
       @(posedge vif.clk);
 
-      seq_item_port.try_next_item(req);
-
-      if (req != null) begin
-
-        drive_axi4s_item();
-        seq_item_port.item_done();
-
-      end
-      else begin
-
-        vif.tvalid <= '0;
-
-      end
+      drive_axi4s_item();
+      seq_item_port.item_done();
 
     end
 
@@ -152,7 +143,7 @@ class vip_axi4s_driver #(
       transfer_counter++;
 
       if (transfer_counter == burst_length) begin
-        vif.tlast  <= '1;
+        vif.tlast <= '1;
       end
 
       @(posedge vif.clk);
@@ -166,8 +157,6 @@ class vip_axi4s_driver #(
 
     vif.tvalid <= '0;
     vif.tlast  <= '0;
-
-    @(posedge vif.clk);
 
   endtask
 

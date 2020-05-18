@@ -25,7 +25,8 @@ import cordic_pkg::*;
 `default_nettype none
 
 module cordic_top #(
-    parameter int DATA_WIDTH_P = 16
+    parameter int DATA_WIDTH_P   = 16,
+    parameter int NR_OF_STAGES_P = 16
   )(
     // Clock and reset
     input  wire                       clk,
@@ -34,16 +35,17 @@ module cordic_top #(
     input  wire              [31 : 0] ing_angle_vector,
     output logic [DATA_WIDTH_P-1 : 0] egr_sine_vector,
     output logic [DATA_WIDTH_P-1 : 0] egr_cosine_vector
- );
+  );
 
   logic [DATA_WIDTH_P-1 : 0] ing_x_vector;
   logic [DATA_WIDTH_P-1 : 0] ing_y_vector;
 
-  assign ing_x_vector = $floor((2**DATA_WIDTH_P - 1) / CORDIC_GAIN_C);
+  assign ing_x_vector = 19429; //$floor((2**DATA_WIDTH_P - 1) / CORDIC_GAIN_C);NR_OF_STAGES
   assign ing_y_vector = '0;
 
   cordic_core #(
-    .DATA_WIDTH_P      ( DATA_WIDTH_P      )
+    .DATA_WIDTH_P      ( DATA_WIDTH_P      ),
+    .NR_OF_STAGES_P    ( NR_OF_STAGES_P    )
   ) cordic_core_i0 (
 
     // Clock and reset
