@@ -39,7 +39,6 @@ module cor_tb_top;
   cordic_axi4s_if #(
     .AXI_DATA_WIDTH_P    ( vip_axi4s_cfg.AXI_DATA_WIDTH_P ),
     .AXI_ID_WIDTH_P      ( vip_axi4s_cfg.AXI_ID_WIDTH_P   ),
-    .CORDIC_DATA_WIDTH_P ( CORDIC_DATA_WIDTH_C            ),
     .NR_OF_STAGES_P      ( 16                             )
   ) cordic_axi4s_if_i0 (
     .clk                 ( clk                            ),

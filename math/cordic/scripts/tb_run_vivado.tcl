@@ -20,9 +20,8 @@ set uvm_directories [list \
 
 set package_files [list \
   "$git_root/vip/vip_axi4s_agent/vip_axi4s_types_pkg.sv" \
-  "$module_path/rtl/cordic_atan_table_pkg.sv" \
   "$module_path/tb/cordic_test_angles_pkg.sv" \
-  "$module_path/rtl/cordic_pkg.sv"];
+  "$module_path/rtl/cordic_atan_radian_table_pkg.sv"];
 
 set header_files [list \
   "$module_path/tb/tb.svh" \

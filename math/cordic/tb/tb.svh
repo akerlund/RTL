@@ -26,6 +26,6 @@ import uvm_pkg::*;
 
 import uvm_pkg::*;
 
-`include "cordic_core.sv"
-`include "cordic_top.sv"
+`include "cordic_radian_core.sv"
+`include "cordic_radian_top.sv"
 `include "cordic_axi4s_if.sv"

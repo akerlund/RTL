@@ -20,21 +20,40 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-package cor_tc_pkg;
+class tc_negative_radian_spin extends cor_base_test;
 
-  `include "uvm_macros.svh"
-  import uvm_pkg::*;
+  cordic_negative_radians_seq #(vip_axi4s_cfg) cordic_negative_radians_seq0;
 
-  import vip_axi4s_types_pkg::*;
-  import vip_axi4s_pkg::*;
+  `uvm_component_utils(tc_negative_radian_spin)
 
-  // Import testbench and agent packages here
-  import cor_tb_pkg::*;
 
-  // Include testcase files here
-  `include "cor_base_test.sv"
-  `include "tc_cor_360_angles.sv"
-  `include "tc_positive_radian_spin.sv"
-  `include "tc_negative_radian_spin.sv"
 
-endpackage
+  function new(string name = "tc_negative_radian_spin", uvm_component parent = null);
+
+    super.new(name, parent);
+
+  endfunction
+
+
+
+  function void build_phase(uvm_phase phase);
+
+    super.build_phase(phase);
+
+  endfunction
+
+
+
+  task run_phase(uvm_phase phase);
+
+    super.run_phase(phase);
+    phase.raise_objection(this);
+
+    cordic_negative_radians_seq0 = new();
+    cordic_negative_radians_seq0.start(v_sqr.axi4s_sequencer);
+
+    phase.drop_objection(this);
+
+  endtask
+
+endclass

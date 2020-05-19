@@ -23,10 +23,9 @@
 `default_nettype none
 
 module cordic_axi4s_if #(
-    parameter int AXI_DATA_WIDTH_P    = 16,
-    parameter int AXI_ID_WIDTH_P      = 16,
-    parameter int CORDIC_DATA_WIDTH_P = 16,
-    parameter int NR_OF_STAGES_P      = 16
+    parameter int AXI_DATA_WIDTH_P = -1,
+    parameter int AXI_ID_WIDTH_P   = -1,
+    parameter int NR_OF_STAGES_P   = -1
   )(
     // Clock and reset
     input  wire                             clk,
@@ -36,6 +35,7 @@ module cordic_axi4s_if #(
     input  wire                             ing_tvalid,
     input  wire    [AXI_DATA_WIDTH_P-1 : 0] ing_tdata,
     input  wire      [AXI_ID_WIDTH_P-1 : 0] ing_tid,
+    input  wire                             ing_tuser,  // Vector selection
 
     // AXI4-S slave side
     output logic                            egr_tvalid,
@@ -43,48 +43,57 @@ module cordic_axi4s_if #(
     output logic     [AXI_ID_WIDTH_P-1 : 0] egr_tid
  );
 
+  localparam int ING_FIFO_SIZE_C = $bits(ing_tvalid) + $bits(ing_tid) + $bits(ing_tuser);
+
   // Used to shift the ing_tvalid which is used to assing egr_tvalid
-  logic [NR_OF_STAGES_P-1 : 0] valid_shifter;
+  logic [NR_OF_STAGES_P-1 : 0] [ING_FIFO_SIZE_C-1 : 0] axi4s_ing_fifo;
 
   // CORDIC signals
-  logic [CORDIC_DATA_WIDTH_P-1 : 0] egr_sine_vector;
-  logic [CORDIC_DATA_WIDTH_P-1 : 0] egr_cosine_vector;
+  logic [AXI_DATA_WIDTH_P-1 : 0] egr_sine_vector;
+  logic [AXI_DATA_WIDTH_P-1 : 0] egr_cosine_vector;
 
-  // AXI4-S slave ports
-  assign egr_tvalid = valid_shifter[NR_OF_STAGES_P-1];
-  assign egr_tdata[CORDIC_DATA_WIDTH_P-1 : 0]                = egr_sine_vector;
-  assign egr_tdata[AXI_DATA_WIDTH_P-1 : CORDIC_DATA_WIDTH_P] = '0;
-  assign egr_tid = '0;
+  // Output select
+  logic egr_tuser;
+
+  // AXI4-S egress ports
+  assign {egr_tvalid, egr_tid, egr_tuser} = axi4s_ing_fifo[NR_OF_STAGES_P-1 ];
+
+  assign egr_tdata = !egr_tvalid ? '0 : !egr_tuser ? egr_sine_vector : egr_cosine_vector;
 
   // Shift the ing_tvalid which is used to assing egr_tvalid
   always_ff @ (posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-      valid_shifter    <= '0;
+      axi4s_ing_fifo  <= '0;
     end
     else begin
-      valid_shifter    <= valid_shifter << 1;
-      valid_shifter[0] <= ing_tvalid;
+
+      // Input requests
+      axi4s_ing_fifo[0] <= {ing_tvalid, ing_tid, ing_tuser};
+
+      // Shift requests
+      for (int i = 0; i < NR_OF_STAGES_P-1; i++) begin
+        axi4s_ing_fifo[i+1] <= axi4s_ing_fifo[i];
+      end
+
     end
   end
 
 
-  cordic_top #(
-    .DATA_WIDTH_P      ( CORDIC_DATA_WIDTH_P ),
-    .NR_OF_STAGES_P    ( NR_OF_STAGES_P      )
-  ) cordic_top_i0 (
+  cordic_radian_top #(
+    .DATA_WIDTH_P      ( AXI_DATA_WIDTH_P  ),
+    .NR_OF_STAGES_P    ( NR_OF_STAGES_P    )
+
+  ) cordic_radian_top_i0 (
 
     // Clock and reset
-    .clk               ( clk                 ),
-    .rst_n             ( rst_n               ),
+    .clk               ( clk               ),
+    .rst_n             ( rst_n             ),
 
     // Vectors
-    .ing_angle_vector  ( ing_tdata           ),
-    .egr_sine_vector   ( egr_sine_vector     ),
-    .egr_cosine_vector ( egr_cosine_vector   )
+    .ing_theta_vector  ( ing_tdata         ),
+    .egr_sine_vector   ( egr_sine_vector   ),
+    .egr_cosine_vector ( egr_cosine_vector )
   );
-
-
-
 
 endmodule
 

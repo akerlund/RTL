@@ -20,19 +20,19 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-import cordic_pkg::*;
+import cordic_atan_radian_table_pkg::*;
 
 `default_nettype none
 
-module cordic_top #(
-    parameter int DATA_WIDTH_P   = 16,
-    parameter int NR_OF_STAGES_P = 16
+module cordic_radian_top #(
+    parameter int DATA_WIDTH_P   = -1,
+    parameter int NR_OF_STAGES_P = -1
   )(
     // Clock and reset
     input  wire                       clk,
     input  wire                       rst_n,
 
-    input  wire              [31 : 0] ing_angle_vector,
+    input  wire  [DATA_WIDTH_P-1 : 0] ing_theta_vector,
     output logic [DATA_WIDTH_P-1 : 0] egr_sine_vector,
     output logic [DATA_WIDTH_P-1 : 0] egr_cosine_vector
   );
@@ -40,20 +40,20 @@ module cordic_top #(
   logic [DATA_WIDTH_P-1 : 0] ing_x_vector;
   logic [DATA_WIDTH_P-1 : 0] ing_y_vector;
 
-  assign ing_x_vector = 19429; //$floor((2**DATA_WIDTH_P - 1) / CORDIC_GAIN_C);NR_OF_STAGES
   assign ing_y_vector = '0;
+  assign ing_x_vector = gain_table_32stage_n4q60[NR_OF_STAGES_P-1][63 : 63-DATA_WIDTH_P+1];
 
-  cordic_core #(
+  cordic_radian_core #(
     .DATA_WIDTH_P      ( DATA_WIDTH_P      ),
     .NR_OF_STAGES_P    ( NR_OF_STAGES_P    )
-  ) cordic_core_i0 (
+  ) cordic_radian_core_i0 (
 
     // Clock and reset
     .clk               ( clk               ),
     .rst_n             ( rst_n             ),
 
     // Ingress vectors
-    .ing_angle_vector  ( ing_angle_vector  ),
+    .ing_theta_vector  ( ing_theta_vector  ),
     .ing_x_vector      ( ing_x_vector      ),
     .ing_y_vector      ( ing_y_vector      ),
 

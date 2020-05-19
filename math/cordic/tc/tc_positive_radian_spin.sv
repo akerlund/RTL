@@ -20,13 +20,40 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-`ifndef CORDIC_PKG
-`define CORDIC__PKG
+class tc_positive_radian_spin extends cor_base_test;
 
-package cordic_pkg;
+  cordic_positive_radians_seq #(vip_axi4s_cfg) cordic_positive_radians_seq0;
 
-  real CORDIC_GAIN_C = 1.646760257865;
+  `uvm_component_utils(tc_positive_radian_spin)
 
-endpackage
 
-`endif
+
+  function new(string name = "tc_positive_radian_spin", uvm_component parent = null);
+
+    super.new(name, parent);
+
+  endfunction
+
+
+
+  function void build_phase(uvm_phase phase);
+
+    super.build_phase(phase);
+
+  endfunction
+
+
+
+  task run_phase(uvm_phase phase);
+
+    super.run_phase(phase);
+    phase.raise_objection(this);
+
+    cordic_positive_radians_seq0 = new();
+    cordic_positive_radians_seq0.start(v_sqr.axi4s_sequencer);
+
+    phase.drop_objection(this);
+
+  endtask
+
+endclass
