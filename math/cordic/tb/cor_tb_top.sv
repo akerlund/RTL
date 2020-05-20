@@ -46,6 +46,7 @@ module cor_tb_top;
     .ing_tvalid          ( axi4s_vif.tvalid               ),
     .ing_tdata           ( axi4s_vif.tdata                ),
     .ing_tid             ( axi4s_vif.tid                  ),
+    .ing_tuser           ( '0                             ),
     .egr_tvalid          (                                ),
     .egr_tdata           (                                ),
     .egr_tid             (                                )

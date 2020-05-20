@@ -43,10 +43,11 @@ module cordic_axi4s_if #(
     output logic     [AXI_ID_WIDTH_P-1 : 0] egr_tid
  );
 
-  localparam int ING_FIFO_SIZE_C = $bits(ing_tvalid) + $bits(ing_tid) + $bits(ing_tuser);
+ localparam int ING_FIFO_SIZE_C   = $bits(ing_tvalid) + $bits(ing_tid) + $bits(ing_tuser);
+ localparam int ING_FIFO_STAGES_C = NR_OF_STAGES_P-3;
 
   // Used to shift the ing_tvalid which is used to assing egr_tvalid
-  logic [NR_OF_STAGES_P-1 : 0] [ING_FIFO_SIZE_C-1 : 0] axi4s_ing_fifo;
+  logic [ING_FIFO_STAGES_C-1 : 0] [ING_FIFO_SIZE_C-1 : 0] axi4s_ing_fifo;
 
   // CORDIC signals
   logic [AXI_DATA_WIDTH_P-1 : 0] egr_sine_vector;
@@ -55,15 +56,17 @@ module cordic_axi4s_if #(
   // Output select
   logic egr_tuser;
 
-  // AXI4-S egress ports
-  assign {egr_tvalid, egr_tid, egr_tuser} = axi4s_ing_fifo[NR_OF_STAGES_P-1 ];
-
+  // AXI4-S egress "tdata" port
   assign egr_tdata = !egr_tvalid ? '0 : !egr_tuser ? egr_sine_vector : egr_cosine_vector;
+
 
   // Shift the ing_tvalid which is used to assing egr_tvalid
   always_ff @ (posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-      axi4s_ing_fifo  <= '0;
+      axi4s_ing_fifo <= '0;
+      egr_tvalid     <= '0;
+      egr_tdata      <= '0;
+      egr_tid        <= '0;
     end
     else begin
 
@@ -71,9 +74,12 @@ module cordic_axi4s_if #(
       axi4s_ing_fifo[0] <= {ing_tvalid, ing_tid, ing_tuser};
 
       // Shift requests
-      for (int i = 0; i < NR_OF_STAGES_P-1; i++) begin
+      for (int i = 0; i < ING_FIFO_STAGES_C-1; i++) begin
         axi4s_ing_fifo[i+1] <= axi4s_ing_fifo[i];
       end
+
+      // Data output
+      {egr_tvalid, egr_tid, egr_tuser} = axi4s_ing_fifo[ING_FIFO_STAGES_C-1];
 
     end
   end
