@@ -22,7 +22,7 @@
 `default_nettype none
 
 module osc_square #(
-    parameter int SQUARE_WIDTH_P  = -1, // Resolution of the wave
+    parameter int DATA_WIDTH_P    = -1, // Resolution of the wave
     parameter int COUNTER_WIDTH_P = -1  // Resolution of the counter
   )(
     // Clock and reset
@@ -30,15 +30,15 @@ module osc_square #(
     input  wire                          rst_n,
 
     // Waveform output
-    output logic  [SQUARE_WIDTH_P-1 : 0] osc_square,
+    output logic    [DATA_WIDTH_P-1 : 0] osc_square,
 
     // Configuration registers
     input  wire  [COUNTER_WIDTH_P-1 : 0] cr_frequency, // Counter's max value
     input  wire  [COUNTER_WIDTH_P-1 : 0] cr_duty_cycle // Determines when the wave goes from highest to lowest
   );
 
-  localparam logic [SQUARE_WIDTH_P-1 : 0] SQUARE_HIGH_C = {1'b0, {(SQUARE_WIDTH_P-1){1'b1}}}; // Highest signed integer
-  localparam logic [SQUARE_WIDTH_P-1 : 0] SQUARE_LOW_C  = {1'b1, {(SQUARE_WIDTH_P-1){1'b0}}}; // Lowest signed integer
+  localparam logic [DATA_WIDTH_P-1 : 0] SQUARE_HIGH_C = {1'b0, {(DATA_WIDTH_P-1){1'b1}}}; // Highest signed integer
+  localparam logic [DATA_WIDTH_P-1 : 0] SQUARE_LOW_C  = {1'b1, {(DATA_WIDTH_P-1){1'b0}}}; // Lowest signed integer
 
   logic [COUNTER_WIDTH_P-1 : 0] osc_counter;
 

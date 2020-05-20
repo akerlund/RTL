@@ -83,7 +83,7 @@ module oscillator_core #(
 
   osc_square #(
 
-    .SQUARE_WIDTH_P  ( WAVE_WIDTH_P    ),
+    .DATA_WIDTH_P    ( WAVE_WIDTH_P    ),
     .COUNTER_WIDTH_P ( COUNTER_WIDTH_P )
 
   ) osc_square_i0 (
@@ -99,7 +99,7 @@ module oscillator_core #(
     .cr_frequency    ( cr_frequency    ),
     .cr_duty_cycle   ( cr_duty_cycle   )
   );
-  
+
 endmodule
 
 `default_nettype wire
