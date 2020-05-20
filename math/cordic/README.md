@@ -1,13 +1,34 @@
 # CORDIC - System Verilog
 
-![Build Status](https://img.shields.io/badge/build-passes-lightgrey)
-![Test  Status](https://img.shields.io/badge/test-N/A-lightgrey)
-![Synth Status](https://img.shields.io/badge/synthesis-passes-lightgrey)
-![FPGA  Status](https://img.shields.io/badge/fpga-passes-lightgrey)
+![Build Status](https://img.shields.io/badge/build-passes-green)
+![Test  Status](https://img.shields.io/badge/test-basic-green)
+![Synth Status](https://img.shields.io/badge/synthesis-N/A-lightgrey)
+![FPGA  Status](https://img.shields.io/badge/fpga-N/A-lightgrey)
+
+This is a System Verilog implementation of the CORDIC algorithm. The design use fixed point representation of the input and output vectors. The input should be between ±2π with four integer bits and the rest as fractional bits and the output will be between ±1.
 
 This implementation of the CORDIC algorith can yield a simulation like this
 
 ![sim](https://github.com/akerlund/rtl_common_design/blob/master/math/cordic/readme/cordic_simulation.JPG)
+
+## Feature
+
+ - Fixed point representation
+   - Output span is ±1
+   - Input span is ±2π, other values are invalid
+   - Using 4 integer bits
+     - One for sign
+     - Three decimal bits because: max(abs(input)) ≤ 2π < (2^3 - 1)
+     - All other bits become fractional bits
+ - Parameters
+   - Number of stages, maximum 32
+   - Data width, maximum 64
+ - AXI4-S interface
+   - Shift register to signal a requesting master back the following:
+     - tvalid
+     - tid
+     - tdata, ingress tuser to select either sine or cosine
+
 
 ## CORDIC Theory
 
