@@ -7,7 +7,7 @@
 
 This is a System Verilog implementation of the CORDIC algorithm. The design use fixed point representation of the input and output vectors. The input should be between ±2π with four integer bits and the rest as fractional bits and the output will be between ±1.
 
-This implementation of the CORDIC algorith can yield a simulation like this
+This implementation of the CORDIC algorithm can yield a simulation like this
 
 ![sim](https://github.com/akerlund/rtl_common_design/blob/master/math/cordic/readme/cordic_simulation.JPG)
 

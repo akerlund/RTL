@@ -1,3 +1,24 @@
+################################################################################
+##
+## Copyright (C) 2020 Fredrik Åkerlund
+##
+## This program is free software: you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation, either version 3 of the License, or
+## (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with this program.  If not, see <https://www.gnu.org/licenses/>.
+##
+## Description:
+##
+################################################################################
+
 import fft_get_butterfly_connections as b_fly_cons  # Returns the correct connection between the stage's butterflies
 import sv_fft_mux_twiddle_generator  as fft_tf_mux  # Generates the twiddle factors and a MUX for them
 import sv_tb_fft_generator           as tb_gen      # Test bench generator
