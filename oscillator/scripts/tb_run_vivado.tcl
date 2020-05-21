@@ -11,6 +11,7 @@ file mkdir "rundir"
 cd   rundir
 
 set rtl_directories [list \
+  "$git_root/clock_enable/" \
   "$module_path/rtl/"];
 
 set uvm_directories [list \

@@ -24,7 +24,10 @@ import uvm_pkg::*;
 
 import oscillator_types_pkg::*;
 
+`include "clock_enable.sv"
 `include "osc_square.sv"
+`include "osc_triangle_core.sv"
+`include "osc_triangle_top.sv"
 `include "oscillator_apb_slave.sv"
 `include "oscillator_core.sv"
 `include "oscillator_top.sv"

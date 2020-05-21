@@ -28,7 +28,7 @@ module osc_tb_top;
   bit clk;
   bit rst_n;
 
-  time clk_period = 10ns;
+  time clk_period = 5000ps;
 
   // IF
   vip_apb3_if #(vip_apb3_cfg) apb3_vif(clk, rst_n);

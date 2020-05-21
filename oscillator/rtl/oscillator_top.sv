@@ -72,7 +72,7 @@ module oscillator_top #(
     .APB3_BASE_ADDR_P   ( APB3_BASE_ADDR_P   ),
     .APB3_ADDR_WIDTH_P  ( APB3_ADDR_WIDTH_P  ),
     .APB3_DATA_WIDTH_P  ( APB3_DATA_WIDTH_P  )
-  ) oscillator_apb3_slave_i0 ( 
+  ) oscillator_apb3_slave_i0 (
     .clk                ( clk                ),
     .rst_n              ( rst_n              ),
     .apb3_psel          ( apb3_psel          ),

@@ -36,7 +36,7 @@ package osc_tb_pkg;
     APB_DATA_WIDTH_P : 32
   };
 
-  localparam int WAVE_WIDTH_C    = 16;
+  localparam int WAVE_WIDTH_C    = 24;
   localparam int COUNTER_WIDTH_C = 32;
 
   `include "osc_config.sv"

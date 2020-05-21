@@ -56,7 +56,7 @@ class osc_square_seq #(
     pwdata = 25; // Clocks
     write_word(paddr, pwdata);
 
-    #1000;
+    #5000us;
 
   endtask
 
