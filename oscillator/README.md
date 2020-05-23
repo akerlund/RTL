@@ -72,7 +72,7 @@ This means that the amplitude will increase by
 8388392.0
 ```
 
-8388392 and when the triangled has reached this amplitude its amplitude will start to decrease nack to the minimum value it can have.
+8388392 and when the triangle has reached this amplitude its amplitude will start to decrease nack to the minimum value it can have.
 
 
 
@@ -80,7 +80,7 @@ This means that the amplitude will increase by
 
 ## Testbench
 
-The testbench is written in UVM and use the APB3 agent located in the **vip** directory.
+The test bench is written in UVM and use the APB3 agent located in the **vip** directory.
 There will be no scoreboard written as far of as today, instead the waveforms will be verified by eye.
 
 ### tc_osc_simple_test
