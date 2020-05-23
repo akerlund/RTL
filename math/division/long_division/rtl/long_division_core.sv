@@ -44,18 +44,19 @@ module long_division_core #(
     output logic                         egr_overflow
   );
 
-  localparam int DIVIDEND_SIZE_C =   N_BITS_P + Q_BITS_P - 1;
+  localparam int DIVIDEND_SIZE_C =   N_BITS_P + Q_BITS_P - 1; // Sign bit is removed (below, too)
   localparam int DIVISOR_SIZE_C  = 2*N_BITS_P + Q_BITS_P - 2;
   localparam int QUOTIENT_SIZE_C = 2*N_BITS_P + Q_BITS_P - 2;
 
-  logic [DIVIDEND_SIZE_C-1 : 0] dividend;
-  logic  [DIVISOR_SIZE_C-1 : 0] divisor;
-  logic [QUOTIENT_SIZE_C-1 : 0] quotient;
+  logic         [DIVIDEND_SIZE_C-1 : 0] dividend;
+  logic          [DIVISOR_SIZE_C-1 : 0] divisor;
+  logic         [QUOTIENT_SIZE_C-1 : 0] quotient;
 
-  logic        [N_BITS_P-1 : 0] counter;
-  logic                         sign_bit;
-  logic                         overflow;
+  logic [$clog2(DIVIDEND_SIZE_C)-1 : 0] counter;
+  logic                                 sign_bit;
+  logic                                 overflow;
 
+  // The vectors are converted to positive if the were inverted, this is the opposite
   assign egr_quotient  = sign_bit ? -quotient : quotient;
   assign egr_remainder = sign_bit ? -dividend : dividend;
   assign egr_overflow  = overflow;
@@ -101,7 +102,7 @@ module long_division_core #(
           divisor[DIVISOR_SIZE_C-1 : DIVIDEND_SIZE_C] <=  ing_divisor[N_BITS_P-2 : 0];
         end
 
-        // Sign is saved for the final result
+        // Sign is saved for converting the calculated quotient and dividend
         sign_bit <= ing_dividend[N_BITS_P-1] ^ ing_divisor[N_BITS_P-1];
 
       end
