@@ -25,13 +25,24 @@
 package vip_math_pkg;
 
 
-  function int abs(int value);
+  function int abs_int(int value);
 
     if (value < 0) begin
-      abs = -value;
+      abs_int = -value;
     end
     else begin
-      abs = value;
+      abs_int = value;
+    end
+
+  endfunction
+
+  function int abs_real(real value);
+
+    if (value < 0) begin
+      abs_real = -value;
+    end
+    else begin
+      abs_real = value;
     end
 
   endfunction
