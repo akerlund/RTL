@@ -47,19 +47,25 @@ class div_scoreboard extends uvm_scoreboard;
   int number_of_master_items;
   int number_of_slave_items;
 
+  // Statistics
   int number_of_compared;
   int number_of_passed;
   int number_of_failed;
 
+  int nr_of_overflows;
+
+
   // For calculating the prediction and comparing
-  int  int_dividend;
-  int  int_divisor;
-  int  int_quotient;
-  int  sb_int_quotient;
-  real real_dividend;
-  real real_divisor;
-  real real_quotient;
-  real sb_real_quotient;
+  int                           overflow;
+  logic signed [N_BITS_C-1 : 0] int_dividend;
+  logic signed [N_BITS_C-1 : 0] int_divisor;
+  logic signed [N_BITS_C-1 : 0] int_quotient;
+  logic signed [N_BITS_C-1 : 0] sb_int_quotient;
+  real                          real_dividend;
+  real                          real_divisor;
+  real                          real_quotient;
+  real                          sb_real_quotient;
+  real                          max_difference = 1.0/(Q_BITS_C+1);
 
   function new(string name, uvm_component parent);
     super.new(name, parent);
@@ -92,6 +98,8 @@ class div_scoreboard extends uvm_scoreboard;
     current_phase = phase;
     super.run_phase(current_phase);
 
+    `uvm_info(get_name(), $sformatf("N_BITS_C: (%0d)", N_BITS_C), UVM_LOW)
+    `uvm_info(get_name(), $sformatf("Q_BITS_C: (%0d)", Q_BITS_C), UVM_LOW)
 
   endtask
 
@@ -115,6 +123,7 @@ class div_scoreboard extends uvm_scoreboard;
     end
     else begin
       `uvm_info(get_name(), $sformatf("Test passed (%0d)/(%0d) finished transfers", number_of_passed, number_of_compared), UVM_LOW)
+      `uvm_info(get_name(), $sformatf("Overflows: (%0d)", nr_of_overflows), UVM_LOW)
     end
 
   endfunction
@@ -156,42 +165,35 @@ class div_scoreboard extends uvm_scoreboard;
     vip_axi4s_item #(vip_axi4s_cfg) current_slave_item;
 
     current_master_item = master_items.pop_front();
-    current_slave_item = slave_items.pop_front();
-
-    number_of_compared++;
+    current_slave_item  = slave_items.pop_front();
 
     int_dividend = current_master_item.tdata[0];
     int_divisor  = current_master_item.tdata[1];
     int_quotient = current_slave_item.tdata[0];
+
+    overflow = current_slave_item.tuser[0];
+
+    if (overflow) begin
+      nr_of_overflows++;
+      number_of_passed++;
+      number_of_compared++;
+      return;
+    end
 
     // Converting values from the Monitors to floats
     real_dividend    = fixed_point_to_float(int_dividend, N_BITS_C-Q_BITS_C, Q_BITS_C);
     real_divisor     = fixed_point_to_float(int_divisor,  N_BITS_C-Q_BITS_C, Q_BITS_C);
     real_quotient    = fixed_point_to_float(int_quotient, N_BITS_C-Q_BITS_C, Q_BITS_C);
 
+
     // Scoreboard quotient prediction
     sb_real_quotient = real_dividend/real_divisor;                                         // Predict (too accurately)
     sb_int_quotient  = float_to_fixed_point(sb_real_quotient, Q_BITS_C);                   // Convert to FP in order to lose accuracy
     sb_real_quotient = fixed_point_to_float(sb_int_quotient, N_BITS_C-Q_BITS_C, Q_BITS_C); // Convert back and it should match
 
-
-    // Reducing the accuracy to 1/128 (1/2^i) as floating points can differ
-
-    // Monitor value
-    int_quotient     = int'(128*real_quotient);
-    real_quotient    = real'(int_quotient)/128;
-    int_quotient     = float_to_fixed_point(real_quotient, Q_BITS_C);
-    real_quotient    = fixed_point_to_float(int_quotient, N_BITS_C-Q_BITS_C, Q_BITS_C);
-
-    // Scoreboard value
-    sb_int_quotient  = int'(128*sb_real_quotient);
-    sb_real_quotient = real'(sb_int_quotient)/128;
-    sb_int_quotient  = float_to_fixed_point(sb_real_quotient, Q_BITS_C);
-    sb_real_quotient = fixed_point_to_float(sb_int_quotient, N_BITS_C-Q_BITS_C, Q_BITS_C);
-
     if (real_quotient != sb_real_quotient) begin
 
-      if (abs_real(abs_real(real_quotient) - abs_real(sb_real_quotient)) > 0.1) begin
+      if (abs_real(abs_real(real_quotient) - abs_real(sb_real_quotient)) > max_difference) begin
         `uvm_error(get_name(), $sformatf("Division number (%0d) mismatches: (%f/%f != %f), scoreboard predicts (%f)", number_of_compared, real_dividend, real_divisor, real_quotient, sb_real_quotient))
         number_of_failed++;
       end
@@ -205,6 +207,8 @@ class div_scoreboard extends uvm_scoreboard;
       number_of_passed++;
 
     end
+
+    number_of_compared++;
 
   endfunction
 

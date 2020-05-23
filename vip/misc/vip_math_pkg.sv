@@ -36,7 +36,7 @@ package vip_math_pkg;
 
   endfunction
 
-  function int abs_real(real value);
+  function real abs_real(real value);
 
     if (value < 0) begin
       abs_real = -value;

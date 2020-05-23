@@ -29,8 +29,9 @@ package div_tb_pkg;
 
   import vip_axi4s_types_pkg::*;
   import vip_axi4s_pkg::*;
+  import vip_fixed_point_pkg::*;
 
-  localparam int N_BITS_C = 32;
+  localparam int N_BITS_C = 24;
   localparam int Q_BITS_C = 15;
 
 

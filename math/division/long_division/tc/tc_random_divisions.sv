@@ -25,7 +25,7 @@ class tc_random_divisions extends div_base_test;
 
   `uvm_component_utils(tc_random_divisions)
 
-  int nr_of_random_divisions = 10000;
+  int nr_of_random_divisions = 100000;
 
 
   function new(string name = "tc_random_divisions", uvm_component parent = null);

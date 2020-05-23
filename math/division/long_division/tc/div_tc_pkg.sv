@@ -29,6 +29,7 @@ package div_tc_pkg;
 
   import vip_axi4s_types_pkg::*;
   import vip_axi4s_pkg::*;
+  import vip_fixed_point_pkg::*;
 
   // Import testbench and agent packages here
   import div_tb_pkg::*;

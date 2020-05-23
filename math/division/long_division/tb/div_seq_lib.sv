@@ -148,7 +148,7 @@ class div_random_divisions_seq #(
     for (int i = 0; i < nr_of_random_divisions; i++) begin
 
       ing_dividend = $urandom;
-      ing_divisor  = $urandom;
+      ing_divisor  = $urandom_range(2**(N_BITS_C-3), -2**(N_BITS_C-3));
 
       axi4s_item.tid      = i;
       axi4s_item.tdata[0] = ing_dividend;
@@ -197,11 +197,10 @@ class div_overflow_divisions_seq #(
     for (int i = 0; i < nr_of_random_divisions; i++) begin
 
       ing_dividend = $urandom;
-      ing_divisor  = $urandom;
 
       axi4s_item.tid      = i;
       axi4s_item.tdata[0] = ing_dividend;
-      axi4s_item.tdata[1] = ing_divisor;
+      axi4s_item.tdata[1] = 1; // Small divisior guarantees overflow
 
       req = axi4s_item;
       start_item(req);

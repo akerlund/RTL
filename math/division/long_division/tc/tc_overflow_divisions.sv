@@ -25,7 +25,7 @@ class tc_overflow_divisions extends div_base_test;
 
   `uvm_component_utils(tc_overflow_divisions)
 
-  int nr_of_random_divisions = 5000;
+  int nr_of_random_divisions = 10;
 
 
   function new(string name = "tc_overflow_divisions", uvm_component parent = null);
@@ -48,6 +48,7 @@ class tc_overflow_divisions extends div_base_test;
 
     super.run_phase(phase);
     phase.raise_objection(this);
+
 
     div_overflow_divisions_seq0 = new();
     div_overflow_divisions_seq0.nr_of_random_divisions = nr_of_random_divisions;

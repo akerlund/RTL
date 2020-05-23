@@ -47,13 +47,14 @@ module long_division_axi4s_if #(
  );
 
 
-  logic [N_BITS_P-1 : 0] ing_dividend;
-  logic [N_BITS_P-1 : 0] ing_divisor;
-  logic                  ing_valid;
-  logic                  ing_ready;
-  logic                  egr_valid;
-  logic [N_BITS_P-1 : 0] egr_quotient;
-  logic                  egr_overflow;
+  logic [AXI_ID_WIDTH_P-1 : 0] ing_tid_d0;
+  logic       [N_BITS_P-1 : 0] ing_dividend;
+  logic       [N_BITS_P-1 : 0] ing_divisor;
+  logic                        ing_valid;
+  logic                        ing_ready;
+  logic                        egr_valid;
+  logic       [N_BITS_P-1 : 0] egr_quotient;
+  logic                        egr_overflow;
 
   // Assign signals to the AXI4-S master side
   assign ing_tready = ing_ready;
@@ -62,19 +63,21 @@ module long_division_axi4s_if #(
   assign egr_tvalid = egr_valid;
   assign egr_tdata  = egr_quotient;
   assign egr_tlast  = '1;
-  assign egr_tid    = ing_tid;
+  assign egr_tid    = ing_tid_d0;
   assign egr_tuser  = egr_overflow;
 
 
   // Core ingress
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
+      ing_tid_d0   <= '0;
       ing_dividend <= '0;
       ing_divisor  <= '0;
     end
     else begin
       ing_valid <= '0;
       if (ing_tvalid && ing_tready) begin
+        ing_tid_d0 <= ing_tid;
         if (!ing_tlast) begin
           ing_dividend <= ing_tdata;
         end

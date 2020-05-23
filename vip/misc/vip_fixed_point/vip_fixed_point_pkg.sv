@@ -25,16 +25,24 @@
 package vip_fixed_point_pkg;
 
   // Converts floating point numbers to fixed point
+  // Does not work as wanted to, e.g., for N16Q1;
+  // -1.420613 => 1111111111111101 = -1.500000
+  // but desired is -1.0
   function int float_to_fixed_point(real float_number, int q);
-    float_to_fixed_point = float_number * (2**q); // Left shift by Q bits
+    if (float_number < 0) begin
+      float_to_fixed_point = -int'((-float_number) * (2**q)); // Left shift by Q bits
+    end
+    else begin
+      float_to_fixed_point =  int'(float_number * (2**q)); // Left shift by Q bits
+    end
   endfunction
 
   // Converts fixed point numbers to floating point
   function real fixed_point_to_float(int fixed_point, int n, int q);
 
     // Necessary to use the shift operator in order to be sure about the sign
-    automatic int                   negative = (fixed_point >> (n+q-1)) > 0;
-    automatic logic signed [63 : 0] operator = fixed_point; // Used for negative conversion
+    int                   negative = (fixed_point >> (n+q-1)) > 0;
+    logic signed [63 : 0] operator = fixed_point; // Used for negative conversion
 
     if (negative) begin
       // Shift operations to make the operator variable signed
@@ -49,7 +57,7 @@ package vip_fixed_point_pkg;
 
   // Returns the largest positive value some fixed point vector can have
   function real get_max_fixed_point(int n, int q);
-    automatic real max_fixed_point = 2**(n-1)-1;
+    real max_fixed_point = 2**(n-1)-1;
     for (int i = 0; i < q; i++) begin max_fixed_point += 2**(-i-1); end
     get_max_fixed_point = max_fixed_point;
   endfunction
@@ -61,8 +69,8 @@ package vip_fixed_point_pkg;
 
   // Checks if a real typed number can be stored using n and q bits
   function int check_if_overflow(real float_number, int n, int q);
-    automatic real max_fixed_point = get_max_fixed_point(n, q);
-    automatic real min_fixed_point = get_min_fixed_point(n);
+    real max_fixed_point = get_max_fixed_point(n, q);
+    real min_fixed_point = get_min_fixed_point(n);
     check_if_overflow    = !(float_number <= max_fixed_point && float_number >= min_fixed_point);
   endfunction
 

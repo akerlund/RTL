@@ -62,7 +62,7 @@ module long_division_core #(
 
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-      ing_ready <= '0;
+      ing_ready <= '1;
       egr_valid <= '0;
       dividend  <= '0;
       divisor   <= '0;
