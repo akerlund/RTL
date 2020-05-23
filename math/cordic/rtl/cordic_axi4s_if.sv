@@ -19,6 +19,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+import cordic_axi4s_types_pkg::*;
+
 `default_nettype none
 
 module cordic_axi4s_if #(
@@ -56,7 +58,7 @@ module cordic_axi4s_if #(
   logic egr_tuser;
 
   // AXI4-S egress "tdata" port
-  assign egr_tdata = !egr_tvalid ? '0 : !egr_tuser ? egr_sine_vector : egr_cosine_vector;
+  assign egr_tdata = !egr_tvalid ? '0 : (egr_tuser == CORDIC_SINE_E) ? egr_sine_vector : egr_cosine_vector;
 
 
   // Shift the ing_tvalid which is used to assing egr_tvalid
