@@ -19,16 +19,36 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-`ifndef CORDIC_AXI4S_TYPES_PKG
-`define CORDIC_AXI4S_TYPES_PKG
+`ifndef IIR_TB_PKG
+`define IIR_TB_PKG
 
-package cordic_axi4s_types_pkg;
+package iir_tb_pkg;
 
-  typedef enum {
-    CORDIC_SINE_E,
-    CORDIC_COSINE_E,
-    CORDIC_SINE_COSINE_E
-  } cordic_request_t;
+  import uvm_pkg::*;
+  `include "uvm_macros.svh"
+
+  import vip_apb3_types_pkg::*;
+  import vip_apb3_pkg::*;
+  import iir_biquad_types_pkg::*;
+
+  localparam int WAVE_WIDTH_C     = 24;
+  localparam int COUNTER_WIDTH_C  = 32;
+  localparam int AXI_DATA_WIDTH_C = 32;
+  localparam int AXI_ID_WIDTH_C   = 32;
+  localparam int N_BITS_C         = 24;
+  localparam int Q_BITS_C         = 16;
+
+  // Configuration of the APB3 VIP
+  localparam vip_apb3_cfg_t vip_apb3_cfg = '{
+    APB_ADDR_WIDTH_P : 8,
+    APB_DATA_WIDTH_P : 32
+  };
+
+  `include "iir_config.sv"
+  `include "iir_scoreboard.sv"
+  `include "iir_virtual_sequencer.sv"
+  `include "iir_env.sv"
+  `include "iir_seq_lib.sv"
 
 endpackage
 

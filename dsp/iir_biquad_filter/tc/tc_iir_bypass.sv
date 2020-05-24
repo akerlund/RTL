@@ -19,17 +19,40 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-`ifndef CORDIC_AXI4S_TYPES_PKG
-`define CORDIC_AXI4S_TYPES_PKG
+class tc_iir_bypass extends iir_base_test;
 
-package cordic_axi4s_types_pkg;
+  iir_bypass_seq #(vip_apb3_cfg) iir_bypass_seq0;
 
-  typedef enum {
-    CORDIC_SINE_E,
-    CORDIC_COSINE_E,
-    CORDIC_SINE_COSINE_E
-  } cordic_request_t;
+  `uvm_component_utils(tc_iir_bypass)
 
-endpackage
 
-`endif
+
+  function new(string name = "tc_iir_bypass", uvm_component parent = null);
+
+    super.new(name, parent);
+
+  endfunction
+
+
+
+  function void build_phase(uvm_phase phase);
+
+    super.build_phase(phase);
+
+  endfunction
+
+
+
+  task run_phase(uvm_phase phase);
+
+    super.run_phase(phase);
+    phase.raise_objection(this);
+
+    iir_bypass_seq0 = new();
+    iir_bypass_seq0.start(v_sqr.apb3_sequencer);
+
+    phase.drop_objection(this);
+
+  endtask
+
+endclass

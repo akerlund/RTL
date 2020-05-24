@@ -1,8 +1,1 @@
 # DSP
-
-![Build Status](https://img.shields.io/badge/build-N/A-lightgrey)
-![Test  Status](https://img.shields.io/badge/test-N/A-lightgrey)
-![Synth Status](https://img.shields.io/badge/synthesis-N/A-lightgrey)
-![FPGA  Status](https://img.shields.io/badge/fpga-N/A-lightgrey)
-
-This is work in progress

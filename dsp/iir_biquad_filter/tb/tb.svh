@@ -19,17 +19,32 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-`ifndef CORDIC_AXI4S_TYPES_PKG
-`define CORDIC_AXI4S_TYPES_PKG
+`include "uvm_macros.svh"
+import uvm_pkg::*;
 
-package cordic_axi4s_types_pkg;
+import oscillator_types_pkg::*;
+import vip_apb3_types_pkg::*;
+import cordic_axi4s_types_pkg::*;
+import cordic_atan_radian_table_pkg::*;
+import iir_biquad_types_pkg::*;
 
-  typedef enum {
-    CORDIC_SINE_E,
-    CORDIC_COSINE_E,
-    CORDIC_SINE_COSINE_E
-  } cordic_request_t;
+`include "clock_enable.sv"
 
-endpackage
+`include "osc_square.sv"
+`include "osc_triangle_core.sv"
+`include "osc_triangle_top.sv"
+`include "oscillator_apb_slave.sv"
+`include "oscillator_core.sv"
+`include "oscillator_top.sv"
 
-`endif
+`include "long_division_core.sv"
+`include "long_division_axi4s_if.sv"
+
+`include "cordic_radian_core.sv"
+`include "cordic_radian_top.sv"
+`include "cordic_axi4s_if.sv"
+
+`include "iir_biquad_apb_slave.sv"
+`include "iir_biquad_core.sv"
+`include "iir_biquad_top.sv"
+`include "iir_dut_biquad_system.sv"

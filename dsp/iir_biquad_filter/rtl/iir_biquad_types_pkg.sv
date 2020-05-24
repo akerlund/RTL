@@ -19,16 +19,16 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-`ifndef CORDIC_AXI4S_TYPES_PKG
-`define CORDIC_AXI4S_TYPES_PKG
+`ifndef IIR_BIQUAD_TYPES_PKG
+`define IIR_BIQUAD_TYPES_PKG
 
-package cordic_axi4s_types_pkg;
+package iir_biquad_types_pkg;
 
   typedef enum {
-    CORDIC_SINE_E,
-    CORDIC_COSINE_E,
-    CORDIC_SINE_COSINE_E
-  } cordic_request_t;
+    IIR_LOW_PASS_E,
+    IIR_HIGH_PASS_E,
+    IIR_BAND_PASS_E
+  } iir_biquad_type_t;
 
 endpackage
 

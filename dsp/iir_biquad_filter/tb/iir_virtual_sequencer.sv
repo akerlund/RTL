@@ -19,17 +19,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-`ifndef CORDIC_AXI4S_TYPES_PKG
-`define CORDIC_AXI4S_TYPES_PKG
+class iir_virtual_sequencer extends uvm_virtual_sequencer;
 
-package cordic_axi4s_types_pkg;
+  `uvm_component_utils(iir_virtual_sequencer)
 
-  typedef enum {
-    CORDIC_SINE_E,
-    CORDIC_COSINE_E,
-    CORDIC_SINE_COSINE_E
-  } cordic_request_t;
+  vip_apb3_sequencer #(vip_apb3_cfg) apb3_sequencer;
 
-endpackage
+  function new(string name = "virtual_sequencer", uvm_component parent = null);
+    super.new(name, parent);
+  endfunction
 
-`endif
+endclass

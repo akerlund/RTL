@@ -19,17 +19,20 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-`ifndef CORDIC_AXI4S_TYPES_PKG
-`define CORDIC_AXI4S_TYPES_PKG
+package iir_tc_pkg;
 
-package cordic_axi4s_types_pkg;
+  `include "uvm_macros.svh"
+  import uvm_pkg::*;
 
-  typedef enum {
-    CORDIC_SINE_E,
-    CORDIC_COSINE_E,
-    CORDIC_SINE_COSINE_E
-  } cordic_request_t;
+  import vip_apb3_types_pkg::*;
+  import vip_apb3_pkg::*;
+  import iir_biquad_types_pkg::*;
+
+  // Import testbench and agent packages here
+  import iir_tb_pkg::*;
+
+  // Include testcase files here
+  `include "iir_base_test.sv"
+  `include "tc_iir_bypass.sv"
 
 endpackage
-
-`endif

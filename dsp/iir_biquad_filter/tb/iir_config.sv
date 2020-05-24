@@ -19,17 +19,17 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-`ifndef CORDIC_AXI4S_TYPES_PKG
-`define CORDIC_AXI4S_TYPES_PKG
+class iir_config extends uvm_object;
 
-package cordic_axi4s_types_pkg;
+  string name;
 
-  typedef enum {
-    CORDIC_SINE_E,
-    CORDIC_COSINE_E,
-    CORDIC_SINE_COSINE_E
-  } cordic_request_t;
+  `uvm_object_utils_begin(iir_config);
+    `uvm_field_string(name, UVM_DEFAULT)
+  `uvm_object_utils_end;
 
-endpackage
+  function new(string name = "iir_config");
+    super.new(name);
+    this.name = name;
+  endfunction
 
-`endif
+endclass

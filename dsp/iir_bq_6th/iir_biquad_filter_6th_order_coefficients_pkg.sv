@@ -23,15 +23,15 @@ package iir_biquad_filter_6th_order_coefficients_pkg;
 
 
   typedef enum {
-    stage0_a1_e = 0,
-    stage0_a2_e,
-    stage0_k_e,
-    stage1_a1_e,
-    stage1_a2_e,
-    stage1_k_e,
-    stage2_a1_e,
-    stage2_a2_e,
-    stage2_k_e
+    STAGE0_A1_E = 0,
+    STAGE0_A2_E,
+    STAGE0_K_E,
+    STAGE1_A1_E,
+    STAGE1_A2_E,
+    STAGE1_K_E,
+    STAGE2_A1_E,
+    STAGE2_A2_E,
+    STAGE2_K_E
   } coef_pos_t;
 
 logic [1:0] iir6_Q12_6_Fs48000_Fc20000 = '0;

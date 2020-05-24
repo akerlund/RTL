@@ -19,17 +19,42 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-`ifndef CORDIC_AXI4S_TYPES_PKG
-`define CORDIC_AXI4S_TYPES_PKG
+class iir_scoreboard extends uvm_scoreboard;
 
-package cordic_axi4s_types_pkg;
+  `uvm_component_utils(iir_scoreboard)
 
-  typedef enum {
-    CORDIC_SINE_E,
-    CORDIC_COSINE_E,
-    CORDIC_SINE_COSINE_E
-  } cordic_request_t;
+  // For raising objections
+  uvm_phase current_phase;
 
-endpackage
+  function new(string name, uvm_component parent);
+    super.new(name, parent);
+  endfunction
 
-`endif
+  virtual function void build_phase(uvm_phase phase);
+
+    super.build_phase(phase);
+
+  endfunction
+
+  function void connect_phase(uvm_phase phase);
+
+    current_phase = phase;
+    super.connect_phase(current_phase);
+
+  endfunction
+
+  virtual task run_phase(uvm_phase phase);
+
+    current_phase = phase;
+    super.run_phase(current_phase);
+
+  endtask
+
+  function void check_phase(uvm_phase phase);
+
+    current_phase = phase;
+    super.check_phase(current_phase);
+
+  endfunction
+
+endclass
