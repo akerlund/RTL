@@ -23,11 +23,12 @@ class vip_apb3_item #(
   vip_apb3_cfg_t cfg = '{default: '0}
   ) extends uvm_sequence_item;
 
-   rand logic [cfg.APB_ADDR_WIDTH_P-1 : 0] paddr;
-        logic                              pwrite;
-   rand logic [cfg.APB_DATA_WIDTH_P-1 : 0] pwdata;
-   rand logic [cfg.APB_DATA_WIDTH_P-1 : 0] prdata;
-        logic                              pslverr;
+   rand logic   [cfg.APB_ADDR_WIDTH_P-1 : 0] paddr;
+        int                                  psel;
+        logic                                pwrite;
+   rand logic   [cfg.APB_DATA_WIDTH_P-1 : 0] pwdata;
+   rand logic   [cfg.APB_DATA_WIDTH_P-1 : 0] prdata;
+        logic                                pslverr;
 
 
   `uvm_object_param_utils_begin(vip_apb3_item #(cfg))

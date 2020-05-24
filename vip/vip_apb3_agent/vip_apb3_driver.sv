@@ -95,22 +95,22 @@ class vip_apb3_driver #(
       @(posedge vif.clk);
 
       seq_item_port.get_next_item(req);
-      
+
       vif.paddr  <= req.paddr;
-      vif.psel   <= '1;
+      vif.psel   <= (1 << req.psel);
       vif.pwrite <= req.pwrite;
       vif.pwdata <= req.pwdata;
-      
+
       // Phase T1 (psel and pwrite asserted)
       @(posedge vif.clk);
-      
+
       vif.penable  <= '1;
-      
+
       // Phase T2 (Penable asserted)
       @(posedge vif.clk);
 
       // Phase T3 (Wait until pready)
-      while(!vif.pready) begin
+      while(!vif.pready[req.psel]) begin
         @(posedge vif.clk);
       end
 

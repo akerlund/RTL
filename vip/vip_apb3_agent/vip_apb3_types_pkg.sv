@@ -32,6 +32,7 @@ package vip_apb3_types_pkg;
   typedef struct packed {
     int APB_ADDR_WIDTH_P;
     int APB_DATA_WIDTH_P;
+    int APB_NR_OF_SLAVES_P;
   } vip_apb3_cfg_t;
 
 endpackage

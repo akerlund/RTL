@@ -45,11 +45,13 @@ class vip_apb3_base_seq #(
 
 
   task write_word(logic [vip_cfg.APB_ADDR_WIDTH_P-1 : 0] paddr,
-                  logic [vip_cfg.APB_DATA_WIDTH_P-1 : 0] pwdata);
+                  logic [vip_cfg.APB_DATA_WIDTH_P-1 : 0] pwdata,
+                  int                                    psel = 0);
 
     apb_item = new();
 
     apb_item.paddr  = paddr;
+    apb_item.psel   = psel;
     apb_item.pwrite = '1;
     apb_item.pwdata = pwdata;
 
