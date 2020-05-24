@@ -28,7 +28,7 @@ module iir_biquad_top #(
     parameter int AXI_DATA_WIDTH_P = -1,
     parameter int AXI_ID_WIDTH_P   = -1,
     parameter int AXI4S_ID_P       = -1,
-    parameter int APB_ADDR_WIDTH_P = -1,
+    parameter int APB_DATA_WIDTH_P = -1,
     parameter int N_BITS_P         = -1,
     parameter int Q_BITS_P         = -1,
     parameter int NR_OF_Q_BITS_P   = -1
@@ -78,11 +78,11 @@ module iir_biquad_top #(
     input  wire  signed         [N_BITS_P-1 : 0] x,
     output logic                                 y_valid,
     output logic signed         [N_BITS_P-1 : 0] y,
-    input  wire                 [N_BITS_P-1 : 0] cr_iir_f0,
-    input  wire                 [N_BITS_P-1 : 0] cr_iir_fs,
-    input  wire                 [N_BITS_P-1 : 0] cr_iir_q,
-    input  wire                          [1 : 0] cr_iir_type,
-    input  wire                                  cr_bypass
+    input  wire         [APB_DATA_WIDTH_P-1 : 0] cr_iir_f0,
+    input  wire         [APB_DATA_WIDTH_P-1 : 0] cr_iir_fs,
+    input  wire         [APB_DATA_WIDTH_P-1 : 0] cr_iir_q,
+    input  wire         [APB_DATA_WIDTH_P-1 : 0] cr_iir_type,
+    input  wire         [APB_DATA_WIDTH_P-1 : 0] cr_bypass
   );
 
   localparam logic        [N_BITS_P-1 : 0] ONE_C = (1 << Q_BITS_P);

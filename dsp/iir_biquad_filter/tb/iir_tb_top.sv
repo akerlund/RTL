@@ -39,35 +39,30 @@ module iir_tb_top;
 
   iir_dut_biquad_system #(
     // Oscillator
-    .WAVE_WIDTH_P      ( WAVE_WIDTH_C                  ),
-    .COUNTER_WIDTH_P   ( COUNTER_WIDTH_C               ),
+    .WAVE_WIDTH_P       ( WAVE_WIDTH_C                    ),
+    .COUNTER_WIDTH_P    ( COUNTER_WIDTH_C                 ),
     // Divider and ...
-    .N_BITS_P          ( N_BITS_C                      ),
-    .Q_BITS_P          ( Q_BITS_C                      ),
+    .N_BITS_P           ( N_BITS_C                        ),
+    .Q_BITS_P           ( Q_BITS_C                        ),
     // Interconnections
-    .AXI_DATA_WIDTH_P  ( AXI_DATA_WIDTH_C              ),
-    .AXI_ID_WIDTH_P    ( AXI_ID_WIDTH_C                ),
+    .AXI_DATA_WIDTH_P   ( AXI_DATA_WIDTH_C                ),
+    .AXI_ID_WIDTH_P     ( AXI_ID_WIDTH_C                  ),
     // APB3
-    .APB_ADDR_WIDTH_P  ( vip_apb3_cfg.APB_ADDR_WIDTH_P ),
-    .APB_DATA_WIDTH_P  ( vip_apb3_cfg.APB_DATA_WIDTH_P )
+    .APB_ADDR_WIDTH_P   ( vip_apb3_cfg.APB_ADDR_WIDTH_P   ),
+    .APB_DATA_WIDTH_P   ( vip_apb3_cfg.APB_DATA_WIDTH_P   ),
+    .APB_NR_OF_SLAVES_P ( vip_apb3_cfg.APB_NR_OF_SLAVES_P )
 
   ) iir_dut_biquad_system_i0 (
-
-    // Clock and reset
-    .clk               ( clk                           ),
-    .rst_n             ( rst_n                         ),
-
-    // Waveform output
-    .filtered_waveform ( filtered_waveform             ),
-
-    // APB interface
-    .apb3_paddr        ( apb3_vif.paddr                ),
-    .apb3_psel         ( apb3_vif.psel                 ),
-    .apb3_penable      ( apb3_vif.penable              ),
-    .apb3_pwrite       ( apb3_vif.pwrite               ),
-    .apb3_pwdata       ( apb3_vif.pwdata               ),
-    .apb3_pready       ( apb3_vif.pready               ),
-    .apb3_prdata       ( apb3_vif.prdata               )
+    .clk                ( clk                             ),
+    .rst_n              ( rst_n                           ),
+    .filtered_waveform  ( filtered_waveform               ),
+    .apb3_paddr         ( apb3_vif.paddr                  ),
+    .apb3_psel          ( apb3_vif.psel                   ),
+    .apb3_penable       ( apb3_vif.penable                ),
+    .apb3_pwrite        ( apb3_vif.pwrite                 ),
+    .apb3_pwdata        ( apb3_vif.pwdata                 ),
+    .apb3_pready        ( apb3_vif.pready                 ),
+    .apb3_prdata        ( apb3_vif.prdata                 )
   );
 
   initial begin

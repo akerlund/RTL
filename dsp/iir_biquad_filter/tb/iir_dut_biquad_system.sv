@@ -31,30 +31,31 @@
 `default_nettype none
 
 module iir_dut_biquad_system #(
-  parameter int WAVE_WIDTH_P      = -1, // Resolution of the waves
-  parameter int COUNTER_WIDTH_P   = -1, // Resolution of the counters
-  parameter int N_BITS_P          = -1, // Fixed point resolution
-  parameter int Q_BITS_P          = -1, // Fixed point resolution
-  parameter int AXI_DATA_WIDTH_P  = -1,
-  parameter int AXI_ID_WIDTH_P    = -1,
-  parameter int APB_ADDR_WIDTH_P  = -1,
-  parameter int APB_DATA_WIDTH_P  = -1
+  parameter int WAVE_WIDTH_P       = -1, // Resolution of the waves
+  parameter int COUNTER_WIDTH_P    = -1, // Resolution of the counters
+  parameter int N_BITS_P           = -1, // Fixed point resolution
+  parameter int Q_BITS_P           = -1, // Fixed point resolution
+  parameter int AXI_DATA_WIDTH_P   = -1,
+  parameter int AXI_ID_WIDTH_P     = -1,
+  parameter int APB_ADDR_WIDTH_P   = -1,
+  parameter int APB_DATA_WIDTH_P   = -1,
+  parameter int APB_NR_OF_SLAVES_P = -1
 )(
   // Clock and reset
-  input  wire                            clk,
-  input  wire                            rst_n,
+  input  wire                             clk,
+  input  wire                             rst_n,
 
   // Waveform output
-  output logic      [WAVE_WIDTH_P-1 : 0] filtered_waveform,
+  output logic       [WAVE_WIDTH_P-1 : 0] filtered_waveform,
 
   // APB interface
-  input  wire                    [1 : 0] apb3_psel,
-  output logic                           apb3_pready,
-  output logic  [APB_DATA_WIDTH_P-1 : 0] apb3_prdata,
-  input  wire                            apb3_pwrite,
-  input  wire                            apb3_penable,
-  input  wire   [APB_ADDR_WIDTH_P-1 : 0] apb3_paddr,
-  input  wire   [APB_DATA_WIDTH_P-1 : 0] apb3_pwdata
+  input  wire  [APB_NR_OF_SLAVES_P-1 : 0] apb3_psel,
+  output logic [APB_NR_OF_SLAVES_P-1 : 0] apb3_pready,
+  output logic   [APB_DATA_WIDTH_P-1 : 0] apb3_prdata,
+  input  wire                             apb3_pwrite,
+  input  wire                             apb3_penable,
+  input  wire    [APB_ADDR_WIDTH_P-1 : 0] apb3_paddr,
+  input  wire    [APB_DATA_WIDTH_P-1 : 0] apb3_pwdata
 );
 
   localparam int OSC_BASE_ADDR_C = 0;
@@ -108,7 +109,7 @@ module iir_dut_biquad_system #(
     .AXI_DATA_WIDTH_P  ( AXI_DATA_WIDTH_P  ),
     .AXI_ID_WIDTH_P    ( AXI_ID_WIDTH_P    ),
     .AXI4S_ID_P        ( 32'hBADC0FFE      ),
-    .APB_ADDR_WIDTH_P  ( APB_DATA_WIDTH_P  ),
+    .APB_DATA_WIDTH_P  ( APB_DATA_WIDTH_P  ),
     .N_BITS_P          ( N_BITS_P          ),
     .Q_BITS_P          ( Q_BITS_P          )
   ) iir_biquad_top_i0 (
@@ -142,7 +143,7 @@ module iir_dut_biquad_system #(
     .x_valid           ( sampling_enable   ), // input
     .x                 ( waveform          ), // input
     .y_valid           (                   ), // output
-    .y                 (                   ), // output
+    .y                 ( filtered_waveform ), // output // N_BITS_P
     .cr_iir_f0         ( cr_iir_f0         ), // input
     .cr_iir_fs         ( cr_iir_fs         ), // input
     .cr_iir_q          ( cr_iir_q          ), // input
@@ -162,7 +163,7 @@ module iir_dut_biquad_system #(
     .rst_n             ( rst_n             ), // input
 
     .apb3_psel         ( apb3_psel[1]      ), // input
-    .apb3_pready       ( apb3_pready       ), // output
+    .apb3_pready       ( apb3_pready[1]    ), // output
     .apb3_prdata       ( apb3_prdata       ), // output
     .apb3_pwrite       ( apb3_pwrite       ), // input
     .apb3_penable      ( apb3_penable      ), // input
@@ -254,7 +255,7 @@ module iir_dut_biquad_system #(
     .apb3_penable      ( apb3_penable      ), // output
     .apb3_pwrite       ( apb3_pwrite       ), // input
     .apb3_pwdata       ( apb3_pwdata       ), // input
-    .apb3_pready       ( apb3_pready       ), // input
+    .apb3_pready       ( apb3_pready[0]    ), // input
     .apb3_prdata       ( apb3_prdata       )  // input
   );
 

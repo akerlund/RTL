@@ -27,6 +27,7 @@ class iir_base_seq #(
 
   logic [vip_cfg.APB_ADDR_WIDTH_P-1 : 0] paddr;
   logic [vip_cfg.APB_DATA_WIDTH_P-1 : 0] pwdata;
+  int                                    psel;
 
   // Base addresses
   logic [vip_cfg.APB_ADDR_WIDTH_P-1 : 0] OSC_BASE_ADDR_C               = 0;
@@ -70,42 +71,47 @@ class iir_bypass_seq #(
 
     // Oscillator registers
 
+    `uvm_info(get_name(), $sformatf("Writing OSC registers"), UVM_LOW)
+    psel = 0;
+
     // Write waveform
     paddr  = OSC_BASE_ADDR_C + CR_OSC_WAVEFORM_SELECT_ADDR_C;
     pwdata = '0;
-    write_word(paddr, pwdata);
+    write_word(paddr, pwdata, psel);
 
     // Write frequency
     paddr  = OSC_BASE_ADDR_C + CR_OSC_FREQUENCY_ADDR_C;
     pwdata = 50; // Clocks
-    write_word(paddr, pwdata);
+    write_word(paddr, pwdata, psel);
 
     // Write duty cycle
     paddr  = OSC_BASE_ADDR_C + CR_OSC_DUTY_CYCLE_ADDR_C;
     pwdata = 25; // Clocks
-    write_word(paddr, pwdata);
+    write_word(paddr, pwdata, psel);
 
+    psel = 1;
 
+    `uvm_info(get_name(), $sformatf("Writing IIR registers"), UVM_LOW)
     // IIR registers
     paddr  = IIR_BASE_ADDR_C + CR_IIR_F0_ADDR_C;
     pwdata = (24000 << Q_BITS_C);
-    write_word(paddr, pwdata);
+    write_word(paddr, pwdata, psel);
 
     paddr  = IIR_BASE_ADDR_C + CR_IIR_FS_ADDR_C;
     pwdata = (48000 << Q_BITS_C);
-    write_word(paddr, pwdata);
+    write_word(paddr, pwdata, psel);
 
     paddr  = IIR_BASE_ADDR_C + CR_IIR_Q_ADDR_C;
     pwdata = (1 << Q_BITS_C);;
-    write_word(paddr, pwdata);
+    write_word(paddr, pwdata, psel);
 
     paddr  = IIR_BASE_ADDR_C + CR_IIR_TYPE_ADDR_C;
     pwdata = IIR_LOW_PASS_E;
-    write_word(paddr, pwdata);
+    write_word(paddr, pwdata, psel);
 
     paddr  = IIR_BASE_ADDR_C + CR_IIR_BYPASS_ADDR_C;
-    pwdata = '0;
-    write_word(paddr, pwdata);
+    pwdata = '1;
+    write_word(paddr, pwdata, psel);
 
     #5000us;
 

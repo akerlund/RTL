@@ -36,12 +36,13 @@ package iir_tb_pkg;
   localparam int AXI_DATA_WIDTH_C = 32;
   localparam int AXI_ID_WIDTH_C   = 32;
   localparam int N_BITS_C         = 24;
-  localparam int Q_BITS_C         = 16;
+  localparam int Q_BITS_C         = 7;
 
   // Configuration of the APB3 VIP
   localparam vip_apb3_cfg_t vip_apb3_cfg = '{
-    APB_ADDR_WIDTH_P : 8,
-    APB_DATA_WIDTH_P : 32
+    APB_ADDR_WIDTH_P   : 8,
+    APB_DATA_WIDTH_P   : 32,
+    APB_NR_OF_SLAVES_P : 2
   };
 
   `include "iir_config.sv"
