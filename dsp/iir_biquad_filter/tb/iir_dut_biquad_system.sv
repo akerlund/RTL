@@ -42,20 +42,20 @@ module iir_dut_biquad_system #(
   parameter int APB_NR_OF_SLAVES_P = -1
 )(
   // Clock and reset
-  input  wire                             clk,
-  input  wire                             rst_n,
+  input  wire                                                     clk,
+  input  wire                                                     rst_n,
 
   // Waveform output
-  output logic       [WAVE_WIDTH_P-1 : 0] filtered_waveform,
+  output logic                               [WAVE_WIDTH_P-1 : 0] filtered_waveform,
 
   // APB interface
-  input  wire  [APB_NR_OF_SLAVES_P-1 : 0] apb3_psel,
-  output logic [APB_NR_OF_SLAVES_P-1 : 0] apb3_pready,
-  output logic   [APB_DATA_WIDTH_P-1 : 0] apb3_prdata,
-  input  wire                             apb3_pwrite,
-  input  wire                             apb3_penable,
-  input  wire    [APB_ADDR_WIDTH_P-1 : 0] apb3_paddr,
-  input  wire    [APB_DATA_WIDTH_P-1 : 0] apb3_pwdata
+  input  wire                            [APB_ADDR_WIDTH_P-1 : 0] apb3_paddr,
+  input  wire                          [APB_NR_OF_SLAVES_P-1 : 0] apb3_psel,
+  input  wire                                                     apb3_penable,
+  input  wire                                                     apb3_pwrite,
+  input  wire                            [APB_DATA_WIDTH_P-1 : 0] apb3_pwdata,
+  output logic                         [APB_NR_OF_SLAVES_P-1 : 0] apb3_pready,
+  output logic [APB_NR_OF_SLAVES_P-1 : 0] [APB_DATA_WIDTH_P-1 : 0] apb3_prdata
 );
 
   localparam int OSC_BASE_ADDR_C = 0;
@@ -67,43 +67,46 @@ module iir_dut_biquad_system #(
 
 
   // Sampling enable
-  logic                                 sampling_enable;
+  logic                                   sampling_enable;
 
   // Configuration registers for IIR top
-  logic        [APB_DATA_WIDTH_P-1 : 0] cr_iir_f0;
-  logic        [APB_DATA_WIDTH_P-1 : 0] cr_iir_fs;
-  logic        [APB_DATA_WIDTH_P-1 : 0] cr_iir_q;
-  logic        [APB_DATA_WIDTH_P-1 : 0] cr_iir_type;
-  logic        [APB_DATA_WIDTH_P-1 : 0] cr_bypass;
+  logic          [APB_DATA_WIDTH_P-1 : 0] cr_iir_f0;
+  logic          [APB_DATA_WIDTH_P-1 : 0] cr_iir_fs;
+  logic          [APB_DATA_WIDTH_P-1 : 0] cr_iir_q;
+  logic          [APB_DATA_WIDTH_P-1 : 0] cr_iir_type;
+  logic          [APB_DATA_WIDTH_P-1 : 0] cr_bypass;
 
   // AXI4-S signals betwwen the IIR top and the CORDIC
-  logic                                 iir_cor_tvalid;
-  logic                                 iir_cor_tready;
-  logic signed [AXI_DATA_WIDTH_P-1 : 0] iir_cor_tdata;
-  logic                                 iir_cor_tlast;
-  logic          [AXI_ID_WIDTH_P-1 : 0] iir_cor_tid;
-  logic                                 iir_cor_tuser;
-  logic                                 cor_iir_tvalid;
-  logic                                 cor_iir_tready;
-  logic signed [AXI_DATA_WIDTH_P-1 : 0] cor_iir_tdata;
-  logic                                 cor_iir_tlast;
-  logic          [AXI_ID_WIDTH_P-1 : 0] cor_iir_tid;
+  logic                                   iir_cor_tvalid;
+  logic                                   iir_cor_tready;
+  logic signed   [AXI_DATA_WIDTH_P-1 : 0] iir_cor_tdata;
+  logic                                   iir_cor_tlast;
+  logic            [AXI_ID_WIDTH_P-1 : 0] iir_cor_tid;
+  logic                                   iir_cor_tuser;
+  logic                                   cor_iir_tvalid;
+  logic                                   cor_iir_tready;
+  logic signed [2*AXI_DATA_WIDTH_P-1 : 0] cor_iir_tdata;
+  logic                                   cor_iir_tlast;
+  logic            [AXI_ID_WIDTH_P-1 : 0] cor_iir_tid;
 
   // AXI4-S signals betwwen the IIR top and the divider
-  logic                                 iir_div_tvalid;
-  logic                                 iir_div_tready;
-  logic        [AXI_DATA_WIDTH_P-1 : 0] iir_div_tdata;
-  logic                                 iir_div_tlast;
-  logic          [AXI_ID_WIDTH_P-1 : 0] iir_div_tid;
-  logic                                 div_iir_tvalid;
-  logic                                 div_iir_tready;
-  logic        [AXI_DATA_WIDTH_P-1 : 0] div_iir_tdata;
-  logic                                 div_iir_tlast;
-  logic          [AXI_ID_WIDTH_P-1 : 0] div_iir_tid;
-  logic                                 div_iir_tuser;
+  logic                                   iir_div_tvalid;
+  logic                                   iir_div_tready;
+  logic          [AXI_DATA_WIDTH_P-1 : 0] iir_div_tdata;
+  logic                                   iir_div_tlast;
+  logic            [AXI_ID_WIDTH_P-1 : 0] iir_div_tid;
+  logic                                   div_iir_tvalid;
+  logic                                   div_iir_tready;
+  logic          [AXI_DATA_WIDTH_P-1 : 0] div_iir_tdata;
+  logic                                   div_iir_tlast;
+  logic            [AXI_ID_WIDTH_P-1 : 0] div_iir_tid;
+  logic                                   div_iir_tuser;
 
   // Oscillator
   logic            [WAVE_WIDTH_P-1 : 0] waveform;
+
+  // No arbiter in place. CORDIC is always ready.
+  assign iir_cor_tready = '1;
 
   iir_biquad_top #(
     .AXI_DATA_WIDTH_P  ( AXI_DATA_WIDTH_P  ),
@@ -162,13 +165,13 @@ module iir_dut_biquad_system #(
     .clk               ( clk               ), // input
     .rst_n             ( rst_n             ), // input
 
-    .apb3_psel         ( apb3_psel[1]      ), // input
-    .apb3_pready       ( apb3_pready[1]    ), // output
-    .apb3_prdata       ( apb3_prdata       ), // output
-    .apb3_pwrite       ( apb3_pwrite       ), // input
-    .apb3_penable      ( apb3_penable      ), // input
     .apb3_paddr        ( apb3_paddr        ), // input
+    .apb3_psel         ( apb3_psel[1]      ), // input
+    .apb3_penable      ( apb3_penable      ), // input
+    .apb3_pwrite       ( apb3_pwrite       ), // input
     .apb3_pwdata       ( apb3_pwdata       ), // input
+    .apb3_pready       ( apb3_pready[1]    ), // output
+    .apb3_prdata       ( apb3_prdata[1]    ), // output
 
     .cr_iir_f0         ( cr_iir_f0         ), // input
     .cr_iir_fs         ( cr_iir_fs         ), // input
@@ -256,7 +259,7 @@ module iir_dut_biquad_system #(
     .apb3_pwrite       ( apb3_pwrite       ), // input
     .apb3_pwdata       ( apb3_pwdata       ), // input
     .apb3_pready       ( apb3_pready[0]    ), // input
-    .apb3_prdata       ( apb3_prdata       )  // input
+    .apb3_prdata       ( apb3_prdata[0]    )  // input
   );
 
 endmodule

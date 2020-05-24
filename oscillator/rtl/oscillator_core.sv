@@ -50,8 +50,7 @@ module oscillator_core #(
 
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-      waveform              <= '0;
-      osc_selected_waveform <= OSC_SQUARE_E;
+      waveform <= '0;
     end
     else begin
 

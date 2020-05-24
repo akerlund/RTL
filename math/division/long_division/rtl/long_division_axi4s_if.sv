@@ -61,7 +61,7 @@ module long_division_axi4s_if #(
 
   // Assign AXI4-S output ports
   assign egr_tvalid = egr_valid;
-  assign egr_tdata  = egr_quotient;
+  assign egr_tdata  = egr_valid ? egr_quotient : egr_tdata;
   assign egr_tlast  = '1;
   assign egr_tid    = ing_tid_d0;
   assign egr_tuser  = egr_overflow;

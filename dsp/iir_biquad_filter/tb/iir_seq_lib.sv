@@ -113,7 +113,7 @@ class iir_bypass_seq #(
     pwdata = '1;
     write_word(paddr, pwdata, psel);
 
-    #5000us;
+    #1000us;
 
   endtask
 

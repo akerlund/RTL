@@ -29,13 +29,13 @@ module iir_biquad_apb_slave #(
     input  wire                           clk,
     input  wire                           rst_n,
 
+    input  wire  [APB_ADDR_WIDTH_P-1 : 0] apb3_paddr,
     input  wire                           apb3_psel,
+    input  wire                           apb3_penable,
+    input  wire                           apb3_pwrite,
+    input  wire  [APB_DATA_WIDTH_P-1 : 0] apb3_pwdata,
     output logic                          apb3_pready,
     output logic [APB_DATA_WIDTH_P-1 : 0] apb3_prdata,
-    input  wire                           apb3_pwrite,
-    input  wire                           apb3_penable,
-    input  wire  [APB_ADDR_WIDTH_P-1 : 0] apb3_paddr,
-    input  wire  [APB_DATA_WIDTH_P-1 : 0] apb3_pwdata,
 
     // Configuration registers
     output logic [APB_DATA_WIDTH_P-1 : 0] cr_iir_f0,
