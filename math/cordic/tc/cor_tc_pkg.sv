@@ -32,7 +32,6 @@ package cor_tc_pkg;
 
   // Include testcase files here
   `include "cor_base_test.sv"
-  `include "tc_cor_360_angles.sv"
   `include "tc_positive_radian_spin.sv"
   `include "tc_negative_radian_spin.sv"
 

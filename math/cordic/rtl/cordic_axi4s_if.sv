@@ -19,8 +19,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-import cordic_axi4s_types_pkg::*;
-
 `default_nettype none
 
 module cordic_axi4s_if #(
@@ -40,7 +38,7 @@ module cordic_axi4s_if #(
 
     // AXI4-S slave side
     output logic                            egr_tvalid,
-    output logic   [AXI_DATA_WIDTH_P-1 : 0] egr_tdata,
+    output logic [2*AXI_DATA_WIDTH_P-1 : 0] egr_tdata,
     output logic     [AXI_ID_WIDTH_P-1 : 0] egr_tid
  );
 
@@ -58,7 +56,7 @@ module cordic_axi4s_if #(
   logic egr_tuser;
 
   // AXI4-S egress "tdata" port
-  assign egr_tdata = !egr_tvalid ? '0 : (egr_tuser == CORDIC_SINE_E) ? egr_sine_vector : egr_cosine_vector;
+  assign egr_tdata = !egr_tvalid ? '0 : {egr_sine_vector, egr_cosine_vector};
 
 
   // Shift the ing_tvalid which is used to assing egr_tvalid
@@ -66,7 +64,6 @@ module cordic_axi4s_if #(
     if (!rst_n) begin
       axi4s_ing_fifo <= '0;
       egr_tvalid     <= '0;
-      egr_tdata      <= '0;
       egr_tid        <= '0;
     end
     else begin
