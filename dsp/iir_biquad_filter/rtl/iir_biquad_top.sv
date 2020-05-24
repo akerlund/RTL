@@ -17,6 +17,12 @@
 //
 // Description:
 //
+// The IIR Bi-Quad top module implements an FSM which calculates the filter
+// coefficients from the values written in the configuration registers.
+// It calls the the CORDIC and the divider for calculating the
+// filter parameters. The parameters will be updated if any register's value
+// is changed.
+//
 ////////////////////////////////////////////////////////////////////////////////
 
 import cordic_axi4s_types_pkg::*;
@@ -35,8 +41,8 @@ module iir_biquad_top #(
   )(
 
     // Clock and reset
-    input  wire                                  clk,
-    input  wire                                  rst_n,
+    input  wire                                    clk,
+    input  wire                                    rst_n,
 
     // -------------------------------------------------------------------------
     // CORDIC interface
@@ -83,6 +89,7 @@ module iir_biquad_top #(
     input  wire           [APB_DATA_WIDTH_P-1 : 0] cr_iir_q,
     input  wire           [APB_DATA_WIDTH_P-1 : 0] cr_iir_type,
     input  wire           [APB_DATA_WIDTH_P-1 : 0] cr_bypass
+  //output logic          [APB_DATA_WIDTH_P-1 : 0] sr_division_overflows // TODO
   );
 
   localparam logic        [N_BITS_P-1 : 0] ONE_C = (1 << Q_BITS_P);
@@ -106,11 +113,11 @@ module iir_biquad_top #(
   top_state_t top_state;
 
   // Configuration registers
-  logic [N_BITS_P-1 : 0] iir_f0;
-  logic [N_BITS_P-1 : 0] iir_fs;
-  logic [N_BITS_P-1 : 0] iir_q;
-  logic          [1 : 0] iir_type;
-  logic                  bypass;
+  logic        [N_BITS_P-1 : 0] iir_f0;
+  logic        [N_BITS_P-1 : 0] iir_fs;
+  logic        [N_BITS_P-1 : 0] iir_q;
+  logic                 [1 : 0] iir_type;
+  logic                         bypass;
 
   // MVP coefficients
   logic signed [N_BITS_P-1 : 0] w0;
@@ -127,7 +134,6 @@ module iir_biquad_top #(
 
 
   always_ff @(posedge clk or negedge rst_n) begin
-
     if (!rst_n) begin
 
       // Ports
@@ -143,27 +149,28 @@ module iir_biquad_top #(
       div_egr_tid       <= '0;
       div_ing_tready    <= '0;
 
-      top_state  <= INITIALIZE_FILTER_E;
+      // FSM variables
+      top_state         <= INITIALIZE_FILTER_E;
+      iir_f0            <= '0;
+      iir_fs            <= '0;
+      iir_q             <= '0;
+      iir_type          <= '0;
+      bypass            <= '0;
 
       // MVP coefficients
-      w0           <= '0;
-      sine_of_w0   <= '0;
-      cosine_of_w0 <= '0;
-      alfa         <= '0;
-      cr_zero_b0   <= '0;
+      w0                <= '0;
+      sine_of_w0        <= '0;
+      cosine_of_w0      <= '0;
+      alfa              <= '0;
+      cr_zero_b0        <= '0;
 
       // Zero and pole coefficients
-      cr_zero_b0   <= '0;
-      cr_zero_b1   <= '0;
-      cr_zero_b2   <= '0;
-      cr_pole_a1   <= '0;
-      cr_pole_a2   <= '0;
+      cr_zero_b0        <= '0;
+      cr_zero_b1        <= '0;
+      cr_zero_b2        <= '0;
+      cr_pole_a1        <= '0;
+      cr_pole_a2        <= '0;
 
-      iir_f0       <= '0;
-      iir_fs       <= '0;
-      iir_q        <= '0;
-      iir_type     <= '0;
-      bypass       <= '0;
     end
     else begin
 
@@ -211,7 +218,7 @@ module iir_biquad_top #(
         WAIT_QUOTIENT_F0_FS_E: begin
           div_ing_tready <= '1;
           if (div_ing_tvalid) begin
-            w0             <= div_ing_tdata*PI2 >> Q_BITS_P; // w0 = 2 * pi * f0 /Fs
+            w0             <= div_ing_tdata*PI2 >>> Q_BITS_P; // w0 = 2 * pi * f0 /Fs
             div_ing_tready <= '0;
             top_state      <= SEND_SINE_OF_W0_E;
           end
@@ -239,9 +246,9 @@ module iir_biquad_top #(
         WAIT_FOR_CORDIC_E: begin
           cordic_ing_tready <= '1;
           if (cordic_ing_tvalid) begin
-            // CORDIC always returns +-1
-            sine_of_w0        <= cordic_ing_tdata[2*AXI_DATA_WIDTH_P-1 : AXI_DATA_WIDTH_P] >> (N_BITS_P-1 - 4);
-            cosine_of_w0      <= cordic_ing_tdata[AXI_DATA_WIDTH_P-1   : 0]                >> (N_BITS_P-1 - 4);
+            // CORDIC always returns +-1, the three MSBs are the integer part
+            sine_of_w0        <= cordic_ing_tdata[2*AXI_DATA_WIDTH_P-1 : AXI_DATA_WIDTH_P] >>> (N_BITS_P - 3);
+            cosine_of_w0      <= cordic_ing_tdata[AXI_DATA_WIDTH_P-1   : 0]                >>> (N_BITS_P - 3);
             cordic_ing_tready <= '0;
             top_state         <= SEND_DIVIDEND_W0_E;
           end
@@ -261,7 +268,7 @@ module iir_biquad_top #(
         SEND_DIVISOR_2Q_E: begin
           if (div_egr_tready) begin
             if (!div_egr_tlast) begin                    // Dividend was sent
-              div_egr_tdata  <= 2*cr_iir_q >> Q_BITS_P;
+              div_egr_tdata  <= 2*cr_iir_q >>> Q_BITS_P;
               div_egr_tlast  <= '1;
             end
             else begin
@@ -295,27 +302,27 @@ module iir_biquad_top #(
           case (cr_iir_type)
 
             IIR_LOW_PASS_E: begin
-              cr_zero_b0 <= (ONE_C - cosine_of_w0) >> 1;  // b0 = (1 - cos(w0)) / 2
-              cr_zero_b1 <= (ONE_C - cosine_of_w0);       // b1 =  1 - cos(w0)
-              cr_zero_b2 <= (ONE_C - cosine_of_w0) >> 1;  // b2 = (1 - cos(w0)) / 2
-              cr_pole_a1 <= -(cosine_of_w0 << 1);         // a1 = -2cos(w0)
-              cr_pole_a2 <=  ONE_C - alfa;                // a2 = 1 - alfa
+              cr_zero_b0 <= (ONE_C - cosine_of_w0) >>> 1;  // b0 = (1 - cos(w0)) / 2
+              cr_zero_b1 <= (ONE_C - cosine_of_w0);        // b1 =  1 - cos(w0)
+              cr_zero_b2 <= (ONE_C - cosine_of_w0) >>> 1;  // b2 = (1 - cos(w0)) / 2
+              cr_pole_a1 <= -(cosine_of_w0 << 1);          // a1 = -2cos(w0)
+              cr_pole_a2 <=  ONE_C - alfa;                 // a2 = 1 - alfa = 1 - sin(w0) / 2Q
             end
 
             IIR_HIGH_PASS_E: begin
-              cr_zero_b0 <=  (ONE_C + cosine_of_w0) >> 1; // b0 =  (1 + cos(w0)) / 2
-              cr_zero_b1 <= -(ONE_C + cosine_of_w0);      // b1 = -(1 + cos(w0)
-              cr_zero_b2 <=  (ONE_C + cosine_of_w0) >> 1; // b2 =  (1 + cos(w0))) / 2
-              cr_pole_a1 <= -(cosine_of_w0 << 1);         // a1 = -2cos(w0)
-              cr_pole_a2 <=  ONE_C - alfa;                // a2 = 1 - alfa
+              cr_zero_b0 <=  (ONE_C + cosine_of_w0) >>> 1; // b0 =  (1 + cos(w0)) / 2
+              cr_zero_b1 <= -(ONE_C + cosine_of_w0);       // b1 = -(1 + cos(w0)
+              cr_zero_b2 <=  (ONE_C + cosine_of_w0) >>> 1; // b2 =  (1 + cos(w0))) / 2
+              cr_pole_a1 <= -(cosine_of_w0 << 1);          // a1 = -2cos(w0)
+              cr_pole_a2 <=  ONE_C - alfa;                 // a2 = 1 - alfa = 1 - sin(w0) / 2Q
             end
 
             IIR_BAND_PASS_E: begin
-              cr_zero_b0 <=  sine_of_w0 >> 1;             // b0 = sin(w0) / 2
-              cr_zero_b1 <= '0;                           // b1 = 0
-              cr_zero_b2 <=  -sine_of_w0 >> 1;            // b2 = -sin(w0) / 2
-              cr_pole_a1 <= -(cosine_of_w0 << 1);         // a1 = -2cos(w0)
-              cr_pole_a2 <=  ONE_C - alfa;                // a2 = 1 - alfa
+              cr_zero_b0 <=  sine_of_w0 >>> 1;             // b0 = sin(w0) / 2
+              cr_zero_b1 <= '0;                            // b1 = 0
+              cr_zero_b2 <=  -sine_of_w0 >>> 1;            // b2 = -sin(w0) / 2
+              cr_pole_a1 <= -(cosine_of_w0 << 1);          // a1 = -2cos(w0)
+              cr_pole_a2 <=  ONE_C - alfa;                 // a2 = 1 - alfa = 1 - sin(w0) / 2Q
             end
 
           endcase
