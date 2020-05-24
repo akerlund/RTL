@@ -26,13 +26,13 @@ interface vip_apb3_if #(
     input rst_n
   );
 
-  logic   [cfg.APB_ADDR_WIDTH_P-1 : 0] paddr;
-  logic [cfg.APB_NR_OF_SLAVES_P-1 : 0] psel;
-  logic                                penable;
-  logic                                pwrite;
-  logic   [cfg.APB_DATA_WIDTH_P-1 : 0] pwdata;
-  logic [cfg.APB_NR_OF_SLAVES_P-1 : 0] pready;
-  logic   [cfg.APB_DATA_WIDTH_P-1 : 0] prdata;
-  logic                                pslverr;
+  logic                                  [cfg.APB_ADDR_WIDTH_P-1 : 0] paddr;
+  logic                                [cfg.APB_NR_OF_SLAVES_P-1 : 0] psel;
+  logic                                                               penable;
+  logic                                                               pwrite;
+  logic                                  [cfg.APB_DATA_WIDTH_P-1 : 0] pwdata;
+  logic                                [cfg.APB_NR_OF_SLAVES_P-1 : 0] pready;
+  logic [cfg.APB_NR_OF_SLAVES_P-1 : 0]   [cfg.APB_DATA_WIDTH_P-1 : 0] prdata;
+  logic                                                               pslverr;
 
 endinterface
