@@ -17,8 +17,6 @@ And oscillator module which will have the following waveforms:
 ![Build Status](https://img.shields.io/badge/Saw-Developing-orange)
 ![Build Status](https://img.shields.io/badge/Sine-Simulated-green)
 
-```python
-```
 
 ## Triangle
 

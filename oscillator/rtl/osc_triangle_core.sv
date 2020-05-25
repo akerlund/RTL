@@ -22,9 +22,9 @@
 `default_nettype none
 
 module osc_triangle_core #(
-    parameter int                               DATA_WIDTH_P         = -1, // Width of the wave
+    parameter int                               WAVE_WIDTH_P         = -1, // Width of the wave
     parameter int                               WAVE_AMPLITUDE_INC_P = -1, // Increment of amplitude at every clock enable
-    parameter logic signed [DATA_WIDTH_P-1 : 0] WAVE_AMPLITUDE_MAX_P = -1  // Max amplitude of the triangle
+    parameter logic signed [WAVE_WIDTH_P-1 : 0] WAVE_AMPLITUDE_MAX_P = -1  // Max amplitude of the triangle
   )(
     // Clock and reset
     input  wire                              clk,
@@ -34,10 +34,10 @@ module osc_triangle_core #(
     input  wire                              clock_enable,
 
     // Waveform output
-    output logic signed [DATA_WIDTH_P-1 : 0] osc_triangle
+    output logic signed [WAVE_WIDTH_P-1 : 0] osc_triangle
   );
 
-  localparam logic signed [DATA_WIDTH_P-1 : 0] TRIANGLE_LOW_C  = {1'b1, {(DATA_WIDTH_P-1){1'b0}}};
+  localparam logic signed [WAVE_WIDTH_P-1 : 0] TRIANGLE_LOW_C  = {1'b1, {(WAVE_WIDTH_P-1){1'b0}}};
 
   typedef enum {
     TRIANGLE_RISING_E,

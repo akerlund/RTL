@@ -22,30 +22,30 @@
 `default_nettype none
 
 module oscillator_apb3_slave #(
-    parameter int APB3_BASE_ADDR_P  = -1,
-    parameter int APB3_ADDR_WIDTH_P = -1,
-    parameter int APB3_DATA_WIDTH_P = -1
+    parameter int APB_BASE_ADDR_P  = -1,
+    parameter int APB_ADDR_WIDTH_P = -1,
+    parameter int APB_DATA_WIDTH_P = -1
   )(
-    input  wire                            clk,
-    input  wire                            rst_n,
+    input  wire                           clk,
+    input  wire                           rst_n,
 
-    input  wire                            apb3_psel,
-    output logic                           apb3_pready,
-    output logic [APB3_DATA_WIDTH_P-1 : 0] apb3_prdata,
-    input  wire                            apb3_pwrite,
-    input  wire                            apb3_penable,
-    input  wire  [APB3_ADDR_WIDTH_P-1 : 0] apb3_paddr,
-    input  wire  [APB3_DATA_WIDTH_P-1 : 0] apb3_pwdata,
+    input  wire                           apb3_psel,
+    output logic                          apb3_pready,
+    output logic [APB_DATA_WIDTH_P-1 : 0] apb3_prdata,
+    input  wire                           apb3_pwrite,
+    input  wire                           apb3_penable,
+    input  wire  [APB_ADDR_WIDTH_P-1 : 0] apb3_paddr,
+    input  wire  [APB_DATA_WIDTH_P-1 : 0] apb3_pwdata,
 
     // Configuration registers
-    output logic [APB3_DATA_WIDTH_P-1 : 0] cr_waveform_select,
-    output logic [APB3_DATA_WIDTH_P-1 : 0] cr_frequency,
-    output logic [APB3_DATA_WIDTH_P-1 : 0] cr_duty_cycle
+    output logic [APB_DATA_WIDTH_P-1 : 0] cr_waveform_select,
+    output logic [APB_DATA_WIDTH_P-1 : 0] cr_frequency,
+    output logic [APB_DATA_WIDTH_P-1 : 0] cr_duty_cycle
   );
 
-  localparam logic [APB3_ADDR_WIDTH_P-1 : 0] CR_WAVEFORM_SELECT_ADDR_C = APB3_BASE_ADDR_P + 0;
-  localparam logic [APB3_ADDR_WIDTH_P-1 : 0] CR_FREQUENCY_ADDR_C       = APB3_BASE_ADDR_P + 4;
-  localparam logic [APB3_ADDR_WIDTH_P-1 : 0] CR_DUTY_CYCLE_ADDR_C      = APB3_BASE_ADDR_P + 8;
+  localparam logic [APB_ADDR_WIDTH_P-1 : 0] CR_WAVEFORM_SELECT_ADDR_C = APB_BASE_ADDR_P + 0;
+  localparam logic [APB_ADDR_WIDTH_P-1 : 0] CR_FREQUENCY_ADDR_C       = APB_BASE_ADDR_P + 4;
+  localparam logic [APB_ADDR_WIDTH_P-1 : 0] CR_DUTY_CYCLE_ADDR_C      = APB_BASE_ADDR_P + 8;
 
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin

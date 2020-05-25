@@ -24,30 +24,69 @@ import oscillator_types_pkg::*;
 `default_nettype none
 
 module oscillator_core #(
-    parameter int WAVE_WIDTH_P    = -1, // Resolution of the waves
-    parameter int COUNTER_WIDTH_P = -1  // Resolution of the counters
+    parameter int SYS_CLK_FREQUENCY_P = -1,
+    parameter int PRIME_FREQUENCY_P   = -1,
+    parameter int AXI_DATA_WIDTH_P    = -1,
+    parameter int AXI_ID_WIDTH_P      = -1,
+    parameter int AXI_ID_P            = -1,
+    parameter int APB_DATA_WIDTH_P    = -1,
+    parameter int WAVE_WIDTH_P        = -1,
+    parameter int Q_BITS_P            = -1
   )(
     // Clock and reset
-    input  wire                          clk,
-    input  wire                          rst_n,
+    input  wire                           clk,
+    input  wire                           rst_n,
 
     // Waveform output
-    output logic    [WAVE_WIDTH_P-1 : 0] waveform,
+    output logic     [WAVE_WIDTH_P-1 : 0] waveform,
+
+    // Long division interface
+    output logic                          div_egr_tvalid,
+    input  wire                           div_egr_tready,
+    output logic [AXI_DATA_WIDTH_P-1 : 0] div_egr_tdata,
+    output logic                          div_egr_tlast,
+    output logic   [AXI_ID_WIDTH_P-1 : 0] div_egr_tid,
+
+    input  wire                           div_ing_tvalid,
+    output logic                          div_ing_tready,
+    input  wire  [AXI_DATA_WIDTH_P-1 : 0] div_ing_tdata,     // Quotient
+    input  wire                           div_ing_tlast,
+    input  wire    [AXI_ID_WIDTH_P-1 : 0] div_ing_tid,
+    input  wire                           div_ing_tuser,     // Overflow
 
     // Configuration registers
-    input  wire                  [1 : 0] cr_waveform_select, // Selected waveform
-    input  wire  [COUNTER_WIDTH_P-1 : 0] cr_frequency,       // Counter's max value
-    input  wire  [COUNTER_WIDTH_P-1 : 0] cr_duty_cycle       // Determines when the wave goes from highest to lowest
+    input  wire  [APB_DATA_WIDTH_P-1 : 0] cr_waveform_select,
+    input  wire  [APB_DATA_WIDTH_P-1 : 0] cr_frequency,
+    input  wire  [APB_DATA_WIDTH_P-1 : 0] cr_duty_cycle
   );
+
+  // This is used for frequency calculations
+  typedef enum {
+    SEND_DIVIDEND_E,
+    SEND_DIVISOR_E,
+    WAIT_QUOTIENT_E,
+    WAIT_FOR_CR_FREQUENCY_E
+  } divider_state_t;
+
+  divider_state_t divider_state;
+
+  // Counters maximum width
+  localparam int COUNTER_WIDTH_C = $clog2(SYS_CLK_FREQUENCY_P); // Maybe this can be smaller?
+
+
+  // Internal reegister
 
   osc_waveform_type_t osc_selected_waveform;
 
-  logic  [WAVE_WIDTH_P-1 : 0] wave_square;
-  logic  [WAVE_WIDTH_P-1 : 0] wave_triangle;
+  logic                          clock_enable;
+  logic  [COUNTER_WIDTH_C-1 : 0] cr_enable_period;
+  logic [APB_DATA_WIDTH_P-1 : 0] cr_frequency_d0;
+  logic     [WAVE_WIDTH_P-1 : 0] wave_square;
+  logic     [WAVE_WIDTH_P-1 : 0] wave_triangle;
 
   assign osc_selected_waveform = osc_waveform_type_t'(cr_waveform_select);
 
-
+  // Waveform process
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
       waveform <= '0;
@@ -78,30 +117,113 @@ module oscillator_core #(
 
   end
 
+
+  // FSM for interfacing with the divider
+  always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+
+      divider_state    <= WAIT_FOR_CR_FREQUENCY_E;
+      cr_frequency_d0  <= '0;
+      cr_enable_period <= '0;
+
+      // Ports
+      div_egr_tvalid   <= '0;
+      div_egr_tdata    <= '0;
+      div_egr_tlast    <= '0;
+      div_egr_tid      <= '0;
+      div_ing_tready   <= '0;
+
+    end
+    else begin
+
+      div_egr_tid <= AXI_ID_P;
+
+      case (divider_state)
+
+        WAIT_FOR_CR_FREQUENCY_E: begin
+
+          if (cr_frequency != cr_frequency_d0) begin
+            cr_frequency_d0 <= cr_frequency;
+            divider_state   <= SEND_DIVIDEND_E;
+          end
+        end
+
+
+        SEND_DIVIDEND_E: begin
+
+          divider_state  <= SEND_DIVISOR_E;
+          div_egr_tvalid <= '1;
+          div_egr_tdata  <= PRIME_FREQUENCY_P << Q_BITS_P;
+          div_egr_tlast  <= '0;
+        end
+
+
+        SEND_DIVISOR_E: begin
+
+          if (div_egr_tready) begin
+
+            // Dividend was sent
+            if (!div_egr_tlast) begin
+              div_egr_tdata  <= cr_frequency_d0 << Q_BITS_P;
+              div_egr_tlast  <= '1;
+            end
+            // Divisor was sent
+            else begin
+              div_egr_tvalid <= '0;
+              div_egr_tlast  <= '0;
+              divider_state  <= WAIT_QUOTIENT_E;
+            end
+          end
+        end
+
+
+        WAIT_QUOTIENT_E: begin
+          div_ing_tready <= '1;
+          if (div_ing_tvalid) begin
+            div_ing_tready   <= '0;
+            cr_enable_period <= div_ing_tdata >> Q_BITS_P;
+            divider_state    <= WAIT_FOR_CR_FREQUENCY_E;
+          end
+        end
+
+      endcase
+
+    end
+  end
+
+
+  clock_enable #(
+    .COUNTER_WIDTH_P  ( COUNTER_WIDTH_C  )
+  ) clock_enable_i0 (
+    .clk              ( clk              ), // input
+    .rst_n            ( rst_n            ), // input
+    .enable           ( clock_enable     ), // output
+    .cr_enable_period ( cr_enable_period )  // input
+  );
+
   osc_square #(
     .DATA_WIDTH_P    ( WAVE_WIDTH_P    ),
-    .COUNTER_WIDTH_P ( COUNTER_WIDTH_P )
+    .COUNTER_WIDTH_P ( COUNTER_WIDTH_C )
   ) osc_square_i0 (
-    .clk             ( clk             ),
-    .rst_n           ( rst_n           ),
-    .osc_square      ( wave_square     ),
-    .cr_frequency    ( cr_frequency    ),
-    .cr_duty_cycle   ( cr_duty_cycle   )
+    .clk             ( clk             ), // input
+    .rst_n           ( rst_n           ), // input
+    .osc_square      ( wave_square     ), // output
+    .cr_frequency    ( cr_frequency    ), // input
+    .cr_duty_cycle   ( cr_duty_cycle   )  // input
   );
 
-  localparam int F100000_HZ_IN_SYS_CLOCK_C = (200000000/100000);
-  localparam int PERIOD_IN_SYS_CLKS_C      = F100000_HZ_IN_SYS_CLOCK_C;
 
   osc_triangle_top #(
-    .DATA_WIDTH_P         ( WAVE_WIDTH_P         ),
-    .PERIOD_IN_SYS_CLKS_P ( PERIOD_IN_SYS_CLKS_C ),
-    .COUNTER_WIDTH_P      ( COUNTER_WIDTH_P      )
+    .SYS_CLK_FREQUENCY_P ( SYS_CLK_FREQUENCY_P ),
+    .PRIME_FREQUENCY_P   ( PRIME_FREQUENCY_P   ),
+    .WAVE_WIDTH_P        ( WAVE_WIDTH_P        )
   ) osc_triangle_top_i0 (
-    .clk                  ( clk                  ), // input
-    .rst_n                ( rst_n                ), // input
-    .osc_triangle         ( wave_triangle        ), // output
-    .cr_enable_period     ( 1                    )  // input
+    .clk                 ( clk                 ), // input
+    .rst_n               ( rst_n               ), // input
+    .clock_enable        ( clock_enable        ), // input
+    .osc_triangle        ( wave_triangle       )  // output
   );
+
 
 endmodule
 
