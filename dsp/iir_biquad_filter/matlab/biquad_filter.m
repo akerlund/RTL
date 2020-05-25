@@ -1,6 +1,6 @@
-N  = 6;       % filter order
+N  = 6;          % filter order
 fc = 20000;      % Hz  -3 dB frequency
-fs = 48000;     % Hz  sample frequency
+fs = 48000;      % Hz  sample frequency
 a  = biquad_synth(N,fc,fs);
 
 a

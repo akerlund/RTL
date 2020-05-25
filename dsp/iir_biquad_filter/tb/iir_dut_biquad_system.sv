@@ -31,31 +31,34 @@
 `default_nettype none
 
 module iir_dut_biquad_system #(
-  parameter int WAVE_WIDTH_P       = -1, // Resolution of the waves
-  parameter int COUNTER_WIDTH_P    = -1, // Resolution of the counters
-  parameter int N_BITS_P           = -1, // Fixed point resolution
-  parameter int Q_BITS_P           = -1, // Fixed point resolution
-  parameter int AXI_DATA_WIDTH_P   = -1,
-  parameter int AXI_ID_WIDTH_P     = -1,
-  parameter int APB_ADDR_WIDTH_P   = -1,
-  parameter int APB_DATA_WIDTH_P   = -1,
-  parameter int APB_NR_OF_SLAVES_P = -1
+  parameter int WAVE_WIDTH_P        = -1, // Resolution of the waves
+  parameter int COUNTER_WIDTH_P     = -1, // Resolution of the counters
+  parameter int N_BITS_P            = -1, // Fixed point resolution
+  parameter int Q_BITS_P            = -1, // Fixed point resolution
+  parameter int AXI_DATA_WIDTH_P    = -1,
+  parameter int AXI_ID_WIDTH_P      = -1,
+  parameter int APB_ADDR_WIDTH_P    = -1,
+  parameter int APB_DATA_WIDTH_P    = -1,
+  parameter int APB_NR_OF_SLAVES_P  = -1,
+  parameter int SYS_CLK_FREQUENCY_P = 200000000,
+  parameter int PRIME_FREQUENCY_P   = 1000000,
+  parameter int AXI_ID_P            = 1
 )(
   // Clock and reset
-  input  wire                                                     clk,
-  input  wire                                                     rst_n,
+  input  wire                                                        clk,
+  input  wire                                                        rst_n,
 
   // Waveform output
-  output logic                               [WAVE_WIDTH_P-1 : 0] filtered_waveform,
+  output logic                                  [WAVE_WIDTH_P-1 : 0] filtered_waveform,
 
   // APB interface
-  input  wire                            [APB_ADDR_WIDTH_P-1 : 0] apb3_paddr,
-  input  wire                          [APB_NR_OF_SLAVES_P-1 : 0] apb3_psel,
-  input  wire                                                     apb3_penable,
-  input  wire                                                     apb3_pwrite,
-  input  wire                            [APB_DATA_WIDTH_P-1 : 0] apb3_pwdata,
-  output logic                         [APB_NR_OF_SLAVES_P-1 : 0] apb3_pready,
-  output logic [APB_NR_OF_SLAVES_P-1 : 0] [APB_DATA_WIDTH_P-1 : 0] apb3_prdata
+  input  wire                               [APB_ADDR_WIDTH_P-1 : 0] apb3_paddr,
+  input  wire                             [APB_NR_OF_SLAVES_P-1 : 0] apb3_psel,
+  input  wire                                                        apb3_penable,
+  input  wire                                                        apb3_pwrite,
+  input  wire                               [APB_DATA_WIDTH_P-1 : 0] apb3_pwdata,
+  output logic                            [APB_NR_OF_SLAVES_P-1 : 0] apb3_pready,
+  output logic [APB_NR_OF_SLAVES_P-1 : 0]   [APB_DATA_WIDTH_P-1 : 0] apb3_prdata
 );
 
   localparam int OSC_BASE_ADDR_C = 0;
@@ -104,6 +107,19 @@ module iir_dut_biquad_system #(
 
   // Oscillator
   logic            [WAVE_WIDTH_P-1 : 0] waveform;
+
+  // AXI4-S signals betwwen the Oscillator top and the divider
+  logic                                   osc_div_tvalid;
+  logic                                   osc_div_tready;
+  logic          [AXI_DATA_WIDTH_P-1 : 0] osc_div_tdata;
+  logic                                   osc_div_tlast;
+  logic            [AXI_ID_WIDTH_P-1 : 0] osc_div_tid;
+  logic                                   div_osc_tvalid;
+  logic                                   div_osc_tready;
+  logic          [AXI_DATA_WIDTH_P-1 : 0] div_osc_tdata;
+  logic                                   div_osc_tlast;
+  logic            [AXI_ID_WIDTH_P-1 : 0] div_osc_tid;
+  logic                                   div_osc_tuser;
 
   // No arbiter in place. CORDIC is always ready.
   assign iir_cor_tready = '1;
@@ -216,50 +232,86 @@ module iir_dut_biquad_system #(
 
 
   long_division_axi4s_if #(
-    .AXI_DATA_WIDTH_P  ( AXI_DATA_WIDTH_P  ),
-    .AXI_ID_WIDTH_P    ( AXI_ID_WIDTH_P    ),
-    .N_BITS_P          ( N_BITS_P          ),
-    .Q_BITS_P          ( Q_BITS_P          )
+    .AXI_DATA_WIDTH_P ( AXI_DATA_WIDTH_P ),
+    .AXI_ID_WIDTH_P   ( AXI_ID_WIDTH_P   ),
+    .N_BITS_P         ( N_BITS_P         ),
+    .Q_BITS_P         ( Q_BITS_P         )
   ) long_division_axi4s_if_i0 (
 
-    .clk               ( clk               ), // input
-    .rst_n             ( rst_n             ), // input
+    .clk              ( clk              ), // input
+    .rst_n            ( rst_n            ), // input
 
-    .ing_tvalid        ( iir_div_tvalid    ), // input
-    .ing_tready        ( iir_div_tready    ), // output
-    .ing_tdata         ( iir_div_tdata     ), // input
-    .ing_tlast         ( iir_div_tlast     ), // input
-    .ing_tid           ( iir_div_tid       ), // input
+    .ing_tvalid       ( iir_div_tvalid   ), // input
+    .ing_tready       ( iir_div_tready   ), // output
+    .ing_tdata        ( iir_div_tdata    ), // input
+    .ing_tlast        ( iir_div_tlast    ), // input
+    .ing_tid          ( iir_div_tid      ), // input
 
-    .egr_tvalid        ( div_iir_tvalid    ), // output
-    .egr_tdata         ( div_iir_tdata     ), // output
-    .egr_tlast         ( div_iir_tlast     ), // output
-    .egr_tid           ( div_iir_tid       ), // output
-    .egr_tuser         ( div_iir_tuser     )  // output
+    .egr_tvalid       ( div_iir_tvalid   ), // output
+    .egr_tdata        ( div_iir_tdata    ), // output
+    .egr_tlast        ( div_iir_tlast    ), // output
+    .egr_tid          ( div_iir_tid      ), // output
+    .egr_tuser        ( div_iir_tuser    )  // output
   );
 
 
 
   oscillator_top #(
-    .WAVE_WIDTH_P      ( WAVE_WIDTH_P      ), // Resolution of the waves
-    .COUNTER_WIDTH_P   ( COUNTER_WIDTH_P   ), // Resolution of the counters
-    .APB3_BASE_ADDR_P  ( OSC_BASE_ADDR_C   ),
-    .APB3_ADDR_WIDTH_P ( APB_ADDR_WIDTH_P  ),
-    .APB3_DATA_WIDTH_P ( APB_DATA_WIDTH_P  )
+    .SYS_CLK_FREQUENCY_P ( SYS_CLK_FREQUENCY_P ),
+    .PRIME_FREQUENCY_P   ( PRIME_FREQUENCY_P   ),
+    .AXI_DATA_WIDTH_P    ( AXI_DATA_WIDTH_P    ),
+    .AXI_ID_WIDTH_P      ( AXI_ID_WIDTH_P      ),
+    .AXI_ID_P            ( AXI_ID_P            ),
+    .APB_BASE_ADDR_P     ( OSC_BASE_ADDR_C     ),
+    .APB_ADDR_WIDTH_P    ( APB_ADDR_WIDTH_P    ),
+    .APB_DATA_WIDTH_P    ( APB_DATA_WIDTH_P    ),
+    .WAVE_WIDTH_P        ( WAVE_WIDTH_P        ),
+    .Q_BITS_P            ( Q_BITS_P            )
   ) oscillator_top_i0 (
+    .clk                 ( clk                 ), // input
+    .rst_n               ( rst_n               ), // input
+    .waveform            ( waveform            ), // output
+    .div_egr_tvalid      ( osc_div_tvalid      ), // output
+    .div_egr_tready      ( osc_div_tready      ), // input
+    .div_egr_tdata       ( osc_div_tdata       ), // output
+    .div_egr_tlast       ( osc_div_tlast       ), // output
+    .div_egr_tid         ( osc_div_tid         ), // output
+    .div_ing_tvalid      ( div_osc_tvalid      ), // input
+    .div_ing_tready      ( div_osc_tready      ), // output
+    .div_ing_tdata       ( div_osc_tdata       ), // input
+    .div_ing_tlast       ( div_osc_tlast       ), // input
+    .div_ing_tid         ( div_osc_tid         ), // input
+    .div_ing_tuser       ( div_osc_tuser       ), // input
+    .apb3_paddr          ( apb3_paddr          ), // input
+    .apb3_psel           ( apb3_psel[0]        ), // output
+    .apb3_penable        ( apb3_penable        ), // output
+    .apb3_pwrite         ( apb3_pwrite         ), // input
+    .apb3_pwdata         ( apb3_pwdata         ), // input
+    .apb3_pready         ( apb3_pready[0]      ), // input
+    .apb3_prdata         ( apb3_prdata[0]      )  // input
+  );
 
-    .clk               ( clk               ), // input
-    .rst_n             ( rst_n             ), // input
+  long_division_axi4s_if #(
+    .AXI_DATA_WIDTH_P ( AXI_DATA_WIDTH_P ),
+    .AXI_ID_WIDTH_P   ( AXI_ID_WIDTH_P   ),
+    .N_BITS_P         ( AXI_DATA_WIDTH_P ),
+    .Q_BITS_P         ( Q_BITS_P         )
+  ) long_division_axi4s_if_i1 (
 
-    .waveform          ( waveform          ), // output
+    .clk              ( clk              ), // input
+    .rst_n            ( rst_n            ), // input
 
-    .apb3_paddr        ( apb3_paddr        ), // input
-    .apb3_psel         ( apb3_psel[0]      ), // output
-    .apb3_penable      ( apb3_penable      ), // output
-    .apb3_pwrite       ( apb3_pwrite       ), // input
-    .apb3_pwdata       ( apb3_pwdata       ), // input
-    .apb3_pready       ( apb3_pready[0]    ), // input
-    .apb3_prdata       ( apb3_prdata[0]    )  // input
+    .ing_tvalid       ( osc_div_tvalid   ), // input
+    .ing_tready       ( osc_div_tready   ), // output
+    .ing_tdata        ( osc_div_tdata    ), // input
+    .ing_tlast        ( osc_div_tlast    ), // input
+    .ing_tid          ( osc_div_tid      ), // input
+
+    .egr_tvalid       ( div_osc_tvalid   ), // output
+    .egr_tdata        ( div_osc_tdata    ), // output
+    .egr_tlast        ( div_osc_tlast    ), // output
+    .egr_tid          ( div_osc_tid      ), // output
+    .egr_tuser        ( div_osc_tuser    )  // output
   );
 
 endmodule

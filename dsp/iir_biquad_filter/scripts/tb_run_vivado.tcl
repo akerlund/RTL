@@ -11,11 +11,11 @@ file mkdir "rundir"
 cd   rundir
 
 set rtl_directories [list \
-  "$git_root/clock_enable/" \
+  "$git_root/clock_enable/rtl " \
   "$git_root/math/cordic/rtl" \
   "$git_root/math/division/long_division/rtl" \
   "$git_root/oscillator/rtl" \
-  "$module_path/rtl/"];
+  "$module_path/rtl"];
 
 set uvm_directories [list \
   "$git_root/vip/vip_apb3_agent/" \

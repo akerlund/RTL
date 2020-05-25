@@ -76,12 +76,12 @@ class iir_bypass_seq #(
 
     // Write waveform
     paddr  = OSC_BASE_ADDR_C + CR_OSC_WAVEFORM_SELECT_ADDR_C;
-    pwdata = '0;
+    pwdata = 1;
     write_word(paddr, pwdata, psel);
 
     // Write frequency
     paddr  = OSC_BASE_ADDR_C + CR_OSC_FREQUENCY_ADDR_C;
-    pwdata = 50; // Clocks
+    pwdata = 100000; // 100kHz
     write_word(paddr, pwdata, psel);
 
     // Write duty cycle
