@@ -31,15 +31,18 @@
 module osc_triangle_top #(
     parameter int SYS_CLK_FREQUENCY_P = -1, // System clock's frequency
     parameter int PRIME_FREQUENCY_P   = -1, // Output frequency then clock enable is always high
-    parameter int WAVE_WIDTH_P        = -1  // Width of the wave
+    parameter int WAVE_WIDTH_P        = -1, // Width of the wave
+    parameter int COUNTER_WIDTH_P     = $clog2(SYS_CLK_FREQUENCY_P)
   )(
     // Clock and reset
-    input  wire                       clk,
-    input  wire                       rst_n,
-    input  wire                       clock_enable,
+    input  wire                          clk,
+    input  wire                          rst_n,
 
     // Waveform output
-    output logic [WAVE_WIDTH_P-1 : 0] osc_triangle
+    output logic    [WAVE_WIDTH_P-1 : 0] osc_triangle,
+
+    // The counter period of the Clock Enable, i.e., PRIME_FREQUENCY_P / frequency
+    input  wire  [COUNTER_WIDTH_P-1 : 0] cr_clock_enable
   );
 
   // The prime (or higest/base) frequency's period in system clock periods, e.g.,
@@ -56,6 +59,8 @@ module osc_triangle_top #(
   localparam logic signed [WAVE_WIDTH_P-1 : 0] WAVE_AMPLITUDE_MAX_C =
     -2**(WAVE_WIDTH_P-1) + WAVE_AMPLITUDE_INC_C*PERIOD_IN_SYS_CLKS_C/2;
 
+  logic clock_enable;
+
   osc_triangle_core #(
     .WAVE_WIDTH_P         ( WAVE_WIDTH_P         ), // Width of the wave
     .WAVE_AMPLITUDE_INC_P ( WAVE_AMPLITUDE_INC_C ), // Increment of amplitude at every clock enable
@@ -66,6 +71,17 @@ module osc_triangle_top #(
     .clock_enable         ( clock_enable         ),
     .osc_triangle         ( osc_triangle         )
   );
+
+
+  clock_enable #(
+    .COUNTER_WIDTH_P  ( COUNTER_WIDTH_P )
+  ) clock_enable_i0 (
+    .clk              ( clk             ), // input
+    .rst_n            ( rst_n           ), // input
+    .enable           ( clock_enable    ), // output
+    .cr_enable_period ( cr_clock_enable )  // input
+  );
+
 
 endmodule
 

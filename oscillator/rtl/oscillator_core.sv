@@ -62,10 +62,13 @@ module oscillator_core #(
 
   // This is used for frequency calculations
   typedef enum {
-    SEND_DIVIDEND_E,
-    SEND_DIVISOR_E,
-    WAIT_QUOTIENT_E,
-    WAIT_FOR_CR_FREQUENCY_E
+    WAIT_FOR_CR_FREQUENCY_E,
+    SEND_DIVIDEND_0_E,
+    SEND_DIVISOR_0_E,
+    WAIT_QUOTIENT_0_E,
+    SEND_DIVIDEND_1_E,
+    SEND_DIVISOR_1_E,
+    WAIT_QUOTIENT_1_E
   } divider_state_t;
 
   divider_state_t divider_state;
@@ -78,8 +81,8 @@ module oscillator_core #(
 
   osc_waveform_type_t osc_selected_waveform;
 
-  logic                          clock_enable;
-  logic  [COUNTER_WIDTH_C-1 : 0] cr_enable_period;
+  logic  [COUNTER_WIDTH_C-1 : 0] sqr_enable_period;
+  logic  [COUNTER_WIDTH_C-1 : 0] tri_enable_period;
   logic [APB_DATA_WIDTH_P-1 : 0] cr_frequency_d0;
   logic     [WAVE_WIDTH_P-1 : 0] wave_square;
   logic     [WAVE_WIDTH_P-1 : 0] wave_triangle;
@@ -118,20 +121,23 @@ module oscillator_core #(
   end
 
 
-  // FSM for interfacing with the divider
+  // FSM for interfacing with the divider and calculate for the
+  // Triangle: PRIME_FREQUENCY_P   / cr_frequency
+  // Square:   SYS_CLK_FREQUENCY_P / cr_frequency, also is triangle * (eg) 250
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
 
-      divider_state    <= WAIT_FOR_CR_FREQUENCY_E;
-      cr_frequency_d0  <= '0;
-      cr_enable_period <= '0;
+      divider_state     <= WAIT_FOR_CR_FREQUENCY_E;
+      cr_frequency_d0   <= '0;
+      sqr_enable_period <= '0;
+      tri_enable_period <= '0;
 
       // Ports
-      div_egr_tvalid   <= '0;
-      div_egr_tdata    <= '0;
-      div_egr_tlast    <= '0;
-      div_egr_tid      <= '0;
-      div_ing_tready   <= '0;
+      div_egr_tvalid    <= '0;
+      div_egr_tdata     <= '0;
+      div_egr_tlast     <= '0;
+      div_egr_tid       <= '0;
+      div_ing_tready    <= '0;
 
     end
     else begin
@@ -144,21 +150,21 @@ module oscillator_core #(
 
           if (cr_frequency != cr_frequency_d0) begin
             cr_frequency_d0 <= cr_frequency;
-            divider_state   <= SEND_DIVIDEND_E;
+            divider_state   <= SEND_DIVIDEND_0_E;
           end
         end
 
 
-        SEND_DIVIDEND_E: begin
+        SEND_DIVIDEND_0_E: begin
 
-          divider_state  <= SEND_DIVISOR_E;
+          divider_state  <= SEND_DIVISOR_0_E;
           div_egr_tvalid <= '1;
           div_egr_tdata  <= PRIME_FREQUENCY_P << Q_BITS_P;
           div_egr_tlast  <= '0;
         end
 
 
-        SEND_DIVISOR_E: begin
+        SEND_DIVISOR_0_E: begin
 
           if (div_egr_tready) begin
 
@@ -171,18 +177,56 @@ module oscillator_core #(
             else begin
               div_egr_tvalid <= '0;
               div_egr_tlast  <= '0;
-              divider_state  <= WAIT_QUOTIENT_E;
+              divider_state  <= WAIT_QUOTIENT_0_E;
             end
           end
         end
 
 
-        WAIT_QUOTIENT_E: begin
+        WAIT_QUOTIENT_0_E: begin
           div_ing_tready <= '1;
           if (div_ing_tvalid) begin
-            div_ing_tready   <= '0;
-            cr_enable_period <= div_ing_tdata >> Q_BITS_P;
-            divider_state    <= WAIT_FOR_CR_FREQUENCY_E;
+            div_ing_tready    <= '0;
+            tri_enable_period <= div_ing_tdata >> Q_BITS_P;
+            divider_state     <= SEND_DIVIDEND_1_E;
+          end
+        end
+
+
+        SEND_DIVIDEND_1_E: begin
+
+          divider_state  <= SEND_DIVISOR_1_E;
+          div_egr_tvalid <= '1;
+          div_egr_tdata  <= (SYS_CLK_FREQUENCY_P >> 4) << Q_BITS_P;
+          div_egr_tlast  <= '0;
+        end
+
+
+        SEND_DIVISOR_1_E: begin
+
+          if (div_egr_tready) begin
+
+            // Dividend was sent
+            if (!div_egr_tlast) begin
+              div_egr_tdata  <= cr_frequency_d0 << Q_BITS_P;
+              div_egr_tlast  <= '1;
+            end
+            // Divisor was sent
+            else begin
+              div_egr_tvalid <= '0;
+              div_egr_tlast  <= '0;
+              divider_state  <= WAIT_QUOTIENT_1_E;
+            end
+          end
+        end
+
+
+        WAIT_QUOTIENT_1_E: begin
+          div_ing_tready <= '1;
+          if (div_ing_tvalid) begin
+            div_ing_tready    <= '0;
+            sqr_enable_period <= (div_ing_tdata >> Q_BITS_P) << 4;
+            divider_state     <= WAIT_FOR_CR_FREQUENCY_E;
           end
         end
 
@@ -192,24 +236,16 @@ module oscillator_core #(
   end
 
 
-  clock_enable #(
-    .COUNTER_WIDTH_P  ( COUNTER_WIDTH_C  )
-  ) clock_enable_i0 (
-    .clk              ( clk              ), // input
-    .rst_n            ( rst_n            ), // input
-    .enable           ( clock_enable     ), // output
-    .cr_enable_period ( cr_enable_period )  // input
-  );
-
-  osc_square #(
-    .DATA_WIDTH_P    ( WAVE_WIDTH_P    ),
-    .COUNTER_WIDTH_P ( COUNTER_WIDTH_C )
-  ) osc_square_i0 (
-    .clk             ( clk             ), // input
-    .rst_n           ( rst_n           ), // input
-    .osc_square      ( wave_square     ), // output
-    .cr_frequency    ( cr_frequency    ), // input
-    .cr_duty_cycle   ( cr_duty_cycle   )  // input
+  osc_square_top #(
+    .WAVE_WIDTH_P     ( WAVE_WIDTH_P      ),
+    .COUNTER_WIDTH_P  ( COUNTER_WIDTH_C   ),
+    .APB_DATA_WIDTH_P ( APB_DATA_WIDTH_P  )
+  ) osc_square_top_i0 (
+    .clk              ( clk               ), // input
+    .rst_n            ( rst_n             ), // input
+    .osc_square       ( wave_square       ), // output
+    .cr_duty_cycle    ( cr_duty_cycle     ), // input
+    .cr_clock_enable  ( sqr_enable_period )  // input  - SYS_CLK_FREQUENCY_P / cr_frequency
   );
 
 
@@ -220,10 +256,9 @@ module oscillator_core #(
   ) osc_triangle_top_i0 (
     .clk                 ( clk                 ), // input
     .rst_n               ( rst_n               ), // input
-    .clock_enable        ( clock_enable        ), // input
-    .osc_triangle        ( wave_triangle       )  // output
+    .osc_triangle        ( wave_triangle       ), // output
+    .cr_clock_enable     ( tri_enable_period   )  // input  - PRIME_FREQUENCY_P / cr_frequency
   );
-
 
 endmodule
 
