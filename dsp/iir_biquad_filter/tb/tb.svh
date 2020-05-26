@@ -29,6 +29,7 @@ import cordic_atan_radian_table_pkg::*;
 import iir_biquad_types_pkg::*;
 
 `include "clock_enable.sv"
+`include "frequency_enable.sv"
 
 `include "osc_square.sv"
 `include "osc_triangle_core.sv"

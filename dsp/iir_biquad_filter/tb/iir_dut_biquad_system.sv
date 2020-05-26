@@ -40,7 +40,7 @@ module iir_dut_biquad_system #(
   parameter int APB_ADDR_WIDTH_P    = -1,
   parameter int APB_DATA_WIDTH_P    = -1,
   parameter int APB_NR_OF_SLAVES_P  = -1,
-  parameter int SYS_CLK_FREQUENCY_P = 200000000,
+  parameter int SYS_CLK_FREQUENCY_P = 250000000,
   parameter int PRIME_FREQUENCY_P   = 1000000,
   parameter int AXI_ID_P            = 1
 )(
@@ -121,6 +121,19 @@ module iir_dut_biquad_system #(
   logic            [AXI_ID_WIDTH_P-1 : 0] div_osc_tid;
   logic                                   div_osc_tuser;
 
+  // AXI4-S signals betwwen the Frequency Enable and the divider
+  logic                                   fen_div_tvalid;
+  logic                                   fen_div_tready;
+  logic          [AXI_DATA_WIDTH_P-1 : 0] fen_div_tdata;
+  logic                                   fen_div_tlast;
+  logic            [AXI_ID_WIDTH_P-1 : 0] fen_div_tid;
+  logic                                   div_fen_tvalid;
+  logic                                   div_fen_tready;
+  logic          [AXI_DATA_WIDTH_P-1 : 0] div_fen_tdata;
+  logic                                   div_fen_tlast;
+  logic            [AXI_ID_WIDTH_P-1 : 0] div_fen_tid;
+  logic                                   div_fen_tuser;
+
   // No arbiter in place. CORDIC is always ready.
   assign iir_cor_tready = '1;
 
@@ -194,18 +207,6 @@ module iir_dut_biquad_system #(
     .cr_iir_q          ( cr_iir_q          ), // input
     .cr_iir_type       ( cr_iir_type       ), // input
     .cr_bypass         ( cr_bypass         )  // input
-  );
-
-
-
-  // Clock enable for triggering sampling
-  clock_enable #(
-    .COUNTER_WIDTH_P   ( COUNTER_WIDTH_P   )
-  ) clock_enable_i0 (
-    .clk               ( clk               ), // input
-    .rst_n             ( rst_n             ), // input
-    .enable            ( sampling_enable   ), // output
-    .cr_enable_period  ( cr_enable_period  )  // input
   );
 
 
@@ -313,6 +314,60 @@ module iir_dut_biquad_system #(
     .egr_tid          ( div_osc_tid      ), // output
     .egr_tuser        ( div_osc_tuser    )  // output
   );
+
+
+
+  frequency_enable #(
+    .SYS_CLK_FREQUENCY_P ( SYS_CLK_FREQUENCY_P ),
+    .AXI_DATA_WIDTH_P    ( AXI_DATA_WIDTH_P    ),
+    .AXI_ID_WIDTH_P      ( AXI_ID_WIDTH_P      ),
+    .Q_BITS_P            ( 3            ),
+    .AXI4S_ID_P          ( 0                   )
+  ) frequency_enable_i0 (
+    .clk                 ( clk                 ),
+    .rst_n               ( rst_n               ),
+    .enable              ( sampling_enable     ),
+    .cr_enable_frequency ( 48000               ),
+    .div_egr_tvalid      ( fen_div_tvalid      ),
+    .div_egr_tready      ( fen_div_tready      ),
+    .div_egr_tdata       ( fen_div_tdata       ),
+    .div_egr_tlast       ( fen_div_tlast       ),
+    .div_egr_tid         ( fen_div_tid         ),
+    .div_ing_tvalid      ( div_fen_tvalid      ),
+    .div_ing_tready      ( div_fen_tready      ),
+    .div_ing_tdata       ( div_fen_tdata       ),
+    .div_ing_tlast       ( div_fen_tlast       ),
+    .div_ing_tid         ( div_fen_tid         ),
+    .div_ing_tuser       ( div_fen_tuser       )
+  );
+
+  long_division_axi4s_if #(
+    .AXI_DATA_WIDTH_P ( AXI_DATA_WIDTH_P ),
+    .AXI_ID_WIDTH_P   ( AXI_ID_WIDTH_P   ),
+    .N_BITS_P         ( AXI_DATA_WIDTH_P ),
+    .Q_BITS_P         ( 3         )
+  ) long_division_axi4s_if_i2 (
+
+    .clk              ( clk              ), // input
+    .rst_n            ( rst_n            ), // input
+
+    .ing_tvalid       ( fen_div_tvalid   ), // input
+    .ing_tready       ( fen_div_tready   ), // output
+    .ing_tdata        ( fen_div_tdata    ), // input
+    .ing_tlast        ( fen_div_tlast    ), // input
+    .ing_tid          ( fen_div_tid      ), // input
+
+    .egr_tvalid       ( div_fen_tvalid   ), // output
+    .egr_tdata        ( div_fen_tdata    ), // output
+    .egr_tlast        ( div_fen_tlast    ), // output
+    .egr_tid          ( div_fen_tid      ), // output
+    .egr_tuser        ( div_fen_tuser    )  // output
+  );
+
+
+
+
+
 
 endmodule
 
