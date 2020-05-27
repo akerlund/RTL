@@ -4,23 +4,46 @@
 
 RTL modules which can be used between projects. This is an ongoing project and not all modules are completed.
 
-## APB3
 ## AXI4-S
+ - Arbiters (Ongoing)
+ - FIFO
 ## Clock Enable
+ - Clock Enable
+ - Delay Enable
+ - Frequency Enable
 ## DSP
-### Oscillator
+ - IIR (Ongoing)
+## Oscillator
+ - Oscillator
+   - Square
+   - Triangle
+   - Saw
 ## FIFO
+ - Synchronous FIFO
 ## FPGA RAM and REG
+ - Block for FPGA RAM and registers
 ## I2C / I2S
 ## LED
+ - RGB HUE controller (ongoing)
 ## MATH
-### FFT
-### CORDIC
+ - CORDIC
+ - Fixed Point Long Division
+ - FFT
 ## Mechanics
+ - Button
+ - Rotary Encoder
+ - Switch
 ## Synchronizers
+ - CDC bit synchronizer
+ - IO bit synchronizer
+ - Reset bit synchronizer
 ## VIP
+ - UVM: APB3 Agent
+ - UVM: AXI4-S Agent
+ - Math functions
+ - DSP functions
+ - Fixed point functions
 
 
-## Git Badges
 
 I make badges with the help of [this](https://shields.io/category/build) page
