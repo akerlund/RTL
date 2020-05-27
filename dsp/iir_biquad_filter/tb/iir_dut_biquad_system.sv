@@ -65,9 +65,6 @@ module iir_dut_biquad_system #(
   localparam int IIR_BASE_ADDR_C = 16;
 
 
-  // Sampling enable period
-  localparam logic [COUNTER_WIDTH_P-1 : 0] cr_enable_period = 200000000/48000;
-
 
   // Sampling enable
   logic                                   sampling_enable;
@@ -78,6 +75,12 @@ module iir_dut_biquad_system #(
   logic          [APB_DATA_WIDTH_P-1 : 0] cr_iir_q;
   logic          [APB_DATA_WIDTH_P-1 : 0] cr_iir_type;
   logic          [APB_DATA_WIDTH_P-1 : 0] cr_bypass;
+
+  logic signed   [APB_DATA_WIDTH_P-1 : 0] sr_zero_b0;
+  logic signed   [APB_DATA_WIDTH_P-1 : 0] sr_zero_b1;
+  logic signed   [APB_DATA_WIDTH_P-1 : 0] sr_zero_b2;
+  logic signed   [APB_DATA_WIDTH_P-1 : 0] sr_pole_a1;
+  logic signed   [APB_DATA_WIDTH_P-1 : 0] sr_pole_a2;
 
   // AXI4-S signals betwwen the IIR top and the CORDIC
   logic                                   iir_cor_tvalid;
@@ -180,7 +183,12 @@ module iir_dut_biquad_system #(
     .cr_iir_fs         ( cr_iir_fs         ), // input
     .cr_iir_q          ( cr_iir_q          ), // input
     .cr_iir_type       ( cr_iir_type       ), // input
-    .cr_bypass         ( cr_bypass         )  // input
+    .cr_bypass         ( cr_bypass         ), // input
+    .sr_zero_b0        ( sr_zero_b0        ), // output
+    .sr_zero_b1        ( sr_zero_b1        ), // output
+    .sr_zero_b2        ( sr_zero_b2        ), // output
+    .sr_pole_a1        ( sr_pole_a1        ), // output
+    .sr_pole_a2        ( sr_pole_a2        )  // output
   );
 
 
@@ -202,11 +210,17 @@ module iir_dut_biquad_system #(
     .apb3_pready       ( apb3_pready[1]    ), // output
     .apb3_prdata       ( apb3_prdata[1]    ), // output
 
-    .cr_iir_f0         ( cr_iir_f0         ), // input
-    .cr_iir_fs         ( cr_iir_fs         ), // input
-    .cr_iir_q          ( cr_iir_q          ), // input
-    .cr_iir_type       ( cr_iir_type       ), // input
-    .cr_bypass         ( cr_bypass         )  // input
+    .cr_iir_f0         ( cr_iir_f0         ), // output
+    .cr_iir_fs         ( cr_iir_fs         ), // output
+    .cr_iir_q          ( cr_iir_q          ), // output
+    .cr_iir_type       ( cr_iir_type       ), // output
+    .cr_bypass         ( cr_bypass         ), // output
+
+    .sr_zero_b0        ( sr_zero_b0        ), // input
+    .sr_zero_b1        ( sr_zero_b1        ), // input
+    .sr_zero_b2        ( sr_zero_b2        ), // input
+    .sr_pole_a1        ( sr_pole_a1        ), // input
+    .sr_pole_a2        ( sr_pole_a2        )  // input
   );
 
 
@@ -321,13 +335,13 @@ module iir_dut_biquad_system #(
     .SYS_CLK_FREQUENCY_P ( SYS_CLK_FREQUENCY_P ),
     .AXI_DATA_WIDTH_P    ( AXI_DATA_WIDTH_P    ),
     .AXI_ID_WIDTH_P      ( AXI_ID_WIDTH_P      ),
-    .Q_BITS_P            ( 3            ),
+    .Q_BITS_P            ( 0                   ),
     .AXI4S_ID_P          ( 0                   )
   ) frequency_enable_i0 (
     .clk                 ( clk                 ),
     .rst_n               ( rst_n               ),
     .enable              ( sampling_enable     ),
-    .cr_enable_frequency ( 48000               ),
+    .cr_enable_frequency ( (cr_iir_fs >> Q_BITS_P) ),
     .div_egr_tvalid      ( fen_div_tvalid      ),
     .div_egr_tready      ( fen_div_tready      ),
     .div_egr_tdata       ( fen_div_tdata       ),
@@ -345,7 +359,7 @@ module iir_dut_biquad_system #(
     .AXI_DATA_WIDTH_P ( AXI_DATA_WIDTH_P ),
     .AXI_ID_WIDTH_P   ( AXI_ID_WIDTH_P   ),
     .N_BITS_P         ( AXI_DATA_WIDTH_P ),
-    .Q_BITS_P         ( 3         )
+    .Q_BITS_P         ( 0                )
   ) long_division_axi4s_if_i2 (
 
     .clk              ( clk              ), // input

@@ -76,6 +76,7 @@ module iir_biquad_core #(
 
   logic signed [N_BITS_P-1 : 0] x1;
   logic signed [N_BITS_P-1 : 0] x2;
+  logic signed [N_BITS_P-1 : 0] y00;
   logic signed [N_BITS_P-1 : 0] y1;
   logic signed [N_BITS_P-1 : 0] y2;
 
@@ -93,6 +94,7 @@ module iir_biquad_core #(
       x0_ready    <= '0;
       y0_valid    <= '0;
       y0          <= '0;
+      y00         <= '0;
       x1          <= '0;
       x2          <= '0;
       y1          <= '0;
@@ -119,35 +121,35 @@ module iir_biquad_core #(
         // b1*x[n-1]
         STAGE_1_E: begin
           iir_state   <= STAGE_2_E;
-          y0          <= mul_product_section;       // Adding (b0*x[n])
+          y00         <= mul_product_section;        // Adding (b0*x[n])
           mul_product <= cr_zero_b1 * x1;
         end
 
         // b2*[x-2]
         STAGE_2_E: begin
           iir_state   <= STAGE_3_E;
-          y0          <= y0 + mul_product_section;  // Adding (b1*x[n-1])
+          y00         <= y00 + mul_product_section;  // Adding (b1*x[n-1])
           mul_product <= cr_zero_b2 * x2;
         end
 
         // -a1*y[n-1]
         STAGE_3_E: begin
           iir_state   <= STAGE_4_E;
-          y0          <= y0 + mul_product_section;  // Adding (b2*x[n-2])
+          y00         <= y00 + mul_product_section;  // Adding (b2*x[n-2])
           mul_product <= cr_pole_a1 * y1;
         end
 
         // -a2*y[n-2]
         STAGE_4_E: begin
           iir_state   <= STAGE_5_E;
-          y0          <= y0 - mul_product_section;  // Subtracting (a1*y[n-1])
+          y00         <= y00 - mul_product_section;  // Subtracting (a1*y[n-1])
           mul_product <= cr_pole_a2 * y2;
         end
 
         STAGE_5_E: begin
           iir_state <= STAGE_0_E;
           y0_valid  <= '1;
-          y0        <= y0 - mul_product_section;    // Subtracting (a2*y[n-2])
+          y0        <= y00 - mul_product_section;    // Subtracting (a2*y[n-2])
           x1        <= x0;
           x2        <= x1;
           y1        <= y0;

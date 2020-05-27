@@ -36,8 +36,7 @@ module iir_biquad_top #(
     parameter int AXI4S_ID_P       = -1,
     parameter int APB_DATA_WIDTH_P = -1,
     parameter int N_BITS_P         = -1,
-    parameter int Q_BITS_P         = -1,
-    parameter int NR_OF_Q_BITS_P   = -1
+    parameter int Q_BITS_P         = -1
   )(
 
     // Clock and reset
@@ -88,11 +87,16 @@ module iir_biquad_top #(
     input  wire           [APB_DATA_WIDTH_P-1 : 0] cr_iir_fs,
     input  wire           [APB_DATA_WIDTH_P-1 : 0] cr_iir_q,
     input  wire           [APB_DATA_WIDTH_P-1 : 0] cr_iir_type,
-    input  wire           [APB_DATA_WIDTH_P-1 : 0] cr_bypass
+    input  wire           [APB_DATA_WIDTH_P-1 : 0] cr_bypass,
   //output logic          [APB_DATA_WIDTH_P-1 : 0] sr_division_overflows // TODO
+    output logic signed   [APB_DATA_WIDTH_P-1 : 0] sr_zero_b0,
+    output logic signed   [APB_DATA_WIDTH_P-1 : 0] sr_zero_b1,
+    output logic signed   [APB_DATA_WIDTH_P-1 : 0] sr_zero_b2,
+    output logic signed   [APB_DATA_WIDTH_P-1 : 0] sr_pole_a1,
+    output logic signed   [APB_DATA_WIDTH_P-1 : 0] sr_pole_a2
   );
 
-  localparam logic        [N_BITS_P-1 : 0] ONE_C = (1 << Q_BITS_P);
+  localparam logic signed [N_BITS_P-1 : 0] ONE_C = (1 << Q_BITS_P);
   localparam logic signed [N_BITS_P-1 : 0] PI2   = {'0, pi_8_4_pos_n4_q50[53 : 50-Q_BITS_P]};
 
   typedef enum {
@@ -100,12 +104,15 @@ module iir_biquad_top #(
     SEND_DIVIDEND_F0_E,
     SEND_DIVISOR_FS_E,
     WAIT_QUOTIENT_F0_FS_E,
+    SEND_DIVIDEND_W0_E,
+    SEND_DIVISOR_2PI_E,
+    WAIT_QUOTIENT_W0_2PI_E,
     SEND_SINE_OF_W0_E,
     HANDSHAKE_CORDIC_E,
     WAIT_FOR_CORDIC_E,
-    SEND_DIVIDEND_W0_E,
+    SEND_DIVIDEND_SINE_W0_E,
     SEND_DIVISOR_2Q_E,
-    WAIT_QUOTIENT_W0_2Q_E,
+    WAIT_QUOTIENT_W0_SINE_2Q_E,
     CALCULATE_COEFFICIENTS_E,
     WAIT_FOR_NEW_CONFIGURATION_E
   } top_state_t;
@@ -113,11 +120,11 @@ module iir_biquad_top #(
   top_state_t top_state;
 
   // Configuration registers
-  logic        [N_BITS_P-1 : 0] iir_f0;
-  logic        [N_BITS_P-1 : 0] iir_fs;
-  logic        [N_BITS_P-1 : 0] iir_q;
-  logic                 [1 : 0] iir_type;
-  logic                         bypass;
+  logic        [APB_DATA_WIDTH_P-1 : 0] iir_f0;
+  logic        [APB_DATA_WIDTH_P-1 : 0] iir_fs;
+  logic        [APB_DATA_WIDTH_P-1 : 0] iir_q;
+  logic        [APB_DATA_WIDTH_P-1 : 0] iir_type;
+  logic        [APB_DATA_WIDTH_P-1 : 0] bypass;
 
   // MVP coefficients
   logic signed [N_BITS_P-1 : 0] w0;
@@ -132,6 +139,11 @@ module iir_biquad_top #(
   logic signed [N_BITS_P-1 : 0] cr_pole_a1;
   logic signed [N_BITS_P-1 : 0] cr_pole_a2;
 
+  assign sr_zero_b0 = cr_zero_b0;
+  assign sr_zero_b1 = cr_zero_b1;
+  assign sr_zero_b2 = cr_zero_b2;
+  assign sr_pole_a1 = cr_pole_a1;
+  assign sr_pole_a2 = cr_pole_a2;
 
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
@@ -220,6 +232,42 @@ module iir_biquad_top #(
           if (div_ing_tvalid) begin
             w0             <= div_ing_tdata*PI2 >>> Q_BITS_P; // w0 = 2 * pi * f0 /Fs
             div_ing_tready <= '0;
+            top_state      <= SEND_DIVIDEND_W0_E;
+          end
+        end
+
+
+        // Send dividend to the long divider
+        SEND_DIVIDEND_W0_E: begin
+
+          div_egr_tvalid <= '1;
+          div_egr_tdata  <= w0;
+          div_egr_tlast  <= '0;
+          div_egr_tid    <= AXI4S_ID_P;
+          top_state      <= SEND_DIVISOR_2PI_E;           // Wait for first handshake
+        end
+
+        // Send divisior to the long divider
+        SEND_DIVISOR_2PI_E: begin
+          if (div_egr_tready) begin
+            if (!div_egr_tlast) begin                    // Dividend was sent
+              div_egr_tdata  <= PI2;
+              div_egr_tlast  <= '1;
+            end
+            else begin
+              div_egr_tvalid <= '0;
+              div_egr_tlast  <= '0;
+              top_state      <= WAIT_QUOTIENT_W0_2PI_E;   // Wait for second handshake
+            end
+          end
+        end
+
+        // Wait for the long divider's result
+        WAIT_QUOTIENT_W0_2PI_E: begin
+          div_ing_tready <= '1;
+          if (div_ing_tvalid) begin
+            w0             <= (div_ing_tdata[Q_BITS_P-1:0] * PI2) >>> Q_BITS_P; // w0 = 2 * pi * f0 /Fs % 2PI * 2PI
+            div_ing_tready <= '0;
             top_state      <= SEND_SINE_OF_W0_E;
           end
         end
@@ -228,7 +276,7 @@ module iir_biquad_top #(
         SEND_SINE_OF_W0_E: begin
 
           cordic_egr_tvalid <= '1;
-          cordic_egr_tdata  <= w0;
+          cordic_egr_tdata  <= w0 << (AXI_DATA_WIDTH_P-4-Q_BITS_P);
           cordic_egr_tid    <= AXI4S_ID_P;
           cordic_egr_tuser  <= CORDIC_SINE_COSINE_E;     // Request both
           top_state         <= HANDSHAKE_CORDIC_E;
@@ -246,16 +294,16 @@ module iir_biquad_top #(
         WAIT_FOR_CORDIC_E: begin
           cordic_ing_tready <= '1;
           if (cordic_ing_tvalid) begin
-            // CORDIC always returns +-1, the three MSBs are the integer part
-            sine_of_w0        <= cordic_ing_tdata[2*AXI_DATA_WIDTH_P-1 : AXI_DATA_WIDTH_P] >>> (N_BITS_P - 3);
-            cosine_of_w0      <= cordic_ing_tdata[AXI_DATA_WIDTH_P-1   : 0]                >>> (N_BITS_P - 3);
-            cordic_ing_tready <= '0;
-            top_state         <= SEND_DIVIDEND_W0_E;
+            // CORDIC always returns +-1, the MSB is the integer part
+            sine_of_w0[4+Q_BITS_P:0]   <= cordic_ing_tdata[AXI_DATA_WIDTH_P-1   : 0];
+            cosine_of_w0[4+Q_BITS_P:0] <= cordic_ing_tdata[2*AXI_DATA_WIDTH_P-1 : AXI_DATA_WIDTH_P];
+            cordic_ing_tready        <= '0;
+            top_state                <= SEND_DIVIDEND_SINE_W0_E;
           end
         end
 
         // Send dividend to the long divider
-        SEND_DIVIDEND_W0_E: begin
+        SEND_DIVIDEND_SINE_W0_E: begin
 
           div_egr_tvalid <= '1;
           div_egr_tdata  <= sine_of_w0;
@@ -274,13 +322,13 @@ module iir_biquad_top #(
             else begin
               div_egr_tvalid <= '0;
               div_egr_tlast  <= '0;
-              top_state      <= WAIT_QUOTIENT_W0_2Q_E;   // Wait for second handshake
+              top_state      <= WAIT_QUOTIENT_W0_SINE_2Q_E;   // Wait for second handshake
             end
           end
         end
 
         // Wait for the long divider's result
-        WAIT_QUOTIENT_W0_2Q_E: begin
+        WAIT_QUOTIENT_W0_SINE_2Q_E: begin
           div_ing_tready <= '1;
           if (div_ing_tvalid) begin
             alfa           <= div_ing_tdata;             // alfa = sin(w0) / 2Q
@@ -337,7 +385,7 @@ module iir_biquad_top #(
 
           // Recalculate alfa
           else if (cr_iir_q != iir_q) begin
-            top_state <= SEND_DIVIDEND_W0_E;
+            top_state <= SEND_DIVIDEND_SINE_W0_E;
           end
 
           // Recalculate coefficients

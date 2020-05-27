@@ -55,7 +55,7 @@ b2 = (1 - cos(w0)) / 2
 
 a0 = 1 + alfa
 
-a1 = -2cos(w0)
+a1 = -2*cos(w0)
 
 a2 = 1 - alfa
 ```
@@ -71,7 +71,7 @@ b2 = (1 + cos(w0)) / 2
 
 a0 = 1 + alfa
 
-a1 = -2cos(w0)
+a1 = -2*cos(w0)
 
 a2 = 1 - alfa
 ```
@@ -79,19 +79,19 @@ a2 = 1 - alfa
 ### Band-Pass Filter
 
 ```
-b0 = sin(w0) / 2
+b0 = sin(w0) / 2 = Q * alfa
 
 b1 = 0
 
-b2 = -sin(w0) / 2
+b2 = -sin(w0) / 2 = -Q * alfa
 
 a0 = 1 + alfa
 
-a1 = -2cos(w0)
+a1 = -2*cos(w0)
 
 a2 = 1 - alfa
 ```
 
 
 
-
+https://www.w3.org/2011/audio/audio-eq-cookbook.html

@@ -45,6 +45,11 @@ class iir_base_seq #(
   logic [vip_cfg.APB_ADDR_WIDTH_P-1 : 0] CR_IIR_TYPE_ADDR_C            = 12;
   logic [vip_cfg.APB_ADDR_WIDTH_P-1 : 0] CR_IIR_BYPASS_ADDR_C          = 16;
 
+  logic [vip_cfg.APB_ADDR_WIDTH_P-1 : 0] SR_ZERO_B0_ADDR_C             = 20;
+  logic [vip_cfg.APB_ADDR_WIDTH_P-1 : 0] SR_ZERO_B1_ADDR_C             = 24;
+  logic [vip_cfg.APB_ADDR_WIDTH_P-1 : 0] SR_ZERO_B2_ADDR_C             = 28;
+  logic [vip_cfg.APB_ADDR_WIDTH_P-1 : 0] SR_POLE_A1_ADDR_C             = 32;
+  logic [vip_cfg.APB_ADDR_WIDTH_P-1 : 0] SR_POLE_A2_ADDR_C             = 36;
 
   function new(string name = "iir_base_seq");
 
@@ -81,34 +86,39 @@ class iir_bypass_seq #(
 
     // Write frequency
     paddr  = OSC_BASE_ADDR_C + CR_OSC_FREQUENCY_ADDR_C;
-    pwdata = 100000; // 100kHz
+    pwdata = 10000; // 100kHz
     write_word(paddr, pwdata, psel);
 
     // Write duty cycle
     paddr  = OSC_BASE_ADDR_C + CR_OSC_DUTY_CYCLE_ADDR_C;
-    pwdata = 25; // Clocks
+    pwdata = 25;
     write_word(paddr, pwdata, psel);
 
     psel = 1;
 
     `uvm_info(get_name(), $sformatf("Writing IIR registers"), UVM_LOW)
-    // IIR registers
+
+    // Cut-off
     paddr  = IIR_BASE_ADDR_C + CR_IIR_F0_ADDR_C;
-    pwdata = (24000 << Q_BITS_C);
+    pwdata = (5000 << Q_BITS_C);
     write_word(paddr, pwdata, psel);
 
+    // Sampling frequency
     paddr  = IIR_BASE_ADDR_C + CR_IIR_FS_ADDR_C;
-    pwdata = (48000 << Q_BITS_C);
+    pwdata = (250000 << Q_BITS_C);
     write_word(paddr, pwdata, psel);
 
+    // Q-value
     paddr  = IIR_BASE_ADDR_C + CR_IIR_Q_ADDR_C;
     pwdata = (1 << Q_BITS_C);;
     write_word(paddr, pwdata, psel);
 
+    // Filter type
     paddr  = IIR_BASE_ADDR_C + CR_IIR_TYPE_ADDR_C;
     pwdata = IIR_LOW_PASS_E;
     write_word(paddr, pwdata, psel);
 
+    // Bypass enable
     paddr  = IIR_BASE_ADDR_C + CR_IIR_BYPASS_ADDR_C;
     pwdata = '1;
     write_word(paddr, pwdata, psel);

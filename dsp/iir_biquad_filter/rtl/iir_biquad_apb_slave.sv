@@ -42,7 +42,15 @@ module iir_biquad_apb_slave #(
     output logic [APB_DATA_WIDTH_P-1 : 0] cr_iir_fs,
     output logic [APB_DATA_WIDTH_P-1 : 0] cr_iir_q,
     output logic [APB_DATA_WIDTH_P-1 : 0] cr_iir_type,
-    output logic [APB_DATA_WIDTH_P-1 : 0] cr_bypass
+    output logic [APB_DATA_WIDTH_P-1 : 0] cr_bypass,
+
+    // Status registers
+    input  wire  [APB_DATA_WIDTH_P-1 : 0] sr_zero_b0,
+    input  wire  [APB_DATA_WIDTH_P-1 : 0] sr_zero_b1,
+    input  wire  [APB_DATA_WIDTH_P-1 : 0] sr_zero_b2,
+    input  wire  [APB_DATA_WIDTH_P-1 : 0] sr_pole_a1,
+    input  wire  [APB_DATA_WIDTH_P-1 : 0] sr_pole_a2
+
   );
 
   localparam logic [APB_ADDR_WIDTH_P-1 : 0] CR_IIR_F0_ADDR_C     = APB_BASE_ADDR_P + 0;
@@ -50,6 +58,12 @@ module iir_biquad_apb_slave #(
   localparam logic [APB_ADDR_WIDTH_P-1 : 0] CR_IIR_Q_ADDR_C      = APB_BASE_ADDR_P + 8;
   localparam logic [APB_ADDR_WIDTH_P-1 : 0] CR_IIR_TYPE_ADDR_C   = APB_BASE_ADDR_P + 12;
   localparam logic [APB_ADDR_WIDTH_P-1 : 0] CR_IIR_BYPASS_ADDR_C = APB_BASE_ADDR_P + 16;
+
+  localparam logic [APB_ADDR_WIDTH_P-1 : 0] SR_ZERO_B0_ADDR_C    = APB_BASE_ADDR_P + 20;
+  localparam logic [APB_ADDR_WIDTH_P-1 : 0] SR_ZERO_B1_ADDR_C    = APB_BASE_ADDR_P + 24;
+  localparam logic [APB_ADDR_WIDTH_P-1 : 0] SR_ZERO_B2_ADDR_C    = APB_BASE_ADDR_P + 28;
+  localparam logic [APB_ADDR_WIDTH_P-1 : 0] SR_POLE_A1_ADDR_C    = APB_BASE_ADDR_P + 32;
+  localparam logic [APB_ADDR_WIDTH_P-1 : 0] SR_POLE_A2_ADDR_C    = APB_BASE_ADDR_P + 36;
 
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
@@ -110,7 +124,27 @@ module iir_biquad_apb_slave #(
           // ---------------------------------------------------------------------
 
           else begin
-            apb3_prdata <= '0;
+
+            if (apb3_paddr == SR_ZERO_B0_ADDR_C) begin
+              apb3_prdata <= sr_zero_b0;
+            end
+
+            if (apb3_paddr == SR_ZERO_B1_ADDR_C) begin
+              apb3_prdata <= sr_zero_b1;
+            end
+
+            if (apb3_paddr == SR_ZERO_B2_ADDR_C) begin
+              apb3_prdata <= sr_zero_b2;
+            end
+
+            if (apb3_paddr == SR_POLE_A1_ADDR_C) begin
+              apb3_prdata <= sr_pole_a1;
+            end
+
+            if (apb3_paddr == SR_POLE_A2_ADDR_C) begin
+              apb3_prdata <= sr_pole_a2;
+            end
+
           end
         end
       end
