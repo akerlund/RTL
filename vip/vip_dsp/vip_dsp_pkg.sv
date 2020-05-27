@@ -19,33 +19,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-`ifndef VIP_MATH_PKG
-`define VIP_MATH_PKG
+`ifndef VIP_DSP_PKG
+`define VIP_DSP_PKG
 
-package vip_math_pkg;
+package vip_dsp_pkg;
 
-
-  function int abs_int(int value);
-
-    if (value < 0) begin
-      abs_int = -value;
-    end
-    else begin
-      abs_int = value;
-    end
-
-  endfunction
-
-  function real abs_real(real value);
-
-    if (value < 0) begin
-      abs_real = -value;
-    end
-    else begin
-      abs_real = value;
-    end
-
-  endfunction
+  `include "biquad_coefficients.svh"
 
 endpackage
 
