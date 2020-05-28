@@ -30,6 +30,7 @@ package iir_tb_pkg;
   import vip_apb3_types_pkg::*;
   import vip_apb3_pkg::*;
   import iir_biquad_types_pkg::*;
+  import oscillator_types_pkg::*;
 
   localparam int WAVE_WIDTH_C     = 24;
   localparam int COUNTER_WIDTH_C  = 32;

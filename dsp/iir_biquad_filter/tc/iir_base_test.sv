@@ -27,8 +27,20 @@ class iir_base_test extends uvm_test;
   iir_config            tb_cfg;
 
   iir_virtual_sequencer v_sqr;
+  uvm_table_printer     printer;
 
-  uvm_table_printer printer;
+  // IIR parameters
+  int               iir_f0;
+  int               iir_fs;
+  int               iir_q;
+  iir_biquad_type_t iir_type;
+  int               iir_bypass;
+
+  // Oscillator parameters
+  int                 osc_f;
+  int                 osc_duty_cycle;
+  osc_waveform_type_t osc_waveform_type;
+
 
   function new(string name = "iir_base_test", uvm_component parent = null);
 
@@ -48,7 +60,6 @@ class iir_base_test extends uvm_test;
     uvm_config_db #(uvm_verbosity)::set(this, "*", "recording_detail", UVM_FULL);
 
     tb_env = iir_env::type_id::create("tb_env", this);
-
     tb_cfg = iir_config::type_id::create("tb_cfg", this);
 
   endfunction

@@ -25,8 +25,22 @@ class iir_base_seq #(
 
   `uvm_object_param_utils(iir_base_seq #(vip_cfg))
 
+  // IIR parameters
+  int iir_f0;
+  int iir_fs;
+  int iir_q;
+  int iir_type;
+  int iir_bypass;
+
+  // Oscillator parameters
+  int osc_f;
+  int osc_duty_cycle;
+  int osc_waveform_type;
+
+  // APB3 variables
   logic [vip_cfg.APB_ADDR_WIDTH_P-1 : 0] paddr;
   logic [vip_cfg.APB_DATA_WIDTH_P-1 : 0] pwdata;
+  logic [vip_cfg.APB_DATA_WIDTH_P-1 : 0] prdata;
   int                                    psel;
 
   // Base addresses
@@ -51,79 +65,127 @@ class iir_base_seq #(
   logic [vip_cfg.APB_ADDR_WIDTH_P-1 : 0] SR_POLE_A1_ADDR_C             = 32;
   logic [vip_cfg.APB_ADDR_WIDTH_P-1 : 0] SR_POLE_A2_ADDR_C             = 36;
 
+
   function new(string name = "iir_base_seq");
-
     super.new(name);
-
   endfunction
 
 endclass
 
 
 
-class iir_bypass_seq #(
+class iir_configuration_seq #(
   vip_apb3_cfg_t vip_cfg = '{default: '0}
   ) extends iir_base_seq #(vip_cfg);
 
-  `uvm_object_param_utils(iir_bypass_seq #(vip_cfg))
+  `uvm_object_param_utils(iir_configuration_seq #(vip_cfg))
 
-  function new(string name = "iir_bypass_seq");
+  function new(string name = "iir_configuration_seq");
     super.new(name);
   endfunction
 
 
   virtual task body();
 
+    // -------------------------------------------------------------------------
     // Oscillator registers
+    // -------------------------------------------------------------------------
 
     `uvm_info(get_name(), $sformatf("Writing OSC registers"), UVM_LOW)
     psel = 0;
 
     // Write waveform
     paddr  = OSC_BASE_ADDR_C + CR_OSC_WAVEFORM_SELECT_ADDR_C;
-    pwdata = 1;
+    pwdata = osc_waveform_type;
     write_word(paddr, pwdata, psel);
 
     // Write frequency
     paddr  = OSC_BASE_ADDR_C + CR_OSC_FREQUENCY_ADDR_C;
-    pwdata = 10000; // 100kHz
+    pwdata = osc_f;
     write_word(paddr, pwdata, psel);
 
     // Write duty cycle
     paddr  = OSC_BASE_ADDR_C + CR_OSC_DUTY_CYCLE_ADDR_C;
-    pwdata = 25;
+    pwdata = osc_duty_cycle;
     write_word(paddr, pwdata, psel);
 
-    psel = 1;
+
+    // -------------------------------------------------------------------------
+    // IIR registers
+    // -------------------------------------------------------------------------
 
     `uvm_info(get_name(), $sformatf("Writing IIR registers"), UVM_LOW)
+    psel = 1;
 
     // Cut-off
     paddr  = IIR_BASE_ADDR_C + CR_IIR_F0_ADDR_C;
-    pwdata = (5000 << Q_BITS_C);
+    pwdata = (iir_f0 << Q_BITS_C);
     write_word(paddr, pwdata, psel);
 
     // Sampling frequency
     paddr  = IIR_BASE_ADDR_C + CR_IIR_FS_ADDR_C;
-    pwdata = (250000 << Q_BITS_C);
+    pwdata = (iir_fs << Q_BITS_C);
     write_word(paddr, pwdata, psel);
 
     // Q-value
     paddr  = IIR_BASE_ADDR_C + CR_IIR_Q_ADDR_C;
-    pwdata = (1 << Q_BITS_C);;
+    pwdata = (iir_q << Q_BITS_C);
     write_word(paddr, pwdata, psel);
 
     // Filter type
     paddr  = IIR_BASE_ADDR_C + CR_IIR_TYPE_ADDR_C;
-    pwdata = IIR_LOW_PASS_E;
+    pwdata = iir_type;
     write_word(paddr, pwdata, psel);
 
     // Bypass enable
     paddr  = IIR_BASE_ADDR_C + CR_IIR_BYPASS_ADDR_C;
-    pwdata = '1;
+    pwdata = iir_bypass;
     write_word(paddr, pwdata, psel);
 
-    #1000us;
+  endtask
+
+endclass
+
+
+class iir_read_coefficients_seq #(
+  vip_apb3_cfg_t vip_cfg = '{default: '0}
+  ) extends iir_base_seq #(vip_cfg);
+
+  `uvm_object_param_utils(iir_read_coefficients_seq #(vip_cfg))
+
+  function new(string name = "iir_read_coefficients_seq");
+    super.new(name);
+  endfunction
+
+
+  virtual task body();
+
+    // -------------------------------------------------------------------------
+    // IIR coefficients
+    // -------------------------------------------------------------------------
+
+    `uvm_info(get_name(), $sformatf("Reading IIR coefficients"), UVM_LOW)
+    psel = 1;
+
+    // b0
+    paddr  = IIR_BASE_ADDR_C + SR_ZERO_B0_ADDR_C;
+    read_word(paddr, prdata, psel);
+
+    // b1
+    paddr  = IIR_BASE_ADDR_C + SR_ZERO_B1_ADDR_C;
+    read_word(paddr, prdata, psel);
+
+    // b2
+    paddr  = IIR_BASE_ADDR_C + SR_ZERO_B2_ADDR_C;
+    read_word(paddr, prdata, psel);
+
+    // a1
+    paddr  = IIR_BASE_ADDR_C + SR_POLE_A1_ADDR_C;
+    read_word(paddr, prdata, psel);
+
+    // a2
+    paddr  = IIR_BASE_ADDR_C + SR_POLE_A2_ADDR_C;
+    read_word(paddr, prdata, psel);
 
   endtask
 

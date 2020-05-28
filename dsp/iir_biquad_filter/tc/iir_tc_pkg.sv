@@ -27,12 +27,14 @@ package iir_tc_pkg;
   import vip_apb3_types_pkg::*;
   import vip_apb3_pkg::*;
   import iir_biquad_types_pkg::*;
+  import oscillator_types_pkg::*;
 
   // Import testbench and agent packages here
   import iir_tb_pkg::*;
 
   // Include testcase files here
   `include "iir_base_test.sv"
-  `include "tc_iir_bypass.sv"
+  `include "tc_iir_basic_configuration.sv"
+  `include "tc_iir_coefficient_check.sv"
 
 endpackage

@@ -19,17 +19,29 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-class tc_iir_bypass extends iir_base_test;
+class tc_iir_coefficient_check extends iir_base_test;
 
-  iir_bypass_seq #(vip_apb3_cfg) iir_bypass_seq0;
+  iir_configuration_seq #(vip_apb3_cfg) iir_configuration_seq0;
 
-  `uvm_component_utils(tc_iir_bypass)
+  `uvm_component_utils(tc_iir_coefficient_check)
 
 
 
-  function new(string name = "tc_iir_bypass", uvm_component parent = null);
+  function new(string name = "tc_iir_coefficient_check", uvm_component parent = null);
 
     super.new(name, parent);
+
+    // IIR parameters
+    iir_f0     = 5000;
+    iir_fs     = 250000;
+    iir_q      = 1;
+    iir_type   = IIR_LOW_PASS_E;
+    iir_bypass = '0;
+
+    // Oscillator parameters
+    osc_f             = 10000;
+    osc_duty_cycle    = 0;
+    osc_waveform_type = OSC_TRIANGLE_E;
 
   endfunction
 
@@ -48,8 +60,21 @@ class tc_iir_bypass extends iir_base_test;
     super.run_phase(phase);
     phase.raise_objection(this);
 
-    iir_bypass_seq0 = new();
-    iir_bypass_seq0.start(v_sqr.apb3_sequencer);
+    iir_configuration_seq0 = new();
+
+    // IIR parameters
+    iir_configuration_seq0.iir_f0     = iir_f0;
+    iir_configuration_seq0.iir_fs     = iir_fs;
+    iir_configuration_seq0.iir_q      = iir_q;
+    iir_configuration_seq0.iir_type   = iir_type;
+    iir_configuration_seq0.iir_bypass = iir_bypass;
+
+    // Oscillator parameters
+    iir_configuration_seq0.osc_f             = osc_f;
+    iir_configuration_seq0.osc_duty_cycle    = osc_duty_cycle;
+    iir_configuration_seq0.osc_waveform_type = osc_waveform_type;
+
+    iir_configuration_seq0.start(v_sqr.apb3_sequencer);
 
     phase.drop_objection(this);
 

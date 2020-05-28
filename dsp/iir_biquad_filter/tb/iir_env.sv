@@ -85,6 +85,8 @@ class iir_env extends uvm_env;
 
     super.connect_phase(phase);
     virtual_sequencer.apb3_sequencer = vip_apb3_agent0.sequencer;
+    vip_apb3_agent0.monitor.collected_write_port.connect(scoreboard0.apb_write_port);
+    vip_apb3_agent0.monitor.collected_read_port.connect(scoreboard0.apb_read_port);
 
   endfunction
 

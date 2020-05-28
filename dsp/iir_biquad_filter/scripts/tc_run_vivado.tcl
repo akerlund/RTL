@@ -1,7 +1,8 @@
 #-------------------------------------------------------------------------------
 # Select testcase
 #-------------------------------------------------------------------------------
-set test_case "tc_iir_bypass";
+set test_case "tc_iir_basic_configuration";
+#set test_case "tc_iir_coefficient_check";
 
 set  script_dir [pwd]
 cd   rundir

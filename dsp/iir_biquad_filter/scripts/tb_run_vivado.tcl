@@ -23,6 +23,9 @@ set uvm_directories [list \
   "$module_path/tc/"];
 
 set package_files [list \
+  "$git_root/vip/vip_math/vip_math_pkg.sv" \
+  "$git_root/vip/vip_dsp/vip_dsp_pkg.sv" \
+  "$git_root/vip/vip_fixed_point/vip_fixed_point_pkg.sv" \
   "$git_root/vip/vip_apb3_agent/vip_apb3_types_pkg.sv" \
   "$git_root/oscillator/rtl/oscillator_types_pkg.sv" \
   "$git_root/math/cordic/rtl/cordic_axi4s_types_pkg.sv" \
