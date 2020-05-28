@@ -25,6 +25,9 @@ class vip_apb3_monitor #(
 
   protected virtual vip_apb3_if #(vip_cfg) vif;
 
+  uvm_analysis_port #(vip_apb3_item #(vip_cfg)) collected_write_port;
+  uvm_analysis_port #(vip_apb3_item #(vip_cfg)) collected_read_port;
+
   protected int id;
   vip_apb3_config cfg;
 
@@ -37,6 +40,8 @@ class vip_apb3_monitor #(
   function new(string name, uvm_component parent);
 
     super.new(name, parent);
+    collected_write_port = new("collected_write_port", this);
+    collected_read_port  = new("collected_read_port", this);
 
   endfunction
 
@@ -75,7 +80,7 @@ class vip_apb3_monitor #(
 
   virtual protected task collect_transfers();
 
-    vip_apb3_item #(vip_cfg) item = new();
+    vip_apb3_item #(vip_cfg) apb_item;
 
     @(negedge vif.rst_n);
     @(posedge vif.rst_n);
@@ -83,6 +88,24 @@ class vip_apb3_monitor #(
     forever begin
 
       @(posedge vif.clk iff vif.rst_n == 1);
+
+      if (vif.psel && vif.penable && vif.pready) begin
+
+        apb_item         = new();
+        apb_item.paddr   = vif.paddr;
+        apb_item.psel    = vif.psel;
+        apb_item.pwrite  = vif.pwrite;
+        apb_item.pwdata  = vif.pwdata;
+        apb_item.prdata  = vif.prdata;
+        apb_item.pslverr = vif.pslverr;
+
+        if (vif.pwrite) begin
+          collected_write_port.write(apb_item);
+        end
+        else begin
+          collected_read_port.write(apb_item);
+        end
+      end
 
     end
 

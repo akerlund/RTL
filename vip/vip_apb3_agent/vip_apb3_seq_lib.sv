@@ -89,7 +89,7 @@ class vip_apb3_base_seq #(
 
     logic [vip_cfg.APB_ADDR_WIDTH_P-1 : 0] prdata;
     read_word(paddr,  prdata);
-    write_word(paddr, prdata & ~mask | pwdata & mask);
+    write_word(paddr, prdata & ~mask | pwdata);
 
   endtask
 
