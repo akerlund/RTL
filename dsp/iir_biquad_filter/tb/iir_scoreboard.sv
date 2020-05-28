@@ -52,6 +52,12 @@ class iir_scoreboard extends uvm_scoreboard;
   int number_of_passed;
   int number_of_failed;
 
+  // DSP Bi-Quad parameters
+  real              iir_f0;
+  real              iir_fs;
+  real              iir_q;
+  iir_biquad_type_t iir_type;
+
   // DSP Bi-Quad coefficients
   real zero_b0;
   real zero_b1;
@@ -119,9 +125,30 @@ class iir_scoreboard extends uvm_scoreboard;
 
   virtual function void write_apb_write_port(vip_apb3_item #(vip_apb3_cfg) trans);
 
+    iir_biquad_type_t t;
     number_of_apb_write_items++;
     apb_write_items.push_back(trans);
     all_apb_write_items.push_back(trans);
+
+    if (trans.paddr == IIR_BASE_ADDR_C + CR_IIR_F0_ADDR_C) begin
+      iir_f0 = real'($signed(trans.pwdata))/2**Q_BITS_C;
+      `uvm_info(get_type_name(), $sformatf("iir_f0: %f", iir_f0), UVM_LOW)
+    end
+
+    else if (trans.paddr == IIR_BASE_ADDR_C + CR_IIR_FS_ADDR_C) begin
+      iir_fs = real'($signed(trans.pwdata))/2**Q_BITS_C;
+      `uvm_info(get_type_name(), $sformatf("iir_fs: %f", iir_fs), UVM_LOW)
+    end
+
+    else if (trans.paddr == IIR_BASE_ADDR_C + CR_IIR_Q_ADDR_C) begin
+      iir_q = real'($signed(trans.pwdata))/2**Q_BITS_C;
+      `uvm_info(get_type_name(), $sformatf("iir_q: %f", iir_q), UVM_LOW)
+    end
+
+    else if (trans.paddr == IIR_BASE_ADDR_C + CR_IIR_TYPE_ADDR_C) begin
+      iir_type = iir_biquad_type_t'(trans.pwdata);
+      `uvm_info(get_type_name(), $sformatf("iir_type: %s", iir_type.name()), UVM_LOW)
+    end
 
     //current_phase.raise_objection(this);
 
@@ -140,27 +167,27 @@ class iir_scoreboard extends uvm_scoreboard;
     `uvm_info(get_type_name(), $sformatf("Collected transfer:\n%s", trans.sprint()), UVM_LOW)
 
     if (trans.paddr == IIR_BASE_ADDR_C + SR_ZERO_B0_ADDR_C) begin
-      zero_b0 = $signed(trans.prdata)/2**Q_BITS_C;
+      zero_b0 = real'($signed(trans.prdata))/2**Q_BITS_C;
       `uvm_info(get_type_name(), $sformatf("zero_b0: %f", zero_b0), UVM_LOW)
     end
 
     else if (trans.paddr == IIR_BASE_ADDR_C + SR_ZERO_B1_ADDR_C) begin
-      zero_b1 = $signed(trans.prdata)/2**Q_BITS_C;
+      zero_b1 = real'($signed(trans.prdata))/2**Q_BITS_C;
       `uvm_info(get_type_name(), $sformatf("zero_b1: %f", zero_b1), UVM_LOW)
     end
 
     else if (trans.paddr == IIR_BASE_ADDR_C + SR_ZERO_B2_ADDR_C) begin
-      zero_b2 = $signed(trans.prdata)/2**Q_BITS_C;
+      zero_b2 = real'($signed(trans.prdata))/2**Q_BITS_C;
       `uvm_info(get_type_name(), $sformatf("zero_b2: %f", zero_b2), UVM_LOW)
     end
 
     else if (trans.paddr == IIR_BASE_ADDR_C + SR_POLE_A1_ADDR_C) begin
-      pole_a1 = $signed(trans.prdata)/2**Q_BITS_C;
+      pole_a1 = real'($signed(trans.prdata))/2**Q_BITS_C;
       `uvm_info(get_type_name(), $sformatf("pole_a1: %f", pole_a1), UVM_LOW)
     end
 
     else if (trans.paddr == IIR_BASE_ADDR_C + SR_POLE_A2_ADDR_C) begin
-      pole_a2 = $signed(trans.prdata)/2**Q_BITS_C;
+      pole_a2 = real'($signed(trans.prdata))/2**Q_BITS_C;
       `uvm_info(get_type_name(), $sformatf("pole_a2: %f", pole_a2), UVM_LOW)
     end
 

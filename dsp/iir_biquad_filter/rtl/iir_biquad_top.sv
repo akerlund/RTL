@@ -174,7 +174,6 @@ module iir_biquad_top #(
       sine_of_w0        <= '0;
       cosine_of_w0      <= '0;
       alfa              <= '0;
-      cr_zero_b0        <= '0;
 
       // Zero and pole coefficients
       cr_zero_b0        <= '0;
@@ -266,7 +265,7 @@ module iir_biquad_top #(
         WAIT_QUOTIENT_W0_2PI_E: begin
           div_ing_tready <= '1;
           if (div_ing_tvalid) begin
-            w0             <= (div_ing_tdata[Q_BITS_P-1:0] * PI2) >>> Q_BITS_P; // w0 = 2 * pi * f0 /Fs % 2PI * 2PI
+            w0             <= (div_ing_tdata[Q_BITS_P-1 : 0] * PI2) >>> Q_BITS_P; // w0 = 2 * pi * f0 /Fs % 2PI * 2PI
             div_ing_tready <= '0;
             top_state      <= SEND_SINE_OF_W0_E;
           end
@@ -294,11 +293,11 @@ module iir_biquad_top #(
         WAIT_FOR_CORDIC_E: begin
           cordic_ing_tready <= '1;
           if (cordic_ing_tvalid) begin
-            // CORDIC always returns +-1, the MSB is the integer part
-            sine_of_w0[4+Q_BITS_P:0]   <= cordic_ing_tdata[AXI_DATA_WIDTH_P-1   : 0];
-            cosine_of_w0[4+Q_BITS_P:0] <= cordic_ing_tdata[2*AXI_DATA_WIDTH_P-1 : AXI_DATA_WIDTH_P];
-            cordic_ing_tready        <= '0;
-            top_state                <= SEND_DIVIDEND_SINE_W0_E;
+            // CORDIC always returns +-1, the 4 MSBs are the integer part
+            sine_of_w0[4+Q_BITS_P : 0]   <= cordic_ing_tdata[AXI_DATA_WIDTH_P-1   : 0];
+            cosine_of_w0[4+Q_BITS_P : 0] <= cordic_ing_tdata[2*AXI_DATA_WIDTH_P-1 : AXI_DATA_WIDTH_P];
+            cordic_ing_tready            <= '0;
+            top_state                    <= SEND_DIVIDEND_SINE_W0_E;
           end
         end
 
