@@ -81,6 +81,7 @@ class vip_apb3_monitor #(
   virtual protected task collect_transfers();
 
     vip_apb3_item #(vip_cfg) apb_item;
+    int psel;
 
     @(negedge vif.rst_n);
     @(posedge vif.rst_n);
@@ -95,14 +96,16 @@ class vip_apb3_monitor #(
         apb_item.paddr   = vif.paddr;
         apb_item.psel    = vif.psel;
         apb_item.pwrite  = vif.pwrite;
-        apb_item.pwdata  = vif.pwdata;
-        apb_item.prdata  = vif.prdata;
         apb_item.pslverr = vif.pslverr;
 
         if (vif.pwrite) begin
+          apb_item.pwdata  = vif.pwdata;
+          apb_item.prdata  = '0;
           collected_write_port.write(apb_item);
         end
         else begin
+          apb_item.pwdata  = '0;
+          apb_item.prdata  = vif.prdata[$clog2(int'(vif.psel))];
           collected_read_port.write(apb_item);
         end
       end

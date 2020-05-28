@@ -50,7 +50,11 @@ module iir_tb_top;
     // APB3
     .APB_ADDR_WIDTH_P   ( vip_apb3_cfg.APB_ADDR_WIDTH_P   ),
     .APB_DATA_WIDTH_P   ( vip_apb3_cfg.APB_DATA_WIDTH_P   ),
-    .APB_NR_OF_SLAVES_P ( vip_apb3_cfg.APB_NR_OF_SLAVES_P )
+    .APB_NR_OF_SLAVES_P ( vip_apb3_cfg.APB_NR_OF_SLAVES_P ),
+    .OSC_BASE_ADDR_P    ( OSC_BASE_ADDR_C                 ),
+    .OSC_PSEL_P         ( OSC_PSEL_BIT_C                  ),
+    .IIR_BASE_ADDR_P    ( IIR_BASE_ADDR_C                 ),
+    .IIR_PSEL_P         ( IIR_PSEL_BIT_C                  )
 
   ) iir_dut_biquad_system_i0 (
     .clk                ( clk                             ),

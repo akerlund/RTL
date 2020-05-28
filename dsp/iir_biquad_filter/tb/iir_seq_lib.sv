@@ -19,6 +19,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+import iir_biquad_apb_slave_addr_pkg::*;
+
 class iir_base_seq #(
   vip_apb3_cfg_t vip_cfg = '{default: '0}
   ) extends vip_apb3_base_seq #(vip_cfg);
@@ -43,27 +45,12 @@ class iir_base_seq #(
   logic [vip_cfg.APB_DATA_WIDTH_P-1 : 0] prdata;
   int                                    psel;
 
-  // Base addresses
-  logic [vip_cfg.APB_ADDR_WIDTH_P-1 : 0] OSC_BASE_ADDR_C               = 0;
-  logic [vip_cfg.APB_ADDR_WIDTH_P-1 : 0] IIR_BASE_ADDR_C               = 16;
 
   // Oscillator addresses
   logic [vip_cfg.APB_ADDR_WIDTH_P-1 : 0] CR_OSC_WAVEFORM_SELECT_ADDR_C = 0;
   logic [vip_cfg.APB_ADDR_WIDTH_P-1 : 0] CR_OSC_FREQUENCY_ADDR_C       = 4;
   logic [vip_cfg.APB_ADDR_WIDTH_P-1 : 0] CR_OSC_DUTY_CYCLE_ADDR_C      = 8;
 
-  // IIR addresses
-  logic [vip_cfg.APB_ADDR_WIDTH_P-1 : 0] CR_IIR_F0_ADDR_C              = 0;
-  logic [vip_cfg.APB_ADDR_WIDTH_P-1 : 0] CR_IIR_FS_ADDR_C              = 4;
-  logic [vip_cfg.APB_ADDR_WIDTH_P-1 : 0] CR_IIR_Q_ADDR_C               = 8;
-  logic [vip_cfg.APB_ADDR_WIDTH_P-1 : 0] CR_IIR_TYPE_ADDR_C            = 12;
-  logic [vip_cfg.APB_ADDR_WIDTH_P-1 : 0] CR_IIR_BYPASS_ADDR_C          = 16;
-
-  logic [vip_cfg.APB_ADDR_WIDTH_P-1 : 0] SR_ZERO_B0_ADDR_C             = 20;
-  logic [vip_cfg.APB_ADDR_WIDTH_P-1 : 0] SR_ZERO_B1_ADDR_C             = 24;
-  logic [vip_cfg.APB_ADDR_WIDTH_P-1 : 0] SR_ZERO_B2_ADDR_C             = 28;
-  logic [vip_cfg.APB_ADDR_WIDTH_P-1 : 0] SR_POLE_A1_ADDR_C             = 32;
-  logic [vip_cfg.APB_ADDR_WIDTH_P-1 : 0] SR_POLE_A2_ADDR_C             = 36;
 
 
   function new(string name = "iir_base_seq");
@@ -165,27 +152,31 @@ class iir_read_coefficients_seq #(
     // -------------------------------------------------------------------------
 
     `uvm_info(get_name(), $sformatf("Reading IIR coefficients"), UVM_LOW)
-    psel = 1;
 
     // b0
+    `uvm_info(get_name(), $sformatf("Reading SR_ZERO_B0_ADDR_C"), UVM_LOW)
     paddr  = IIR_BASE_ADDR_C + SR_ZERO_B0_ADDR_C;
-    read_word(paddr, prdata, psel);
+    read_word(paddr, prdata, IIR_PSEL_BIT_C);
 
     // b1
+    `uvm_info(get_name(), $sformatf("Reading SR_ZERO_B1_ADDR_C"), UVM_LOW)
     paddr  = IIR_BASE_ADDR_C + SR_ZERO_B1_ADDR_C;
-    read_word(paddr, prdata, psel);
+    read_word(paddr, prdata, IIR_PSEL_BIT_C);
 
     // b2
+    `uvm_info(get_name(), $sformatf("Reading SR_ZERO_B2_ADDR_C"), UVM_LOW)
     paddr  = IIR_BASE_ADDR_C + SR_ZERO_B2_ADDR_C;
-    read_word(paddr, prdata, psel);
+    read_word(paddr, prdata, IIR_PSEL_BIT_C);
 
     // a1
+    `uvm_info(get_name(), $sformatf("Reading SR_ZERO_A1_ADDR_C"), UVM_LOW)
     paddr  = IIR_BASE_ADDR_C + SR_POLE_A1_ADDR_C;
-    read_word(paddr, prdata, psel);
+    read_word(paddr, prdata, IIR_PSEL_BIT_C);
 
     // a2
+    `uvm_info(get_name(), $sformatf("Reading SR_ZERO_A2_ADDR_C"), UVM_LOW)
     paddr  = IIR_BASE_ADDR_C + SR_POLE_A2_ADDR_C;
-    read_word(paddr, prdata, psel);
+    read_word(paddr, prdata, IIR_PSEL_BIT_C);
 
   endtask
 

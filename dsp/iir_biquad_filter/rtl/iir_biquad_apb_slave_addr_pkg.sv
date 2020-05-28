@@ -19,41 +19,23 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-class tc_iir_coefficient_check extends iir_base_test;
+`ifndef IIR_BIQUAD_APB_SLAVE_ADDR_PKG
+`define IIR_BIQUAD_APB_SLAVE_ADDR_PKG
 
-  iir_read_coefficients_seq #(vip_apb3_cfg) iir_read_coefficients_seq0;
+package iir_biquad_apb_slave_addr_pkg;
 
-  `uvm_component_utils(tc_iir_coefficient_check)
+  localparam int CR_IIR_F0_ADDR_C     = 0;
+  localparam int CR_IIR_FS_ADDR_C     = 4;
+  localparam int CR_IIR_Q_ADDR_C      = 8;
+  localparam int CR_IIR_TYPE_ADDR_C   = 12;
+  localparam int CR_IIR_BYPASS_ADDR_C = 16;
 
+  localparam int SR_ZERO_B0_ADDR_C    = 20;
+  localparam int SR_ZERO_B1_ADDR_C    = 24;
+  localparam int SR_ZERO_B2_ADDR_C    = 28;
+  localparam int SR_POLE_A1_ADDR_C    = 32;
+  localparam int SR_POLE_A2_ADDR_C    = 36;
 
+endpackage
 
-  function new(string name = "tc_iir_coefficient_check", uvm_component parent = null);
-
-    super.new(name, parent);
-
-  endfunction
-
-
-
-  function void build_phase(uvm_phase phase);
-
-    super.build_phase(phase);
-
-  endfunction
-
-
-
-  task run_phase(uvm_phase phase);
-
-    super.run_phase(phase);
-    phase.raise_objection(this);
-
-    iir_read_coefficients_seq0 = new();
-
-    iir_read_coefficients_seq0.start(v_sqr.apb3_sequencer);
-
-    phase.drop_objection(this);
-
-  endtask
-
-endclass
+`endif

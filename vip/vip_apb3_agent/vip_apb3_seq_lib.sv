@@ -64,20 +64,21 @@ class vip_apb3_base_seq #(
 
 
   task read_word(logic [vip_cfg.APB_ADDR_WIDTH_P-1 : 0] paddr,
-                 logic [vip_cfg.APB_DATA_WIDTH_P-1 : 0] prdata);
+                 logic [vip_cfg.APB_DATA_WIDTH_P-1 : 0] prdata,
+                 int                                    psel = 0);
 
     apb_item = new();
 
     apb_item.paddr  = paddr;
-    apb_item.pwrite = '0;
+    apb_item.psel   = psel;
+    apb_item.pwrite = APB_OP_READ_E;
 
     req = apb_item;
     start_item(req);
     finish_item(req);
 
-    get_response(rsp);
-
-    prdata = rsp.prdata;
+    //get_response(rsp);
+    //prdata = rsp.prdata;
 
   endtask
 
@@ -85,11 +86,12 @@ class vip_apb3_base_seq #(
 
   task write_masked(logic [vip_cfg.APB_ADDR_WIDTH_P-1 : 0] paddr,
                     logic [vip_cfg.APB_DATA_WIDTH_P-1 : 0] pwdata,
-                    logic [vip_cfg.APB_DATA_WIDTH_P-1 : 0] mask);
+                    logic [vip_cfg.APB_DATA_WIDTH_P-1 : 0] mask,
+                    int                                    psel = 0);
 
     logic [vip_cfg.APB_ADDR_WIDTH_P-1 : 0] prdata;
-    read_word(paddr,  prdata);
-    write_word(paddr, prdata & ~mask | pwdata);
+    read_word(paddr,  prdata, psel);
+    write_word(paddr, (prdata & ~mask | pwdata), psel);
 
   endtask
 

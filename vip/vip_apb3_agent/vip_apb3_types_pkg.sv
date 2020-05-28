@@ -35,6 +35,11 @@ package vip_apb3_types_pkg;
     int APB_NR_OF_SLAVES_P;
   } vip_apb3_cfg_t;
 
+  typedef enum {
+    APB_OP_READ_E,
+    APB_OP_WRITE_E
+  } vip_apb3_op_type_t;
+
 endpackage
 
 `endif

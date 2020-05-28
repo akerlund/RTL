@@ -21,7 +21,8 @@
 
 class tc_iir_basic_configuration extends iir_base_test;
 
-  iir_configuration_seq #(vip_apb3_cfg) iir_configuration_seq0;
+  iir_configuration_seq     #(vip_apb3_cfg) iir_configuration_seq0;
+  iir_read_coefficients_seq #(vip_apb3_cfg) iir_read_coefficients_seq0;
 
   `uvm_component_utils(tc_iir_basic_configuration)
 
@@ -76,7 +77,12 @@ class tc_iir_basic_configuration extends iir_base_test;
 
     iir_configuration_seq0.start(v_sqr.apb3_sequencer);
 
-    #1000us;
+    #1us;
+
+    iir_read_coefficients_seq0 = new();
+    iir_read_coefficients_seq0.start(v_sqr.apb3_sequencer);
+
+    #2us;
 
     phase.drop_objection(this);
 

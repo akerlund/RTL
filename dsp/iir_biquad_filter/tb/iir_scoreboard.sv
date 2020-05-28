@@ -52,6 +52,12 @@ class iir_scoreboard extends uvm_scoreboard;
   int number_of_passed;
   int number_of_failed;
 
+  // DSP Bi-Quad coefficients
+  real zero_b0;
+  real zero_b1;
+  real zero_b2;
+  real pole_a1;
+  real pole_a2;
 
   function new(string name, uvm_component parent);
     super.new(name, parent);
@@ -132,6 +138,33 @@ class iir_scoreboard extends uvm_scoreboard;
     all_apb_read_items.push_back(trans);
 
     `uvm_info(get_type_name(), $sformatf("Collected transfer:\n%s", trans.sprint()), UVM_LOW)
+
+    if (trans.paddr == IIR_BASE_ADDR_C + SR_ZERO_B0_ADDR_C) begin
+      zero_b0 = $signed(trans.prdata)/2**Q_BITS_C;
+      `uvm_info(get_type_name(), $sformatf("zero_b0: %f", zero_b0), UVM_LOW)
+    end
+
+    else if (trans.paddr == IIR_BASE_ADDR_C + SR_ZERO_B1_ADDR_C) begin
+      zero_b1 = $signed(trans.prdata)/2**Q_BITS_C;
+      `uvm_info(get_type_name(), $sformatf("zero_b1: %f", zero_b1), UVM_LOW)
+    end
+
+    else if (trans.paddr == IIR_BASE_ADDR_C + SR_ZERO_B2_ADDR_C) begin
+      zero_b2 = $signed(trans.prdata)/2**Q_BITS_C;
+      `uvm_info(get_type_name(), $sformatf("zero_b2: %f", zero_b2), UVM_LOW)
+    end
+
+    else if (trans.paddr == IIR_BASE_ADDR_C + SR_POLE_A1_ADDR_C) begin
+      pole_a1 = $signed(trans.prdata)/2**Q_BITS_C;
+      `uvm_info(get_type_name(), $sformatf("pole_a1: %f", pole_a1), UVM_LOW)
+    end
+
+    else if (trans.paddr == IIR_BASE_ADDR_C + SR_POLE_A2_ADDR_C) begin
+      pole_a2 = $signed(trans.prdata)/2**Q_BITS_C;
+      `uvm_info(get_type_name(), $sformatf("pole_a2: %f", pole_a2), UVM_LOW)
+    end
+
+
 
   endfunction
 

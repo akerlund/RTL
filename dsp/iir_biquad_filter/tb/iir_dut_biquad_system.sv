@@ -40,6 +40,10 @@ module iir_dut_biquad_system #(
   parameter int APB_ADDR_WIDTH_P    = -1,
   parameter int APB_DATA_WIDTH_P    = -1,
   parameter int APB_NR_OF_SLAVES_P  = -1,
+  parameter int OSC_BASE_ADDR_P     = -1,
+  parameter int OSC_PSEL_P          = -1,
+  parameter int IIR_BASE_ADDR_P     = -1,
+  parameter int IIR_PSEL_P          = -1,
   parameter int SYS_CLK_FREQUENCY_P = 250000000,
   parameter int PRIME_FREQUENCY_P   = 1000000,
   parameter int AXI_ID_P            = 1
@@ -61,8 +65,6 @@ module iir_dut_biquad_system #(
   output logic [APB_NR_OF_SLAVES_P-1 : 0]   [APB_DATA_WIDTH_P-1 : 0] apb3_prdata
 );
 
-  localparam int OSC_BASE_ADDR_C = 0;
-  localparam int IIR_BASE_ADDR_C = 16;
 
 
 
@@ -194,33 +196,33 @@ module iir_dut_biquad_system #(
 
 
   iir_biquad_apb_slave #(
-    .APB_BASE_ADDR_P   ( IIR_BASE_ADDR_C   ),
-    .APB_ADDR_WIDTH_P  ( APB_ADDR_WIDTH_P  ),
-    .APB_DATA_WIDTH_P  ( APB_DATA_WIDTH_P  )
+    .APB_BASE_ADDR_P   ( IIR_BASE_ADDR_P         ),
+    .APB_ADDR_WIDTH_P  ( APB_ADDR_WIDTH_P        ),
+    .APB_DATA_WIDTH_P  ( APB_DATA_WIDTH_P        )
   ) iir_biquad_apb_slave_i0 (
 
-    .clk               ( clk               ), // input
-    .rst_n             ( rst_n             ), // input
+    .clk               ( clk                     ), // input
+    .rst_n             ( rst_n                   ), // input
 
-    .apb3_paddr        ( apb3_paddr        ), // input
-    .apb3_psel         ( apb3_psel[1]      ), // input
-    .apb3_penable      ( apb3_penable      ), // input
-    .apb3_pwrite       ( apb3_pwrite       ), // input
-    .apb3_pwdata       ( apb3_pwdata       ), // input
-    .apb3_pready       ( apb3_pready[1]    ), // output
-    .apb3_prdata       ( apb3_prdata[1]    ), // output
+    .apb3_paddr        ( apb3_paddr              ), // input
+    .apb3_psel         ( apb3_psel[IIR_PSEL_P]   ), // input
+    .apb3_penable      ( apb3_penable            ), // input
+    .apb3_pwrite       ( apb3_pwrite             ), // input
+    .apb3_pwdata       ( apb3_pwdata             ), // input
+    .apb3_pready       ( apb3_pready[IIR_PSEL_P] ), // output
+    .apb3_prdata       ( apb3_prdata[IIR_PSEL_P] ), // output
 
-    .cr_iir_f0         ( cr_iir_f0         ), // output
-    .cr_iir_fs         ( cr_iir_fs         ), // output
-    .cr_iir_q          ( cr_iir_q          ), // output
-    .cr_iir_type       ( cr_iir_type       ), // output
-    .cr_bypass         ( cr_bypass         ), // output
+    .cr_iir_f0         ( cr_iir_f0               ), // output
+    .cr_iir_fs         ( cr_iir_fs               ), // output
+    .cr_iir_q          ( cr_iir_q                ), // output
+    .cr_iir_type       ( cr_iir_type             ), // output
+    .cr_bypass         ( cr_bypass               ), // output
 
-    .sr_zero_b0        ( sr_zero_b0        ), // input
-    .sr_zero_b1        ( sr_zero_b1        ), // input
-    .sr_zero_b2        ( sr_zero_b2        ), // input
-    .sr_pole_a1        ( sr_pole_a1        ), // input
-    .sr_pole_a2        ( sr_pole_a2        )  // input
+    .sr_zero_b0        ( sr_zero_b0              ), // input
+    .sr_zero_b1        ( sr_zero_b1              ), // input
+    .sr_zero_b2        ( sr_zero_b2              ), // input
+    .sr_pole_a1        ( sr_pole_a1              ), // input
+    .sr_pole_a2        ( sr_pole_a2              )  // input
   );
 
 
@@ -272,38 +274,38 @@ module iir_dut_biquad_system #(
 
 
   oscillator_top #(
-    .SYS_CLK_FREQUENCY_P ( SYS_CLK_FREQUENCY_P ),
-    .PRIME_FREQUENCY_P   ( PRIME_FREQUENCY_P   ),
-    .AXI_DATA_WIDTH_P    ( AXI_DATA_WIDTH_P    ),
-    .AXI_ID_WIDTH_P      ( AXI_ID_WIDTH_P      ),
-    .AXI_ID_P            ( AXI_ID_P            ),
-    .APB_BASE_ADDR_P     ( OSC_BASE_ADDR_C     ),
-    .APB_ADDR_WIDTH_P    ( APB_ADDR_WIDTH_P    ),
-    .APB_DATA_WIDTH_P    ( APB_DATA_WIDTH_P    ),
-    .WAVE_WIDTH_P        ( WAVE_WIDTH_P        ),
-    .Q_BITS_P            ( Q_BITS_P            )
+    .SYS_CLK_FREQUENCY_P ( SYS_CLK_FREQUENCY_P     ),
+    .PRIME_FREQUENCY_P   ( PRIME_FREQUENCY_P       ),
+    .AXI_DATA_WIDTH_P    ( AXI_DATA_WIDTH_P        ),
+    .AXI_ID_WIDTH_P      ( AXI_ID_WIDTH_P          ),
+    .AXI_ID_P            ( AXI_ID_P                ),
+    .APB_BASE_ADDR_P     ( OSC_BASE_ADDR_P         ),
+    .APB_ADDR_WIDTH_P    ( APB_ADDR_WIDTH_P        ),
+    .APB_DATA_WIDTH_P    ( APB_DATA_WIDTH_P        ),
+    .WAVE_WIDTH_P        ( WAVE_WIDTH_P            ),
+    .Q_BITS_P            ( Q_BITS_P                )
   ) oscillator_top_i0 (
-    .clk                 ( clk                 ), // input
-    .rst_n               ( rst_n               ), // input
-    .waveform            ( waveform            ), // output
-    .div_egr_tvalid      ( osc_div_tvalid      ), // output
-    .div_egr_tready      ( osc_div_tready      ), // input
-    .div_egr_tdata       ( osc_div_tdata       ), // output
-    .div_egr_tlast       ( osc_div_tlast       ), // output
-    .div_egr_tid         ( osc_div_tid         ), // output
-    .div_ing_tvalid      ( div_osc_tvalid      ), // input
-    .div_ing_tready      ( div_osc_tready      ), // output
-    .div_ing_tdata       ( div_osc_tdata       ), // input
-    .div_ing_tlast       ( div_osc_tlast       ), // input
-    .div_ing_tid         ( div_osc_tid         ), // input
-    .div_ing_tuser       ( div_osc_tuser       ), // input
-    .apb3_paddr          ( apb3_paddr          ), // input
-    .apb3_psel           ( apb3_psel[0]        ), // output
-    .apb3_penable        ( apb3_penable        ), // output
-    .apb3_pwrite         ( apb3_pwrite         ), // input
-    .apb3_pwdata         ( apb3_pwdata         ), // input
-    .apb3_pready         ( apb3_pready[0]      ), // input
-    .apb3_prdata         ( apb3_prdata[0]      )  // input
+    .clk                 ( clk                     ), // input
+    .rst_n               ( rst_n                   ), // input
+    .waveform            ( waveform                ), // output
+    .div_egr_tvalid      ( osc_div_tvalid          ), // output
+    .div_egr_tready      ( osc_div_tready          ), // input
+    .div_egr_tdata       ( osc_div_tdata           ), // output
+    .div_egr_tlast       ( osc_div_tlast           ), // output
+    .div_egr_tid         ( osc_div_tid             ), // output
+    .div_ing_tvalid      ( div_osc_tvalid          ), // input
+    .div_ing_tready      ( div_osc_tready          ), // output
+    .div_ing_tdata       ( div_osc_tdata           ), // input
+    .div_ing_tlast       ( div_osc_tlast           ), // input
+    .div_ing_tid         ( div_osc_tid             ), // input
+    .div_ing_tuser       ( div_osc_tuser           ), // input
+    .apb3_paddr          ( apb3_paddr              ), // input
+    .apb3_psel           ( apb3_psel[OSC_PSEL_P]   ), // output
+    .apb3_penable        ( apb3_penable            ), // output
+    .apb3_pwrite         ( apb3_pwrite             ), // input
+    .apb3_pwdata         ( apb3_pwdata             ), // input
+    .apb3_pready         ( apb3_pready[OSC_PSEL_P] ), // input
+    .apb3_prdata         ( apb3_prdata[OSC_PSEL_P] )  // input
   );
 
   long_division_axi4s_if #(
