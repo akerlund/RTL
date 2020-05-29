@@ -72,13 +72,15 @@ class vip_apb3_base_seq #(
     apb_item.paddr  = paddr;
     apb_item.psel   = psel;
     apb_item.pwrite = APB_OP_READ_E;
+    apb_item.pwdata = '0;
 
     req = apb_item;
     start_item(req);
     finish_item(req);
 
-    //get_response(rsp);
-    //prdata = rsp.prdata;
+    get_response(rsp);
+    prdata = rsp.prdata;
+    //`uvm_info(get_type_name(), $sformatf("Driver response:\n%b", prdata), UVM_LOW)
 
   endtask
 

@@ -101,26 +101,31 @@ class vip_apb3_driver #(
       vif.pwrite <= req.pwrite;
       vif.pwdata <= req.pwdata;
 
-      // Phase T1 (psel and pwrite asserted)
       @(posedge vif.clk);
 
-      vif.penable  <= '1;
+      vif.penable <= '1;
 
-      // Phase T2 (Penable asserted)
       @(posedge vif.clk);
 
-      // Phase T3 (Wait until pready)
-      while(!vif.pready[req.psel]) begin
+      while (!vif.pready[req.psel]) begin
         @(posedge vif.clk);
       end
 
+      if (req.pwrite == APB_OP_READ_E) begin
+        rsp = new();
+        rsp.prdata = vif.prdata[req.psel];
+        rsp.set_id_info(req);
+        seq_item_port.put(rsp);
+      end
+
       vif.paddr   <= '0;
-      vif.psel    <= '0;
+      vif.psel    <=  0;
       vif.penable <= '0;
       vif.pwrite  <= '0;
       vif.pwdata  <= '0;
 
       seq_item_port.item_done();
+
 
     end
 
