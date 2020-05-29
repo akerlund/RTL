@@ -46,8 +46,8 @@ package vip_fixed_point_pkg;
 
     if (negative) begin
       // Shift operations to make the operator variable signed
-      operator = (operator << (32-n-q));
-      operator = (operator >>> (32-n-q));
+      operator = (operator <<  (64-n-q));
+      operator = (operator >>> (64-n-q));
       fixed_point_to_float = (real'(operator) / (2**q)); // Typecasting to preserve the decimals
     end
     else begin
