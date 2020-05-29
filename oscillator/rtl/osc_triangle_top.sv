@@ -35,14 +35,14 @@ module osc_triangle_top #(
     parameter int COUNTER_WIDTH_P     = $clog2(SYS_CLK_FREQUENCY_P)
   )(
     // Clock and reset
-    input  wire                          clk,
-    input  wire                          rst_n,
+    input  wire                                 clk,
+    input  wire                                 rst_n,
 
     // Waveform output
-    output logic    [WAVE_WIDTH_P-1 : 0] osc_triangle,
+    output logic signed    [WAVE_WIDTH_P-1 : 0] osc_triangle,
 
     // The counter period of the Clock Enable, i.e., PRIME_FREQUENCY_P / frequency
-    input  wire  [COUNTER_WIDTH_P-1 : 0] cr_clock_enable
+    input  wire         [COUNTER_WIDTH_P-1 : 0] cr_clock_enable
   );
 
   // The prime (or higest/base) frequency's period in system clock periods, e.g.,

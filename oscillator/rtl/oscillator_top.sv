@@ -34,34 +34,34 @@ module oscillator_top #(
     parameter int Q_BITS_P            = -1
   )(
     // Clock and reset
-    input  wire                           clk,
-    input  wire                           rst_n,
+    input  wire                                 clk,
+    input  wire                                 rst_n,
 
     // Waveform output
-    output logic     [WAVE_WIDTH_P-1 : 0] waveform,
+    output logic signed    [WAVE_WIDTH_P-1 : 0] waveform,
 
     // Long division interface
-    output logic                          div_egr_tvalid,
-    input  wire                           div_egr_tready,
-    output logic [AXI_DATA_WIDTH_P-1 : 0] div_egr_tdata,
-    output logic                          div_egr_tlast,
-    output logic   [AXI_ID_WIDTH_P-1 : 0] div_egr_tid,
+    output logic                                div_egr_tvalid,
+    input  wire                                 div_egr_tready,
+    output logic       [AXI_DATA_WIDTH_P-1 : 0] div_egr_tdata,
+    output logic                                div_egr_tlast,
+    output logic         [AXI_ID_WIDTH_P-1 : 0] div_egr_tid,
 
-    input  wire                           div_ing_tvalid,
-    output logic                          div_ing_tready,
-    input  wire  [AXI_DATA_WIDTH_P-1 : 0] div_ing_tdata,     // Quotient
-    input  wire                           div_ing_tlast,
-    input  wire    [AXI_ID_WIDTH_P-1 : 0] div_ing_tid,
-    input  wire                           div_ing_tuser,     // Overflow
+    input  wire                                 div_ing_tvalid,
+    output logic                                div_ing_tready,
+    input  wire        [AXI_DATA_WIDTH_P-1 : 0] div_ing_tdata,  // Quotient
+    input  wire                                 div_ing_tlast,
+    input  wire          [AXI_ID_WIDTH_P-1 : 0] div_ing_tid,
+    input  wire                                 div_ing_tuser,  // Overflow
 
     // APB interface
-    input  wire                           apb3_psel,
-    output logic                          apb3_pready,
-    output logic [APB_DATA_WIDTH_P-1 : 0] apb3_prdata,
-    input  wire                           apb3_pwrite,
-    input  wire                           apb3_penable,
-    input  wire  [APB_ADDR_WIDTH_P-1 : 0] apb3_paddr,
-    input  wire  [APB_DATA_WIDTH_P-1 : 0] apb3_pwdata
+    input  wire                                 apb3_psel,
+    output logic                                apb3_pready,
+    output logic       [APB_DATA_WIDTH_P-1 : 0] apb3_prdata,
+    input  wire                                 apb3_pwrite,
+    input  wire                                 apb3_penable,
+    input  wire        [APB_ADDR_WIDTH_P-1 : 0] apb3_paddr,
+    input  wire        [APB_DATA_WIDTH_P-1 : 0] apb3_pwdata
   );
 
   logic  [APB_DATA_WIDTH_P-1 : 0] cr_waveform_select;

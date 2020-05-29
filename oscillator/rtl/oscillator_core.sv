@@ -34,30 +34,30 @@ module oscillator_core #(
     parameter int Q_BITS_P            = -1
   )(
     // Clock and reset
-    input  wire                           clk,
-    input  wire                           rst_n,
+    input  wire                                  clk,
+    input  wire                                  rst_n,
 
     // Waveform output
-    output logic     [WAVE_WIDTH_P-1 : 0] waveform,
+    output logic signed     [WAVE_WIDTH_P-1 : 0] waveform,
 
     // Long division interface
-    output logic                          div_egr_tvalid,
-    input  wire                           div_egr_tready,
-    output logic [AXI_DATA_WIDTH_P-1 : 0] div_egr_tdata,
-    output logic                          div_egr_tlast,
-    output logic   [AXI_ID_WIDTH_P-1 : 0] div_egr_tid,
+    output logic                                 div_egr_tvalid,
+    input  wire                                  div_egr_tready,
+    output logic        [AXI_DATA_WIDTH_P-1 : 0] div_egr_tdata,
+    output logic                                 div_egr_tlast,
+    output logic          [AXI_ID_WIDTH_P-1 : 0] div_egr_tid,
 
-    input  wire                           div_ing_tvalid,
-    output logic                          div_ing_tready,
-    input  wire  [AXI_DATA_WIDTH_P-1 : 0] div_ing_tdata,     // Quotient
-    input  wire                           div_ing_tlast,
-    input  wire    [AXI_ID_WIDTH_P-1 : 0] div_ing_tid,
-    input  wire                           div_ing_tuser,     // Overflow
+    input  wire                                  div_ing_tvalid,
+    output logic                                 div_ing_tready,
+    input  wire         [AXI_DATA_WIDTH_P-1 : 0] div_ing_tdata,     // Quotient
+    input  wire                                  div_ing_tlast,
+    input  wire           [AXI_ID_WIDTH_P-1 : 0] div_ing_tid,
+    input  wire                                  div_ing_tuser,     // Overflow
 
     // Configuration registers
-    input  wire  [APB_DATA_WIDTH_P-1 : 0] cr_waveform_select,
-    input  wire  [APB_DATA_WIDTH_P-1 : 0] cr_frequency,
-    input  wire  [APB_DATA_WIDTH_P-1 : 0] cr_duty_cycle
+    input  wire         [APB_DATA_WIDTH_P-1 : 0] cr_waveform_select,
+    input  wire         [APB_DATA_WIDTH_P-1 : 0] cr_frequency,
+    input  wire         [APB_DATA_WIDTH_P-1 : 0] cr_duty_cycle
   );
 
   // This is used for frequency calculations
@@ -81,11 +81,11 @@ module oscillator_core #(
 
   osc_waveform_type_t osc_selected_waveform;
 
-  logic  [COUNTER_WIDTH_C-1 : 0] sqr_enable_period;
-  logic  [COUNTER_WIDTH_C-1 : 0] tri_enable_period;
-  logic [APB_DATA_WIDTH_P-1 : 0] cr_frequency_d0;
-  logic     [WAVE_WIDTH_P-1 : 0] wave_square;
-  logic     [WAVE_WIDTH_P-1 : 0] wave_triangle;
+  logic         [COUNTER_WIDTH_C-1 : 0] sqr_enable_period;
+  logic         [COUNTER_WIDTH_C-1 : 0] tri_enable_period;
+  logic        [APB_DATA_WIDTH_P-1 : 0] cr_frequency_d0;
+  logic signed     [WAVE_WIDTH_P-1 : 0] wave_square;
+  logic signed     [WAVE_WIDTH_P-1 : 0] wave_triangle;
 
   assign osc_selected_waveform = osc_waveform_type_t'(cr_waveform_select);
 
@@ -99,11 +99,11 @@ module oscillator_core #(
       case (osc_selected_waveform)
 
         OSC_SQUARE_E: begin
-          waveform <= wave_square;
+          waveform <= wave_square >>> (WAVE_WIDTH_P - Q_BITS_P - 1);
         end
 
         OSC_TRIANGLE_E: begin
-          waveform <= wave_triangle;
+          waveform <= wave_triangle >>> (WAVE_WIDTH_P - Q_BITS_P - 1);
         end
 
         // OSC_SAW_E: begin

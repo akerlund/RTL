@@ -25,15 +25,15 @@ module osc_saw #(
     parameter int SAW_WIDTH_P     = -1
     parameter int COUNTER_WIDTH_P = -1
   )(
-    input  wire                          clk,
-    input  wire                          rst_n,
+    input  wire                                 clk,
+    input  wire                                 rst_n,
 
-    output logic     [SAW_WIDTH_P-1 : 0] osc_saw,
-    input  wire  [COUNTER_WIDTH_P-1 : 0] cr_frequency
+    output logic signed     [SAW_WIDTH_P-1 : 0] osc_saw,
+    input  wire         [COUNTER_WIDTH_P-1 : 0] cr_frequency
   );
 
-  localparam logic [COUNTER_WIDTH_P-1 : 0] SAW_HIGH_C = {1'b0, {(COUNTER_WIDTH_P-1){1'b1}}};
-  localparam logic [COUNTER_WIDTH_P-1 : 0] SAW_LOW_C  = {1'b1, {(COUNTER_WIDTH_P-1){1'b0}}};
+  localparam logic signed [COUNTER_WIDTH_P-1 : 0] SAW_HIGH_C = {1'b0, {(COUNTER_WIDTH_P-1){1'b1}}};
+  localparam logic signed [COUNTER_WIDTH_P-1 : 0] SAW_LOW_C  = {1'b1, {(COUNTER_WIDTH_P-1){1'b0}}};
 
   typedef enum {
     RELOAD_E = 0,

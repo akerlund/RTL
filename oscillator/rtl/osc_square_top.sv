@@ -27,13 +27,13 @@ module osc_square_top #(
     parameter int APB_DATA_WIDTH_P = -1
   )(
     // Clock and reset
-    input  wire                           clk,
-    input  wire                           rst_n,
-    output logic     [WAVE_WIDTH_P-1 : 0] osc_square,
+    input  wire                                  clk,
+    input  wire                                  rst_n,
+    output logic signed     [WAVE_WIDTH_P-1 : 0] osc_square,
 
     // Configuration registers
-    input  wire  [APB_DATA_WIDTH_P-1 : 0] cr_duty_cycle,
-    input  wire   [COUNTER_WIDTH_P-1 : 0] cr_clock_enable // For example; SYS_CLK_FREQUENCY_P / cr_frequency
+    input  wire         [APB_DATA_WIDTH_P-1 : 0] cr_duty_cycle,
+    input  wire          [COUNTER_WIDTH_P-1 : 0] cr_clock_enable // For example; SYS_CLK_FREQUENCY_P / cr_frequency
   );
 
   logic sqr_enable;
