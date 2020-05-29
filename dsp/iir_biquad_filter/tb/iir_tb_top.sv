@@ -40,7 +40,6 @@ module iir_tb_top;
   iir_dut_biquad_system #(
     // Oscillator
     .WAVE_WIDTH_P       ( WAVE_WIDTH_C                    ),
-    .COUNTER_WIDTH_P    ( COUNTER_WIDTH_C                 ),
     // Divider and ...
     .N_BITS_P           ( N_BITS_C                        ),
     .Q_BITS_P           ( Q_BITS_C                        ),

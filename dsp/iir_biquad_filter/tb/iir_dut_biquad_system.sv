@@ -32,7 +32,6 @@
 
 module iir_dut_biquad_system #(
   parameter int WAVE_WIDTH_P        = -1, // Resolution of the waves
-  parameter int COUNTER_WIDTH_P     = -1, // Resolution of the counters
   parameter int N_BITS_P            = -1, // Fixed point resolution
   parameter int Q_BITS_P            = -1, // Fixed point resolution
   parameter int AXI_DATA_WIDTH_P    = -1,
@@ -64,9 +63,6 @@ module iir_dut_biquad_system #(
   output logic                            [APB_NR_OF_SLAVES_P-1 : 0] apb3_pready,
   output logic [APB_NR_OF_SLAVES_P-1 : 0]   [APB_DATA_WIDTH_P-1 : 0] apb3_prdata
 );
-
-
-
 
   // Sampling enable
   logic                                   sampling_enable;
@@ -379,11 +375,6 @@ module iir_dut_biquad_system #(
     .egr_tid          ( div_fen_tid      ), // output
     .egr_tuser        ( div_fen_tuser    )  // output
   );
-
-
-
-
-
 
 endmodule
 

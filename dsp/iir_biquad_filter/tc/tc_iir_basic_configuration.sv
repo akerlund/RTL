@@ -33,14 +33,14 @@ class tc_iir_basic_configuration extends iir_base_test;
     super.new(name, parent);
 
     // IIR parameters
-    iir_f0     = 5000;
-    iir_fs     = 250000;
+    iir_f0     = 8000;
+    iir_fs     = 64000;
     iir_q      = 1;
     iir_type   = IIR_LOW_PASS_E;
     iir_bypass = '0;
 
     // Oscillator parameters
-    osc_f             = 10000;
+    osc_f             = 1000;
     osc_duty_cycle    = 0;
     osc_waveform_type = OSC_TRIANGLE_E;
 
@@ -82,7 +82,7 @@ class tc_iir_basic_configuration extends iir_base_test;
     iir_read_coefficients_seq0 = new();
     iir_read_coefficients_seq0.start(v_sqr.apb3_sequencer);
 
-    #2us;
+    #10ms;
 
     phase.drop_objection(this);
 

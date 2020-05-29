@@ -60,7 +60,7 @@ module iir_biquad_core #(
     input  wire  signed [N_BITS_P-1 : 0] cr_zero_b2
   );
 
-  localparam int MUL_HIGH_C = N_BITS_P - 1;
+  localparam int MUL_HIGH_C = N_BITS_P + Q_BITS_P - 1;
   localparam int MUL_LOW_C  = Q_BITS_P;
 
   typedef enum {
@@ -78,7 +78,6 @@ module iir_biquad_core #(
   logic signed [N_BITS_P-1 : 0] x2;
   logic signed [N_BITS_P-1 : 0] y00;
   logic signed [N_BITS_P-1 : 0] y1;
-  logic signed [N_BITS_P-1 : 0] y2;
 
   // DSP multiplication register
   logic signed [2*N_BITS_P-1 : 0] mul_product;
@@ -98,7 +97,6 @@ module iir_biquad_core #(
       x1          <= '0;
       x2          <= '0;
       y1          <= '0;
-      y2          <= '0;
       mul_product <= '0;
     end
     else begin
@@ -136,14 +134,14 @@ module iir_biquad_core #(
         STAGE_3_E: begin
           iir_state   <= STAGE_4_E;
           y00         <= y00 + mul_product_section;  // Adding (b2*x[n-2])
-          mul_product <= cr_pole_a1 * y1;
+          mul_product <= cr_pole_a1 * y0;
         end
 
         // -a2*y[n-2]
         STAGE_4_E: begin
           iir_state   <= STAGE_5_E;
           y00         <= y00 - mul_product_section;  // Subtracting (a1*y[n-1])
-          mul_product <= cr_pole_a2 * y2;
+          mul_product <= cr_pole_a2 * y1;
         end
 
         STAGE_5_E: begin
@@ -153,7 +151,6 @@ module iir_biquad_core #(
           x1        <= x0;
           x2        <= x1;
           y1        <= y0;
-          y2        <= y1;
         end
 
       endcase

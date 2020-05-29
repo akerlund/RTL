@@ -96,8 +96,9 @@ module iir_biquad_top #(
     output logic signed   [APB_DATA_WIDTH_P-1 : 0] sr_pole_a2
   );
 
-  localparam logic signed [N_BITS_P-1 : 0] ONE_C = (1 << Q_BITS_P);
-  localparam logic signed [N_BITS_P-1 : 0] PI2   = {'0, pi_8_4_pos_n4_q50[53 : 50-Q_BITS_P]};
+  localparam logic signed [N_BITS_P-1 : 0] ONE_C           = (1 << Q_BITS_P);
+  localparam logic signed [N_BITS_P-1 : 0] PI2_C           = {'0, pi_8_4_pos_n4_q50[53 : 50-Q_BITS_P]};
+  localparam int                           CORDIC_Q_BITS_C = AXI_DATA_WIDTH_P - 4;
 
   typedef enum {
     INITIALIZE_FILTER_E,
@@ -114,10 +115,32 @@ module iir_biquad_top #(
     SEND_DIVISOR_2Q_E,
     WAIT_QUOTIENT_W0_SINE_2Q_E,
     CALCULATE_COEFFICIENTS_E,
+
+
+    SEND_DIVIDEND_B0_E,
+    SEND_DIVISOR_A0_0_E,
+    WAIT_QUOTIENT_B0_A0_E,
+    SEND_DIVIDEND_B1_E,
+    SEND_DIVISOR_A0_1_E,
+    WAIT_QUOTIENT_B1_A0_E,
+    SEND_DIVIDEND_B2_E,
+    SEND_DIVISOR_A0_2_E,
+    WAIT_QUOTIENT_B0_A2_E,
+    SEND_DIVIDEND_A1_E,
+    SEND_DIVISOR_A0_3_E,
+    WAIT_QUOTIENT_A1_A0_E,
+    SEND_DIVIDEND_A2_E,
+    SEND_DIVISOR_A0_4_E,
+    WAIT_QUOTIENT_A2_A0_E,
+
     WAIT_FOR_NEW_CONFIGURATION_E
   } top_state_t;
 
   top_state_t top_state;
+
+  // CORDIC
+  logic        [AXI_DATA_WIDTH_P-1 : 0] cordic_sine;
+  logic        [AXI_DATA_WIDTH_P-1 : 0] cordic_cosine;
 
   // Configuration registers
   logic        [APB_DATA_WIDTH_P-1 : 0] iir_f0;
@@ -127,23 +150,27 @@ module iir_biquad_top #(
   logic        [APB_DATA_WIDTH_P-1 : 0] bypass;
 
   // MVP coefficients
-  logic signed [N_BITS_P-1 : 0] w0;
-  logic signed [N_BITS_P-1 : 0] sine_of_w0;
-  logic signed [N_BITS_P-1 : 0] cosine_of_w0;
-  logic signed [N_BITS_P-1 : 0] alfa;
+  logic signed         [N_BITS_P-1 : 0] w0;
+  logic signed         [N_BITS_P-1 : 0] sine_of_w0;
+  logic signed         [N_BITS_P-1 : 0] cosine_of_w0;
+  logic signed         [N_BITS_P-1 : 0] alfa;
 
   // Zero and pole coefficients
-  logic signed [N_BITS_P-1 : 0] cr_zero_b0;
-  logic signed [N_BITS_P-1 : 0] cr_zero_b1;
-  logic signed [N_BITS_P-1 : 0] cr_zero_b2;
-  logic signed [N_BITS_P-1 : 0] cr_pole_a1;
-  logic signed [N_BITS_P-1 : 0] cr_pole_a2;
+  logic signed         [N_BITS_P-1 : 0] cr_zero_b0;
+  logic signed         [N_BITS_P-1 : 0] cr_zero_b1;
+  logic signed         [N_BITS_P-1 : 0] cr_zero_b2;
+  logic signed         [N_BITS_P-1 : 0] cr_pole_a0;
+  logic signed         [N_BITS_P-1 : 0] cr_pole_a1;
+  logic signed         [N_BITS_P-1 : 0] cr_pole_a2;
 
   assign sr_zero_b0 = cr_zero_b0;
   assign sr_zero_b1 = cr_zero_b1;
   assign sr_zero_b2 = cr_zero_b2;
   assign sr_pole_a1 = cr_pole_a1;
   assign sr_pole_a2 = cr_pole_a2;
+
+  assign {cordic_sine, cordic_cosine} = cordic_ing_tdata;
+
 
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
@@ -179,6 +206,7 @@ module iir_biquad_top #(
       cr_zero_b0        <= '0;
       cr_zero_b1        <= '0;
       cr_zero_b2        <= '0;
+      cr_pole_a0        <= '0;
       cr_pole_a1        <= '0;
       cr_pole_a2        <= '0;
 
@@ -229,7 +257,7 @@ module iir_biquad_top #(
         WAIT_QUOTIENT_F0_FS_E: begin
           div_ing_tready <= '1;
           if (div_ing_tvalid) begin
-            w0             <= div_ing_tdata*PI2 >>> Q_BITS_P; // w0 = 2 * pi * f0 /Fs
+            w0             <= div_ing_tdata*PI2_C >>> Q_BITS_P; // w0 = 2 * pi * f0 /Fs
             div_ing_tready <= '0;
             top_state      <= SEND_DIVIDEND_W0_E;
           end
@@ -250,7 +278,7 @@ module iir_biquad_top #(
         SEND_DIVISOR_2PI_E: begin
           if (div_egr_tready) begin
             if (!div_egr_tlast) begin                    // Dividend was sent
-              div_egr_tdata  <= PI2;
+              div_egr_tdata  <= PI2_C;
               div_egr_tlast  <= '1;
             end
             else begin
@@ -265,7 +293,7 @@ module iir_biquad_top #(
         WAIT_QUOTIENT_W0_2PI_E: begin
           div_ing_tready <= '1;
           if (div_ing_tvalid) begin
-            w0             <= (div_ing_tdata[Q_BITS_P-1 : 0] * PI2) >>> Q_BITS_P; // w0 = 2 * pi * f0 /Fs % 2PI * 2PI
+            w0             <= (div_ing_tdata[Q_BITS_P-1 : 0] * PI2_C) >>> Q_BITS_P; // w0 = 2 * pi * f0 /Fs % 2PI * 2PI
             div_ing_tready <= '0;
             top_state      <= SEND_SINE_OF_W0_E;
           end
@@ -293,11 +321,11 @@ module iir_biquad_top #(
         WAIT_FOR_CORDIC_E: begin
           cordic_ing_tready <= '1;
           if (cordic_ing_tvalid) begin
-            // CORDIC always returns +-1, the 4 MSBs are the integer part
-            sine_of_w0[4+Q_BITS_P : 0]   <= cordic_ing_tdata[AXI_DATA_WIDTH_P-1   : 0];
-            cosine_of_w0[4+Q_BITS_P : 0] <= cordic_ing_tdata[2*AXI_DATA_WIDTH_P-1 : AXI_DATA_WIDTH_P];
-            cordic_ing_tready            <= '0;
-            top_state                    <= SEND_DIVIDEND_SINE_W0_E;
+            // CORDIC always returns +-1, the MSB is the sign, the rest are q-bits
+            sine_of_w0        <= cordic_sine   >> (CORDIC_Q_BITS_C - Q_BITS_P);
+            cosine_of_w0      <= cordic_cosine >> (CORDIC_Q_BITS_C - Q_BITS_P);
+            cordic_ing_tready <= '0;
+            top_state         <= SEND_DIVIDEND_SINE_W0_E;
           end
         end
 
@@ -315,7 +343,7 @@ module iir_biquad_top #(
         SEND_DIVISOR_2Q_E: begin
           if (div_egr_tready) begin
             if (!div_egr_tlast) begin                    // Dividend was sent
-              div_egr_tdata  <= 2*cr_iir_q >>> Q_BITS_P;
+              div_egr_tdata  <= cr_iir_q << 2;
               div_egr_tlast  <= '1;
             end
             else begin
@@ -338,13 +366,15 @@ module iir_biquad_top #(
 
         CALCULATE_COEFFICIENTS_E: begin
 
-          top_state <= WAIT_FOR_NEW_CONFIGURATION_E;
+          top_state <= SEND_DIVIDEND_B0_E;
 
           iir_f0   <= cr_iir_f0;
           iir_fs   <= cr_iir_fs;
           iir_q    <= cr_iir_q;
           iir_type <= cr_iir_type;
           bypass   <= cr_bypass;
+
+          cr_pole_a0 <= ONE_C + alfa;
 
           case (cr_iir_type)
 
@@ -374,6 +404,182 @@ module iir_biquad_top #(
 
           endcase
         end
+
+        // ---------------------------------------------------------------------
+        // Normalizing b0 (divide with a0)
+        // ---------------------------------------------------------------------
+        SEND_DIVIDEND_B0_E: begin
+
+          div_egr_tvalid <= '1;
+          div_egr_tdata  <= cr_zero_b0;
+          div_egr_tlast  <= '0;
+          div_egr_tid    <= AXI4S_ID_P;
+          top_state      <= SEND_DIVISOR_A0_0_E;
+        end
+
+        SEND_DIVISOR_A0_0_E: begin
+          if (div_egr_tready) begin
+            if (!div_egr_tlast) begin
+              div_egr_tdata  <= cr_pole_a0;
+              div_egr_tlast  <= '1;
+            end
+            else begin
+              div_egr_tvalid <= '0;
+              div_egr_tlast  <= '0;
+              top_state      <= WAIT_QUOTIENT_B0_A0_E;
+            end
+          end
+        end
+
+        WAIT_QUOTIENT_B0_A0_E: begin
+          div_ing_tready <= '1;
+          if (div_ing_tvalid) begin
+            cr_zero_b0     <= div_ing_tdata;
+            div_ing_tready <= '0;
+            top_state      <= SEND_DIVIDEND_B1_E;
+          end
+        end
+
+        // ---------------------------------------------------------------------
+        // Normalizing b1 (divide with a0)
+        // ---------------------------------------------------------------------
+        SEND_DIVIDEND_B1_E: begin
+
+          div_egr_tvalid <= '1;
+          div_egr_tdata  <= cr_zero_b1;
+          div_egr_tlast  <= '0;
+          div_egr_tid    <= AXI4S_ID_P;
+          top_state      <= SEND_DIVISOR_A0_1_E;
+        end
+
+        SEND_DIVISOR_A0_1_E: begin
+          if (div_egr_tready) begin
+            if (!div_egr_tlast) begin
+              div_egr_tdata  <= cr_pole_a0;
+              div_egr_tlast  <= '1;
+            end
+            else begin
+              div_egr_tvalid <= '0;
+              div_egr_tlast  <= '0;
+              top_state      <= WAIT_QUOTIENT_B1_A0_E;
+            end
+          end
+        end
+
+        WAIT_QUOTIENT_B1_A0_E: begin
+          div_ing_tready <= '1;
+          if (div_ing_tvalid) begin
+            cr_zero_b1     <= div_ing_tdata;
+            div_ing_tready <= '0;
+            top_state      <= SEND_DIVIDEND_B2_E;
+          end
+        end
+
+        // ---------------------------------------------------------------------
+        // Normalizing b2 (divide with a0)
+        // ---------------------------------------------------------------------
+        SEND_DIVIDEND_B2_E: begin
+
+          div_egr_tvalid <= '1;
+          div_egr_tdata  <= cr_zero_b2;
+          div_egr_tlast  <= '0;
+          div_egr_tid    <= AXI4S_ID_P;
+          top_state      <= SEND_DIVISOR_A0_2_E;
+        end
+
+        SEND_DIVISOR_A0_2_E: begin
+          if (div_egr_tready) begin
+            if (!div_egr_tlast) begin
+              div_egr_tdata  <= cr_pole_a0;
+              div_egr_tlast  <= '1;
+            end
+            else begin
+              div_egr_tvalid <= '0;
+              div_egr_tlast  <= '0;
+              top_state      <= WAIT_QUOTIENT_B0_A2_E;
+            end
+          end
+        end
+
+        WAIT_QUOTIENT_B0_A2_E: begin
+          div_ing_tready <= '1;
+          if (div_ing_tvalid) begin
+            cr_zero_b2     <= div_ing_tdata;
+            div_ing_tready <= '0;
+            top_state      <= SEND_DIVIDEND_A1_E;
+          end
+        end
+
+        // ---------------------------------------------------------------------
+        // Normalizing a1 (divide with a0)
+        // ---------------------------------------------------------------------
+        SEND_DIVIDEND_A1_E: begin
+
+          div_egr_tvalid <= '1;
+          div_egr_tdata  <= cr_pole_a1;
+          div_egr_tlast  <= '0;
+          div_egr_tid    <= AXI4S_ID_P;
+          top_state      <= SEND_DIVISOR_A0_3_E;
+        end
+
+        SEND_DIVISOR_A0_3_E: begin
+          if (div_egr_tready) begin
+            if (!div_egr_tlast) begin
+              div_egr_tdata  <= cr_pole_a0;
+              div_egr_tlast  <= '1;
+            end
+            else begin
+              div_egr_tvalid <= '0;
+              div_egr_tlast  <= '0;
+              top_state      <= WAIT_QUOTIENT_A1_A0_E;
+            end
+          end
+        end
+
+        WAIT_QUOTIENT_A1_A0_E: begin
+          div_ing_tready <= '1;
+          if (div_ing_tvalid) begin
+            cr_pole_a1     <= div_ing_tdata;
+            div_ing_tready <= '0;
+            top_state      <= SEND_DIVIDEND_A2_E;
+          end
+        end
+
+        // ---------------------------------------------------------------------
+        // Normalizing a2 (divide with a0)
+        // ---------------------------------------------------------------------
+        SEND_DIVIDEND_A2_E: begin
+
+          div_egr_tvalid <= '1;
+          div_egr_tdata  <= cr_pole_a2;
+          div_egr_tlast  <= '0;
+          div_egr_tid    <= AXI4S_ID_P;
+          top_state      <= SEND_DIVISOR_A0_4_E;
+        end
+
+        SEND_DIVISOR_A0_4_E: begin
+          if (div_egr_tready) begin
+            if (!div_egr_tlast) begin
+              div_egr_tdata  <= cr_pole_a0;
+              div_egr_tlast  <= '1;
+            end
+            else begin
+              div_egr_tvalid <= '0;
+              div_egr_tlast  <= '0;
+              top_state      <= WAIT_QUOTIENT_A2_A0_E;
+            end
+          end
+        end
+
+        WAIT_QUOTIENT_A2_A0_E: begin
+          div_ing_tready <= '1;
+          if (div_ing_tvalid) begin
+            cr_pole_a2     <= div_ing_tdata;
+            div_ing_tready <= '0;
+            top_state      <= WAIT_FOR_NEW_CONFIGURATION_E;
+          end
+        end
+
 
         WAIT_FOR_NEW_CONFIGURATION_E: begin
 

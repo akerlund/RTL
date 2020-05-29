@@ -19,10 +19,12 @@ set rtl_directories [list \
 
 set uvm_directories [list \
   "$git_root/vip/vip_apb3_agent/" \
+  "$git_root/vip/vip_dsp/" \
   "$module_path/tb/" \
   "$module_path/tc/"];
 
 set package_files [list \
+  "$module_path/rtl/iir_biquad_types_pkg.sv" \
   "$git_root/vip/vip_math/vip_math_pkg.sv" \
   "$git_root/vip/vip_dsp/vip_dsp_pkg.sv" \
   "$git_root/vip/vip_fixed_point/vip_fixed_point_pkg.sv" \
@@ -30,8 +32,7 @@ set package_files [list \
   "$git_root/oscillator/rtl/oscillator_types_pkg.sv" \
   "$git_root/math/cordic/rtl/cordic_axi4s_types_pkg.sv" \
   "$git_root/math/cordic/rtl/cordic_atan_radian_table_pkg.sv" \
-  "$module_path/rtl/iir_biquad_apb_slave_addr_pkg.sv" \
-  "$module_path/rtl/iir_biquad_types_pkg.sv"];
+  "$module_path/rtl/iir_biquad_apb_slave_addr_pkg.sv"];
 
 set header_files [list \
   "$module_path/tb/tb.svh" \

@@ -80,6 +80,7 @@ module iir_biquad_apb_slave #(
         if (apb3_penable) begin
 
           apb3_pready <= '1;
+          apb3_prdata <= apb3_prdata;
 
           // ---------------------------------------------------------------------
           // Writes
