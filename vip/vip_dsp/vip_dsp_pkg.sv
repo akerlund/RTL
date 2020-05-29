@@ -19,12 +19,67 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+
 `ifndef VIP_DSP_PKG
 `define VIP_DSP_PKG
 
+import vip_math_pkg::*;
+import iir_biquad_types_pkg::*;
+
 package vip_dsp_pkg;
 
-  `include "biquad_coefficients.svh"
+  typedef struct {
+    real w0;
+    real alfa;
+    real b0;
+    real b1;
+    real b2;
+    real a0;
+    real a1;
+    real a2;
+  } biquad_coefficients_t;
+
+
+  function biquad_coefficients_t biquad_coefficients(real f0, real fs, real q, iir_biquad_types_pkg::iir_biquad_type_t bq_type);
+
+    biquad_coefficients_t coef;
+
+    coef.w0   = 2 * vip_math_pkg::vip_pi * f0 / fs;
+    coef.alfa = $sin(coef.w0) / (2 * q);
+
+    case (bq_type)
+
+      iir_biquad_types_pkg::IIR_LOW_PASS_E: begin
+        coef.b0 =  (1 - $cos(coef.w0)) / 2;
+        coef.b1 =   1 - $cos(coef.w0);
+        coef.b2 =  (1 - $cos(coef.w0)) / 2;
+        coef.a0 =   1 + coef.alfa;
+        coef.a1 = -(2 * $cos(coef.w0));
+        coef.a2 =   1 - coef.alfa;
+      end
+
+      iir_biquad_types_pkg::IIR_HIGH_PASS_E: begin
+        coef.b0 =  (1 + $cos(coef.w0)) / 2;
+        coef.b1 = -(1 + $cos(coef.w0));
+        coef.b2 =  (1 + $cos(coef.w0)) / 2;
+        coef.a0 =   1 + coef.alfa;
+        coef.a1 = -(2 * $cos(coef.w0));
+        coef.a2 =   1 - coef.alfa;
+      end
+
+      iir_biquad_types_pkg::IIR_BAND_PASS_E: begin
+        coef.b0 =   $sin(coef.w0) / 2;
+        coef.b1 =   0;
+        coef.b2 = -($sin(coef.w0) / 2);
+        coef.a0 =   1 + coef.alfa;
+        coef.a1 = -(2 * $cos(coef.w0));
+        coef.a2 =   1 - coef.alfa;
+      end
+    endcase
+
+    biquad_coefficients = coef;
+
+  endfunction
 
 endpackage
 

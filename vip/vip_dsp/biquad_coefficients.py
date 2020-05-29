@@ -68,8 +68,8 @@ def biquad_coefficients(f0, fs, q, bq_type):
 
 if __name__ == '__main__':
 
-  f0      = 10000.0
-  fs      = 44100.0
+  f0      = 8000.0
+  fs      = 64000.0
   q       = 1
   bq_type = "BQ_LP_E"
 
