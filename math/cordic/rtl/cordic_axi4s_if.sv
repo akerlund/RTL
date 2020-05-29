@@ -43,7 +43,7 @@ module cordic_axi4s_if #(
  );
 
  localparam int ING_FIFO_SIZE_C   = $bits(ing_tvalid) + $bits(ing_tid) + $bits(ing_tuser);
- localparam int ING_FIFO_STAGES_C = NR_OF_STAGES_P-3;
+ localparam int ING_FIFO_STAGES_C = NR_OF_STAGES_P-1;
 
   // Used to shift the ing_tvalid which is used to assing egr_tvalid
   logic [ING_FIFO_STAGES_C-1 : 0] [ING_FIFO_SIZE_C-1 : 0] axi4s_ing_fifo;
