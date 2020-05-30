@@ -99,6 +99,7 @@ class axi4s_counting_seq #(
 
   `uvm_object_param_utils(axi4s_counting_seq #(vip_cfg))
 
+  int counter;
 
   function new(string name = "axi4s_counting_seq");
     super.new(name);
@@ -108,6 +109,24 @@ class axi4s_counting_seq #(
   virtual task body();
 
     vip_axi4s_item #(vip_cfg) axi4s_item;
+    counter = 0;
+
+    for (int i = 0; i < nr_of_bursts; i++) begin
+
+      // Increasing the address by number of bytes that were written previously
+      axi4s_item = new();
+
+      void'(axi4s_item.randomize());
+
+      foreach (axi4s_item.tdata[i]) begin
+        axi4s_item.tdata[i] = counter++;
+      end
+
+      req = axi4s_item;
+      start_item(req);
+      finish_item(req);
+
+    end
 
   endtask
 

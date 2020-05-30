@@ -61,7 +61,12 @@ class vip_axi4s_driver #(
         master_drive();
       end
       else begin
-        slave_drive();
+        if (!cfg.tready_back_pressure_enabled) begin
+          slave_drive();
+        end
+        else begin
+          slave_drive_tready_randomly();
+        end
       end
     join
 
@@ -130,6 +135,61 @@ class vip_axi4s_driver #(
       vif.tready <= '1;
 
       @(posedge vif.clk);
+
+      // Wait for handshake
+      while(!(vif.tvalid && vif.tlast)) begin
+        @(posedge vif.clk);
+      end
+
+      vif.tready <= '0;
+
+    end
+
+  endtask
+
+
+
+  virtual protected task slave_drive_tready_randomly();
+
+    int clock_counter            = 0;
+    int tready_deasserted_time   = 0;
+    int tready_deasserted_period = $urandom_range(cfg.min_tready_deasserted_period,
+                                                  cfg.max_tready_deasserted_period);
+
+    @(negedge vif.rst_n);
+    @(posedge vif.rst_n);
+
+    `uvm_info(get_type_name(), $sformatf("Reset asserted"), UVM_HIGH)
+
+
+    forever begin
+
+      @(posedge vif.clk);
+      vif.tready <= '1;
+      @(posedge vif.clk);
+
+      while(!(vif.tvalid && vif.tlast)) begin
+
+        clock_counter++;
+
+        if (!(clock_counter % tready_deasserted_period)) begin
+
+          clock_counter = 0;
+          vif.tready    <= '0;
+
+          tready_deasserted_time   = $urandom_range(cfg.min_tready_deasserted_time,
+                                                    cfg.max_tready_deasserted_time);
+
+          tready_deasserted_period = $urandom_range(cfg.min_tready_deasserted_period,
+                                                    cfg.max_tready_deasserted_period);
+
+          repeat (tready_deasserted_time) @(posedge vif.clk);
+          vif.tready <= '1;
+
+        end
+
+        @(posedge vif.clk);
+      end
 
       // Wait for handshake
       while(!(vif.tvalid && vif.tlast)) begin
