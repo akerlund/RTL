@@ -89,9 +89,12 @@ module iir_biquad_top #(
     input  wire           [APB_DATA_WIDTH_P-1 : 0] cr_iir_type,
     input  wire           [APB_DATA_WIDTH_P-1 : 0] cr_bypass,
   //output logic          [APB_DATA_WIDTH_P-1 : 0] sr_division_overflows // TODO
+    output logic signed   [APB_DATA_WIDTH_P-1 : 0] sr_w0,
+    output logic signed   [APB_DATA_WIDTH_P-1 : 0] sr_alfa,
     output logic signed   [APB_DATA_WIDTH_P-1 : 0] sr_zero_b0,
     output logic signed   [APB_DATA_WIDTH_P-1 : 0] sr_zero_b1,
     output logic signed   [APB_DATA_WIDTH_P-1 : 0] sr_zero_b2,
+    output logic signed   [APB_DATA_WIDTH_P-1 : 0] sr_pole_a0,
     output logic signed   [APB_DATA_WIDTH_P-1 : 0] sr_pole_a1,
     output logic signed   [APB_DATA_WIDTH_P-1 : 0] sr_pole_a2
   );
@@ -115,6 +118,7 @@ module iir_biquad_top #(
     SEND_DIVISOR_2Q_E,
     WAIT_QUOTIENT_W0_SINE_2Q_E,
     CALCULATE_COEFFICIENTS_E,
+    CALCULATE_COEFFICIENTS_1_E,
 
 
     SEND_DIVIDEND_B0_E,
@@ -163,9 +167,12 @@ module iir_biquad_top #(
   logic signed         [N_BITS_P-1 : 0] cr_pole_a1;
   logic signed         [N_BITS_P-1 : 0] cr_pole_a2;
 
+  assign sr_w0      = w0;
+  assign sr_alfa    = alfa;
   assign sr_zero_b0 = cr_zero_b0;
   assign sr_zero_b1 = cr_zero_b1;
   assign sr_zero_b2 = cr_zero_b2;
+  assign sr_pole_a0 = cr_pole_a0;
   assign sr_pole_a1 = cr_pole_a1;
   assign sr_pole_a2 = cr_pole_a2;
 
@@ -343,7 +350,7 @@ module iir_biquad_top #(
         SEND_DIVISOR_2Q_E: begin
           if (div_egr_tready) begin
             if (!div_egr_tlast) begin                    // Dividend was sent
-              div_egr_tdata  <= cr_iir_q << 2;
+              div_egr_tdata  <= cr_iir_q << 1;
               div_egr_tlast  <= '1;
             end
             else begin
@@ -366,7 +373,7 @@ module iir_biquad_top #(
 
         CALCULATE_COEFFICIENTS_E: begin
 
-          top_state <= SEND_DIVIDEND_B0_E;
+          top_state <= CALCULATE_COEFFICIENTS_1_E;
 
           iir_f0   <= cr_iir_f0;
           iir_fs   <= cr_iir_fs;
@@ -403,6 +410,11 @@ module iir_biquad_top #(
             end
 
           endcase
+        end
+
+        CALCULATE_COEFFICIENTS_1_E: begin
+          top_state <= SEND_DIVIDEND_B0_E;
+
         end
 
         // ---------------------------------------------------------------------

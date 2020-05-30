@@ -33,7 +33,7 @@ module iir_tb_top;
   // IF
   vip_apb3_if #(vip_apb3_cfg) apb3_vif(clk, rst_n);
 
-  logic [WAVE_WIDTH_C-1 : 0] filtered_waveform;
+  logic [N_BITS_C-1 : 0] filtered_waveform;
 
 
 

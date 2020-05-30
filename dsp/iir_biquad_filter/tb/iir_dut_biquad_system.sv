@@ -52,7 +52,7 @@ module iir_dut_biquad_system #(
   input  wire                                                        rst_n,
 
   // Waveform output
-  output logic                                  [WAVE_WIDTH_P-1 : 0] filtered_waveform,
+  output logic                                      [N_BITS_P-1 : 0] filtered_waveform,
 
   // APB interface
   input  wire                               [APB_ADDR_WIDTH_P-1 : 0] apb3_paddr,
@@ -74,9 +74,12 @@ module iir_dut_biquad_system #(
   logic          [APB_DATA_WIDTH_P-1 : 0] cr_iir_type;
   logic          [APB_DATA_WIDTH_P-1 : 0] cr_bypass;
 
+  logic signed   [APB_DATA_WIDTH_P-1 : 0] sr_w0;
+  logic signed   [APB_DATA_WIDTH_P-1 : 0] sr_alfa;
   logic signed   [APB_DATA_WIDTH_P-1 : 0] sr_zero_b0;
   logic signed   [APB_DATA_WIDTH_P-1 : 0] sr_zero_b1;
   logic signed   [APB_DATA_WIDTH_P-1 : 0] sr_zero_b2;
+  logic signed   [APB_DATA_WIDTH_P-1 : 0] sr_pole_a0;
   logic signed   [APB_DATA_WIDTH_P-1 : 0] sr_pole_a1;
   logic signed   [APB_DATA_WIDTH_P-1 : 0] sr_pole_a2;
 
@@ -107,7 +110,7 @@ module iir_dut_biquad_system #(
   logic                                   div_iir_tuser;
 
   // Oscillator
-  logic            [WAVE_WIDTH_P-1 : 0] waveform;
+  logic signed       [WAVE_WIDTH_P-1 : 0] waveform;
 
   // AXI4-S signals betwwen the Oscillator top and the divider
   logic                                   osc_div_tvalid;
@@ -135,8 +138,12 @@ module iir_dut_biquad_system #(
   logic            [AXI_ID_WIDTH_P-1 : 0] div_fen_tid;
   logic                                   div_fen_tuser;
 
+  // IIR signals
+  logic signed [N_BITS_P-1 : 0] x0;
+
   // No arbiter in place. CORDIC is always ready.
   assign iir_cor_tready = '1;
+  assign x0 = {{(N_BITS_P-WAVE_WIDTH_P){waveform[WAVE_WIDTH_P-1]}}, waveform};
 
   iir_biquad_top #(
     .AXI_DATA_WIDTH_P  ( AXI_DATA_WIDTH_P  ),
@@ -174,7 +181,7 @@ module iir_dut_biquad_system #(
     .div_ing_tuser     ( div_iir_tuser     ), // input
 
     .x_valid           ( sampling_enable   ), // input
-    .x                 ( waveform          ), // input
+    .x                 ( x0                ), // input
     .y_valid           (                   ), // output
     .y                 ( filtered_waveform ), // output // N_BITS_P
     .cr_iir_f0         ( cr_iir_f0         ), // input
@@ -182,9 +189,12 @@ module iir_dut_biquad_system #(
     .cr_iir_q          ( cr_iir_q          ), // input
     .cr_iir_type       ( cr_iir_type       ), // input
     .cr_bypass         ( cr_bypass         ), // input
+    .sr_w0             ( sr_w0             ), // output
+    .sr_alfa           ( sr_alfa           ), // output
     .sr_zero_b0        ( sr_zero_b0        ), // output
     .sr_zero_b1        ( sr_zero_b1        ), // output
     .sr_zero_b2        ( sr_zero_b2        ), // output
+    .sr_pole_a0        ( sr_pole_a0        ), // output
     .sr_pole_a1        ( sr_pole_a1        ), // output
     .sr_pole_a2        ( sr_pole_a2        )  // output
   );
@@ -214,9 +224,12 @@ module iir_dut_biquad_system #(
     .cr_iir_type       ( cr_iir_type             ), // output
     .cr_bypass         ( cr_bypass               ), // output
 
+    .sr_w0             ( sr_w0                   ), // input
+    .sr_alfa           ( sr_alfa                 ), // input
     .sr_zero_b0        ( sr_zero_b0              ), // input
     .sr_zero_b1        ( sr_zero_b1              ), // input
     .sr_zero_b2        ( sr_zero_b2              ), // input
+    .sr_pole_a0        ( sr_pole_a0              ), // input
     .sr_pole_a1        ( sr_pole_a1              ), // input
     .sr_pole_a2        ( sr_pole_a2              )  // input
   );

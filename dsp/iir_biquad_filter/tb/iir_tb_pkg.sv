@@ -37,8 +37,8 @@ package iir_tb_pkg;
   localparam int COUNTER_WIDTH_C  = 32;
   localparam int AXI_DATA_WIDTH_C = 32;
   localparam int AXI_ID_WIDTH_C   = 32;
-  localparam int N_BITS_C         = 24;
-  localparam int Q_BITS_C         = 7;
+  localparam int N_BITS_C         = 32;
+  localparam int Q_BITS_C         = 11;
 
   localparam int OSC_BASE_ADDR_C = 0;
   localparam int IIR_BASE_ADDR_C = 16;

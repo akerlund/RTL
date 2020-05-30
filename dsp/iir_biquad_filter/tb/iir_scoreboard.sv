@@ -136,25 +136,19 @@ class iir_scoreboard extends uvm_scoreboard;
 
     if (trans.paddr == IIR_BASE_ADDR_C + CR_IIR_F0_ADDR_C) begin
       iir_f0 = real'($signed(trans.pwdata))/2**Q_BITS_C;
-      `uvm_info(get_type_name(), $sformatf("iir_f0: %f", iir_f0), UVM_LOW)
     end
 
     else if (trans.paddr == IIR_BASE_ADDR_C + CR_IIR_FS_ADDR_C) begin
       iir_fs = real'($signed(trans.pwdata))/2**Q_BITS_C;
-      `uvm_info(get_type_name(), $sformatf("iir_fs: %f", iir_fs), UVM_LOW)
     end
 
     else if (trans.paddr == IIR_BASE_ADDR_C + CR_IIR_Q_ADDR_C) begin
       iir_q = real'($signed(trans.pwdata))/2**Q_BITS_C;
-      `uvm_info(get_type_name(), $sformatf("iir_q: %f", iir_q), UVM_LOW)
     end
 
     else if (trans.paddr == IIR_BASE_ADDR_C + CR_IIR_TYPE_ADDR_C) begin
       iir_type = iir_biquad_type_t'(trans.pwdata);
-      `uvm_info(get_type_name(), $sformatf("iir_type: %s", iir_type.name()), UVM_LOW)
     end
-
-    //current_phase.raise_objection(this);
 
   endfunction
 
@@ -168,43 +162,61 @@ class iir_scoreboard extends uvm_scoreboard;
     apb_read_items.push_back(trans);
     all_apb_read_items.push_back(trans);
 
-    //`uvm_info(get_type_name(), $sformatf("Collected transfer:\n%s", trans.sprint()), UVM_LOW)
+    if (trans.paddr == IIR_BASE_ADDR_C + SR_W0_ADDR_C) begin
+      dut_bq_coef.w0 = real'($signed(trans.prdata))/2**Q_BITS_C;
+    end
 
-    if (trans.paddr == IIR_BASE_ADDR_C + SR_ZERO_B0_ADDR_C) begin
+    else if (trans.paddr == IIR_BASE_ADDR_C + SR_ALFA_ADDR_C) begin
+      dut_bq_coef.alfa = real'($signed(trans.prdata))/2**Q_BITS_C;
+    end
+
+    else if (trans.paddr == IIR_BASE_ADDR_C + SR_ZERO_B0_ADDR_C) begin
       dut_bq_coef.b0 = real'($signed(trans.prdata))/2**Q_BITS_C;
-      `uvm_info(get_type_name(), $sformatf("zero_b0: %f", dut_bq_coef.b0), UVM_LOW)
     end
 
     else if (trans.paddr == IIR_BASE_ADDR_C + SR_ZERO_B1_ADDR_C) begin
       dut_bq_coef.b1 = real'($signed(trans.prdata))/2**Q_BITS_C;
-      `uvm_info(get_type_name(), $sformatf("zero_b1: %f", dut_bq_coef.b1), UVM_LOW)
     end
 
     else if (trans.paddr == IIR_BASE_ADDR_C + SR_ZERO_B2_ADDR_C) begin
       dut_bq_coef.b2 = real'($signed(trans.prdata))/2**Q_BITS_C;
-      `uvm_info(get_type_name(), $sformatf("zero_b2: %f", dut_bq_coef.b2), UVM_LOW)
+    end
+
+    else if (trans.paddr == IIR_BASE_ADDR_C + SR_POLE_A0_ADDR_C) begin
+      dut_bq_coef.a0 = real'($signed(trans.prdata))/2**Q_BITS_C;
     end
 
     else if (trans.paddr == IIR_BASE_ADDR_C + SR_POLE_A1_ADDR_C) begin
       dut_bq_coef.a1 = real'($signed(trans.prdata))/2**Q_BITS_C;
-      `uvm_info(get_type_name(), $sformatf("pole_a1: %f", dut_bq_coef.a1), UVM_LOW)
     end
 
     else if (trans.paddr == IIR_BASE_ADDR_C + SR_POLE_A2_ADDR_C) begin
       dut_bq_coef.a2 = real'($signed(trans.prdata))/2**Q_BITS_C;
-      `uvm_info(get_type_name(), $sformatf("pole_a2: %f", dut_bq_coef.a2), UVM_LOW)
-      calculate_biquad_coefficients();
+      `uvm_info(get_type_name(), $sformatf("--------------------------------------------------------------------------------"), UVM_LOW)
+      `uvm_info(get_type_name(), $sformatf("DUT Bi-Quad Coefficients:"), UVM_LOW)
+      print_biquad_coefficients(dut_bq_coef);
+
+      `uvm_info(get_type_name(), $sformatf("--------------------------------------------------------------------------------"), UVM_LOW)
+      `uvm_info(get_type_name(), $sformatf("SB  Bi-Quad Coefficients:"), UVM_LOW)
+      bq_coef = vip_dsp_pkg::biquad_coefficients(iir_f0, iir_fs, iir_q, iir_type);
+      print_biquad_coefficients(bq_coef);
     end
 
   endfunction
 
 
+  function void print_biquad_coefficients(biquad_coefficients_t bqc);
 
-  function void calculate_biquad_coefficients();
+    string coef = {$sformatf("  w0:   %f\n", bqc.w0),
+                   $sformatf("  alfa: %f\n", bqc.alfa),
+                   $sformatf("  b0:   %f\n", bqc.b0),
+                   $sformatf("  b1:   %f\n", bqc.b1),
+                   $sformatf("  b2:   %f\n", bqc.b2),
+                   $sformatf("  a0:   %f\n", bqc.a0),
+                   $sformatf("  a1:   %f\n", bqc.a1),
+                   $sformatf("  a2:   %f\n", bqc.a2)};
 
-    bq_coef = vip_dsp_pkg::biquad_coefficients(iir_f0, iir_fs, iir_q, iir_type);
-    `uvm_info(get_type_name(), $sformatf("Bi-Quad Coefficients:\n%p", bq_coef), UVM_LOW)
-    `uvm_info(get_type_name(), $sformatf("Bi-Quad Coefficients:\n%p", dut_bq_coef), UVM_LOW)
+    `uvm_info(get_type_name(), $sformatf("Bi-Quad Coefficients:\n%s", coef), UVM_LOW)
 
   endfunction
 

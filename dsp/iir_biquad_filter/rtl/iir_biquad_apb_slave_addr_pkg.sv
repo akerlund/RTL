@@ -30,11 +30,14 @@ package iir_biquad_apb_slave_addr_pkg;
   localparam int CR_IIR_TYPE_ADDR_C   = 12;
   localparam int CR_IIR_BYPASS_ADDR_C = 16;
 
-  localparam int SR_ZERO_B0_ADDR_C    = 20;
-  localparam int SR_ZERO_B1_ADDR_C    = 24;
-  localparam int SR_ZERO_B2_ADDR_C    = 28;
-  localparam int SR_POLE_A1_ADDR_C    = 32;
-  localparam int SR_POLE_A2_ADDR_C    = 36;
+  localparam int SR_W0_ADDR_C         = 20;
+  localparam int SR_ALFA_ADDR_C       = 24;
+  localparam int SR_ZERO_B0_ADDR_C    = 28;
+  localparam int SR_ZERO_B1_ADDR_C    = 32;
+  localparam int SR_ZERO_B2_ADDR_C    = 36;
+  localparam int SR_POLE_A0_ADDR_C    = 40;
+  localparam int SR_POLE_A1_ADDR_C    = 44;
+  localparam int SR_POLE_A2_ADDR_C    = 48;
 
 endpackage
 

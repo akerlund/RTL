@@ -153,6 +153,16 @@ class iir_read_coefficients_seq #(
 
     `uvm_info(get_name(), $sformatf("Reading IIR coefficients"), UVM_LOW)
 
+    // w0
+    `uvm_info(get_name(), $sformatf("Reading SR_W0_ADDR_C"), UVM_LOW)
+    paddr  = IIR_BASE_ADDR_C + SR_W0_ADDR_C;
+    read_word(paddr, prdata, IIR_PSEL_BIT_C);
+
+    // alfa
+    `uvm_info(get_name(), $sformatf("Reading SR_ALFA_ADDR_C"), UVM_LOW)
+    paddr  = IIR_BASE_ADDR_C + SR_ALFA_ADDR_C;
+    read_word(paddr, prdata, IIR_PSEL_BIT_C);
+
     // b0
     `uvm_info(get_name(), $sformatf("Reading SR_ZERO_B0_ADDR_C"), UVM_LOW)
     paddr  = IIR_BASE_ADDR_C + SR_ZERO_B0_ADDR_C;
@@ -168,6 +178,11 @@ class iir_read_coefficients_seq #(
     paddr  = IIR_BASE_ADDR_C + SR_ZERO_B2_ADDR_C;
     read_word(paddr, prdata, IIR_PSEL_BIT_C);
 
+    // a0
+    `uvm_info(get_name(), $sformatf("Reading SR_ZERO_A0_ADDR_C"), UVM_LOW)
+    paddr  = IIR_BASE_ADDR_C + SR_POLE_A0_ADDR_C;
+    read_word(paddr, prdata, IIR_PSEL_BIT_C);
+
     // a1
     `uvm_info(get_name(), $sformatf("Reading SR_ZERO_A1_ADDR_C"), UVM_LOW)
     paddr  = IIR_BASE_ADDR_C + SR_POLE_A1_ADDR_C;
@@ -177,6 +192,34 @@ class iir_read_coefficients_seq #(
     `uvm_info(get_name(), $sformatf("Reading SR_ZERO_A2_ADDR_C"), UVM_LOW)
     paddr  = IIR_BASE_ADDR_C + SR_POLE_A2_ADDR_C;
     read_word(paddr, prdata, IIR_PSEL_BIT_C);
+
+  endtask
+
+endclass
+
+
+
+
+class iir_cr_iir_f0_seq #(
+  vip_apb3_cfg_t vip_cfg = '{default: '0}
+  ) extends iir_base_seq #(vip_cfg);
+
+  `uvm_object_param_utils(iir_cr_iir_f0_seq #(vip_cfg))
+
+  function new(string name = "iir_cr_iir_f0_seq");
+    super.new(name);
+  endfunction
+
+
+  virtual task body();
+
+    `uvm_info(get_name(), $sformatf("Writing IIR cut-off requency"), UVM_LOW)
+    psel = 1;
+
+    // Cut-off
+    paddr  = IIR_BASE_ADDR_C + CR_IIR_F0_ADDR_C;
+    pwdata = (iir_f0 << Q_BITS_C);
+    write_word(paddr, pwdata, psel);
 
   endtask
 

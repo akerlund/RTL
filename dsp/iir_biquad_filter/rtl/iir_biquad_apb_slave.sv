@@ -47,9 +47,12 @@ module iir_biquad_apb_slave #(
     output logic [APB_DATA_WIDTH_P-1 : 0] cr_bypass,
 
     // Status registers
+    input  wire  [APB_DATA_WIDTH_P-1 : 0] sr_w0,
+    input  wire  [APB_DATA_WIDTH_P-1 : 0] sr_alfa,
     input  wire  [APB_DATA_WIDTH_P-1 : 0] sr_zero_b0,
     input  wire  [APB_DATA_WIDTH_P-1 : 0] sr_zero_b1,
     input  wire  [APB_DATA_WIDTH_P-1 : 0] sr_zero_b2,
+    input  wire  [APB_DATA_WIDTH_P-1 : 0] sr_pole_a0,
     input  wire  [APB_DATA_WIDTH_P-1 : 0] sr_pole_a1,
     input  wire  [APB_DATA_WIDTH_P-1 : 0] sr_pole_a2
 
@@ -116,6 +119,14 @@ module iir_biquad_apb_slave #(
 
           else begin
 
+            if (apb3_paddr == APB_BASE_ADDR_P + SR_W0_ADDR_C) begin
+              apb3_prdata <= sr_w0;
+            end
+
+            if (apb3_paddr == APB_BASE_ADDR_P + SR_ALFA_ADDR_C) begin
+              apb3_prdata <= sr_alfa;
+            end
+
             if (apb3_paddr == APB_BASE_ADDR_P + SR_ZERO_B0_ADDR_C) begin
               apb3_prdata <= sr_zero_b0;
             end
@@ -126,6 +137,10 @@ module iir_biquad_apb_slave #(
 
             if (apb3_paddr == APB_BASE_ADDR_P + SR_ZERO_B2_ADDR_C) begin
               apb3_prdata <= sr_zero_b2;
+            end
+
+            if (apb3_paddr == APB_BASE_ADDR_P + SR_POLE_A0_ADDR_C) begin
+              apb3_prdata <= sr_pole_a0;
             end
 
             if (apb3_paddr == APB_BASE_ADDR_P + SR_POLE_A1_ADDR_C) begin

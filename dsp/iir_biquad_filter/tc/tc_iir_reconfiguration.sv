@@ -19,21 +19,22 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-class tc_iir_basic_configuration extends iir_base_test;
+class tc_iir_reconfiguration extends iir_base_test;
 
   iir_configuration_seq     #(vip_apb3_cfg) iir_configuration_seq0;
   iir_read_coefficients_seq #(vip_apb3_cfg) iir_read_coefficients_seq0;
+  iir_cr_iir_f0_seq         #(vip_apb3_cfg) iir_cr_iir_f0_seq0;
 
-  `uvm_component_utils(tc_iir_basic_configuration)
+  `uvm_component_utils(tc_iir_reconfiguration)
 
 
 
-  function new(string name = "tc_iir_basic_configuration", uvm_component parent = null);
+  function new(string name = "tc_iir_reconfiguration", uvm_component parent = null);
 
     super.new(name, parent);
 
     // IIR parameters
-    iir_f0     = 500;
+    iir_f0     = 3000;
     iir_fs     = 64000;
     iir_q      = 1;
     iir_type   = IIR_LOW_PASS_E;
@@ -61,7 +62,9 @@ class tc_iir_basic_configuration extends iir_base_test;
     super.run_phase(phase);
     phase.raise_objection(this);
 
-    iir_configuration_seq0 = new();
+    iir_configuration_seq0     = new();
+    iir_read_coefficients_seq0 = new();
+    iir_cr_iir_f0_seq0         = new();
 
     // IIR parameters
     iir_configuration_seq0.iir_f0     = iir_f0;
@@ -79,8 +82,20 @@ class tc_iir_basic_configuration extends iir_base_test;
 
     #1us;
 
-    iir_read_coefficients_seq0 = new();
     iir_read_coefficients_seq0.start(v_sqr.apb3_sequencer);
+
+    #3ms;
+
+    for (int i = 0; i < 14; i++) begin
+
+      iir_f0 = iir_f0 - 200;
+      iir_cr_iir_f0_seq0.iir_f0 = iir_f0;
+      iir_cr_iir_f0_seq0.start(v_sqr.apb3_sequencer);
+      #1us;
+      iir_read_coefficients_seq0.start(v_sqr.apb3_sequencer);
+      #3ms;
+
+    end
 
     #10ms;
 

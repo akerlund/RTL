@@ -35,6 +35,7 @@ package iir_tc_pkg;
   // Include testcase files here
   `include "iir_base_test.sv"
   `include "tc_iir_basic_configuration.sv"
+  `include "tc_iir_reconfiguration.sv"
   `include "tc_iir_coefficient_check.sv"
 
 endpackage
