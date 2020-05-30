@@ -115,7 +115,6 @@ class syfi_scoreboard extends uvm_scoreboard;
     number_of_master_items++;
     master_items.push_back(trans);
     all_master_items.push_back(trans);
-
     current_phase.raise_objection(this);
 
   endfunction
@@ -130,7 +129,6 @@ class syfi_scoreboard extends uvm_scoreboard;
     number_of_slave_items++;
     slave_items.push_back(trans);
     all_slave_items.push_back(trans);
-
     compare();
     current_phase.drop_objection(this);
 
@@ -142,9 +140,26 @@ class syfi_scoreboard extends uvm_scoreboard;
     vip_axi4s_item #(vip_axi4s_cfg) current_master_item;
     vip_axi4s_item #(vip_axi4s_cfg) current_slave_item;
 
+    int compare_ok = 1;
+
     current_master_item = master_items.pop_front();
     current_slave_item  = slave_items.pop_front();
 
+    foreach (current_master_item.tdata[i]) begin
+      if (current_master_item.tdata[i] != current_slave_item.tdata[i]) begin
+        `uvm_error(get_name(), $sformatf("Packet number (%0d) mismatches", number_of_compared))
+        compare_ok = 0;
+        break;
+      end
+    end
+
+
+    if (compare_ok) begin
+      number_of_passed++;
+    end
+    else begin
+      number_of_failed++;
+    end
 
     number_of_compared++;
 

@@ -29,15 +29,16 @@ module synchronous_fifo #(
     input  wire                        clk,
     input  wire                        rst_n,
 
-    // Write port
-    input  wire                        wp_write_enable,
-    input  wire   [DATA_WIDTH_P-1 : 0] wp_data,
-    output logic                       wp_fifo_full,
+    // Ingress
+    input  wire                        ing_enable,
+    input  wire   [DATA_WIDTH_P-1 : 0] ing_data,
+    output logic                       ing_full,
+    output logic                       ing_almost_full,
 
-    // Read port
-    input  wire                        rp_read_enable,
-    output logic  [DATA_WIDTH_P-1 : 0] rp_data,
-    output logic                       rp_fifo_empty,
+    // Egress
+    input  wire                        egr_enable,
+    output logic  [DATA_WIDTH_P-1 : 0] egr_data,
+    output logic                       egr_empty,
 
     // Configuration and status registers
     output logic [ADDRESS_WIDTH_P : 0] sr_fill_level,
@@ -51,13 +52,11 @@ module synchronous_fifo #(
   // Maximum fill level
   localparam logic [ADDRESS_WIDTH_P : 0] FIFO_MAX_LEVEL_C = 2**ADDRESS_WIDTH_P - 1;
 
-  logic                         write_enable;
-  logic [ADDRESS_WIDTH_P-1 : 0] write_address;
-  logic                         read_enable;
-  logic [ADDRESS_WIDTH_P-1 : 0] read_address;
+  logic write_enable;
+  logic read_enable;
 
-  assign write_enable = wp_write_enable && (!wp_fifo_full || rp_read_enable);
-  assign read_enable  = rp_read_enable  && !rp_fifo_empty;
+  assign write_enable = ing_enable && (!ing_full || egr_enable);
+  assign read_enable  = egr_enable  && !egr_empty;
 
   generate
 
@@ -70,21 +69,21 @@ module synchronous_fifo #(
       ) synchronous_fifo_register_i0 (
 
         // Clock and reset
-        .clk             ( clk             ),
-        .rst_n           ( rst_n           ),
+        .clk             ( clk             ), // input
+        .rst_n           ( rst_n           ), // input
 
-        // Write port
-        .wp_write_enable ( write_enable    ),
-        .wp_data         ( wp_data         ),
-        .wp_fifo_full    (                 ),
+        // Ingress
+        .ing_enable      ( write_enable    ), // input
+        .ing_data        ( ing_data        ), // input
+        .ing_full        ( ing_full        ), // output
 
-        // Read port
-        .rp_read_enable  ( read_enable     ),
-        .rp_data         ( rp_data         ),
-        .rp_fifo_empty   ( rp_fifo_empty   ),
+        // Egress
+        .egr_enable      ( read_enable     ), // input
+        .egr_data        ( egr_data        ), // output
+        .egr_empty       ( egr_empty       ), // output
 
         // Status registers
-        .sr_fill_level   (                 )
+        .sr_fill_level   (                 )  // output
       );
 
     end
@@ -131,16 +130,16 @@ module synchronous_fifo #(
       ) fpga_ram_1c_1w_1r_i0 (
 
         // Clock
-        .clk             ( clk               ),
+        .clk             ( clk               ), // input
 
         // Port A
-        .port_a_write_en ( write_enable      ),
-        .port_a_address  ( ram_write_address ),
-        .port_a_data_in  ( wp_data           ),
+        .port_a_write_en ( write_enable      ), // input
+        .port_a_address  ( ram_write_address ), // input
+        .port_a_data_in  ( ing_data          ), // input
 
         // Port B
-        .port_b_address  ( ram_read_address  ),
-        .port_b_data_out ( ram_read_data     )
+        .port_b_address  ( ram_read_address  ), // input
+        .port_b_data_out ( ram_read_data     )  // output
       );
 
       // Register at the output removes the delay of 1 clk period
@@ -151,22 +150,23 @@ module synchronous_fifo #(
       ) synchronous_fifo_register_i0 (
 
         // Clock and reset
-        .clk             ( clk              ),
-        .rst_n           ( rst_n            ),
+        .clk             ( clk              ), // input
+        .rst_n           ( rst_n            ), // input
 
-        // Write port
-        .wp_write_enable ( reg_write_enable ),
-        .wp_data         ( ram_read_data    ),
-        .wp_fifo_full    (                  ),
+        // Ingress
+        .ing_enable      ( reg_write_enable ), // input
+        .ing_data        ( ram_read_data    ), // input
+        .ing_full        (                  ), // output
 
-        // Read port
-        .rp_read_enable  ( read_enable      ),
-        .rp_data         ( rp_data          ),
-        .rp_fifo_empty   ( rp_fifo_empty    ),
+        // Egress
+        .egr_enable      ( read_enable      ), // input
+        .egr_data        ( egr_data         ), // output
+        .egr_empty       ( egr_empty        ), // output
 
         // Status registers
-        .sr_fill_level   ( reg_fill_level   )
+        .sr_fill_level   ( reg_fill_level   )  // output
       );
+
     end
   endgenerate
 
@@ -174,28 +174,28 @@ module synchronous_fifo #(
   always_ff @ (posedge clk or negedge rst_n) begin
     if (!rst_n) begin
 
-      wp_fifo_full        <= '0;
-      wp_fifo_almost_full <= '0;
-      sr_fill_level       <= '0;
-      sr_max_fill_level   <= '0;
+      ing_full          <= '0;
+      ing_almost_full   <= '0;
+      sr_fill_level     <= '0;
+      sr_max_fill_level <= '0;
 
     end
     else begin
 
       // Determine if the FIFO is full
       if (sr_fill_level >= FIFO_MAX_LEVEL_C) begin
-        wp_fifo_full <= '1;
+        ing_full <= '1;
       end
       else begin
-        wp_fifo_full <= '0;
+        ing_full <= '0;
       end
 
       // Determine if the FIFO is almost full
       if (sr_fill_level >= cr_almost_full_level) begin
-        wp_fifo_almost_full <= '1;
+        ing_almost_full <= '1;
       end
       else begin
-        wp_fifo_almost_full <= '0;
+        ing_almost_full <= '0;
       end
 
       // Update the FIFO's fill level

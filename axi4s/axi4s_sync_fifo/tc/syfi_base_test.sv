@@ -29,6 +29,23 @@ class syfi_base_test extends uvm_test;
 
   uvm_table_printer printer;
 
+  //----------------------------------------------------------------------------
+  // Slave configurations
+  //----------------------------------------------------------------------------
+
+  // Back pressure on 'tready'. Time and period are number of clock periods.
+  int tready_back_pressure_enabled = 0;
+
+  // Set how long 'tready' can be asserter for back pressure
+  int min_tready_deasserted_time = 1;
+  int max_tready_deasserted_time = 10;
+
+  // Set the period of when 'tready' is de-asserted
+  int min_tready_deasserted_period = 10;
+  int max_tready_deasserted_period = 55;
+
+
+
   function new(string name = "syfi_base_test", uvm_component parent = null);
 
     super.new(name, parent);
@@ -59,6 +76,14 @@ class syfi_base_test extends uvm_test;
     v_sqr = tb_env.virtual_sequencer;
 
     tb_env.tb_cfg = tb_cfg;
+
+    tb_env.vip_axi4s_config_slv.set_tready_back_pressure_enabled(tready_back_pressure_enabled);
+    tb_env.vip_axi4s_config_slv.configure_tready_parameters(
+      min_tready_deasserted_time,
+      max_tready_deasserted_time,
+      min_tready_deasserted_period,
+      max_tready_deasserted_period
+    );
 
   endfunction
 

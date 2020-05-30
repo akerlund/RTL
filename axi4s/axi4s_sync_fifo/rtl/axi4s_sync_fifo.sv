@@ -22,47 +22,52 @@
 `default_nettype none
 
 module axi4s_sync_fifo #(
-    parameter int tuser_bit_width_p = -1,
-    parameter int address_width_p   = -1
+    parameter int TUSER_WIDTH_P   = -1,
+    parameter int ADDRESS_WIDTH_P = -1
   )(
-    input  wire                          clk,
-    input  wire                          rst_n,
+    input  wire                        clk,
+    input  wire                        rst_n,
 
-    output logic                         axi4s_i_tready,
-    input  wire  [tuser_bit_width_p-1:0] axi4s_i_tuser,
-    input  wire                          axi4s_i_tvalid,
+    output logic                       ing_tready,
+    input  wire  [TUSER_WIDTH_P-1 : 0] ing_tuser,
+    input  wire                        ing_tvalid,
 
-    input  wire                          axi4s_o_tready,
-    output logic [tuser_bit_width_p-1:0] axi4s_o_tuser,
-    output logic                         axi4s_o_tvalid,
+    input  wire                        egr_tready,
+    output logic [TUSER_WIDTH_P-1 : 0] egr_tuser,
+    output logic                       egr_tvalid,
 
-    output logic     [address_width_p:0] sr_fill_level
+    output logic [ADDRESS_WIDTH_P : 0] sr_fill_level,
+    output logic [ADDRESS_WIDTH_P : 0] sr_max_fill_level,
+    input  wire  [ADDRESS_WIDTH_P : 0] cr_almost_full_level
   );
 
   logic wp_fifo_full;
   logic rp_fifo_empty;
-  logic axi4s_i_transaction;
-  logic axi4s_o_transaction;
+  logic ing_transaction;
+  logic egr_transaction;
 
-  assign axi4s_i_tready      = !wp_fifo_full;
-  assign axi4s_o_tvalid      = !rp_fifo_empty;
-  assign axi4s_i_transaction = axi4s_i_tready && axi4s_i_tvalid;
-  assign axi4s_o_transaction = axi4s_o_tready && axi4s_o_tvalid;
+  assign ing_tready      = !wp_fifo_full;
+  assign egr_tvalid      = !rp_fifo_empty;
+
+  assign ing_transaction = ing_tready && ing_tvalid;
+  assign egr_transaction = egr_tready && egr_tvalid;
 
   synchronous_fifo #(
-    .data_width_p      ( tuser_bit_width_p   ),
-    .address_width_p   ( address_width_p     )
+    .DATA_WIDTH_P         ( TUSER_WIDTH_P        ),
+    .ADDRESS_WIDTH_P      ( ADDRESS_WIDTH_P      )
   ) synchronous_fifo_i0 (
-    .clk               ( clk                 ),
-    .rst_n             ( rst_n               ),
-    .wp_write_en       ( axi4s_i_transaction ),
-    .wp_data_in        ( axi4s_i_tuser       ),
-    .wp_fifo_full      ( wp_fifo_full        ),
-    .rp_read_en        ( axi4s_o_transaction ),
-    .rp_data_out       ( axi4s_o_tuser       ),
-    .rp_fifo_empty     ( rp_fifo_empty       ),
-    .sr_fill_level     ( sr_fill_level       ),
-    .sr_max_fill_level (                     )
+    .clk                  ( clk                  ), // input
+    .rst_n                ( rst_n                ), // input
+    .ing_enable           ( ing_transaction      ), // input
+    .ing_data             ( ing_tuser            ), // input
+    .ing_full             ( wp_fifo_full         ), // output
+    .ing_almost_full      (                      ), // output
+    .egr_enable           ( egr_transaction      ), // input
+    .egr_data             ( egr_tuser            ), // output
+    .egr_empty            ( rp_fifo_empty        ), // output
+    .sr_fill_level        ( sr_fill_level        ), // output
+    .sr_max_fill_level    ( sr_max_fill_level    ), // output
+    .cr_almost_full_level ( cr_almost_full_level )  // input
   );
 
 endmodule

@@ -19,18 +19,19 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-class tc_syfi_basic extends syfi_base_test;
+class tc_syfi_back_pressure extends syfi_base_test;
 
-  `uvm_component_utils(tc_syfi_basic)
+  `uvm_component_utils(tc_syfi_back_pressure)
 
   axi4s_counting_seq #(vip_axi4s_cfg) random_seq0;
 
   int nr_of_bursts            = 2048;
   int max_idle_between_bursts = 0;
 
-  function new(string name = "tc_syfi_basic", uvm_component parent = null);
+  function new(string name = "tc_syfi_back_pressure", uvm_component parent = null);
 
     super.new(name, parent);
+    tready_back_pressure_enabled = 1;
 
   endfunction
 

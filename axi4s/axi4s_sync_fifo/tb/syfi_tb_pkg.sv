@@ -32,21 +32,21 @@ package syfi_tb_pkg;
 
   // Configuration of the AXI4-S VIP
   localparam vip_axi4s_cfg_t vip_axi4s_cfg = '{
-    AXI_DATA_WIDTH_P : N_BITS_C,
+    AXI_DATA_WIDTH_P : 32,
     AXI_STRB_WIDTH_P : 0,
     AXI_KEEP_WIDTH_P : 0,
-    AXI_ID_WIDTH_P   : 32,
+    AXI_ID_WIDTH_P   : 0,
     AXI_DEST_WIDTH_P : 0,
-    AXI_USER_WIDTH_P : 1
+    AXI_USER_WIDTH_P : 0
   };
 
   localparam int FIFO_ADDR_WIDTH_C = 4; // Minimum width is (1)
+  localparam int FIFO_USER_WIDTH_C = vip_axi4s_cfg.AXI_DATA_WIDTH_P + 1;
 
   `include "syfi_config.sv"
   `include "syfi_scoreboard.sv"
   `include "syfi_virtual_sequencer.sv"
   `include "syfi_env.sv"
-  `include "syfi_seq_lib.sv"
 
 endpackage
 

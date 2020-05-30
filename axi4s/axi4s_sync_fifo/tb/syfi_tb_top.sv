@@ -34,6 +34,29 @@ module syfi_tb_top;
   vip_axi4s_if #(vip_axi4s_cfg) mst0_vif(clk, rst_n);
   vip_axi4s_if #(vip_axi4s_cfg) slv0_vif(clk, rst_n);
 
+  logic [FIFO_USER_WIDTH_C-1 : 0] ing_tuser;
+  logic [FIFO_USER_WIDTH_C-1 : 0] egr_tuser;
+
+  assign ing_tuser = {mst0_vif.tlast, mst0_vif.tdata};
+  assign {slv0_vif.tlast, slv0_vif.tdata} = egr_tuser;
+
+
+  axi4s_sync_fifo #(
+    .TUSER_WIDTH_P        ( FIFO_USER_WIDTH_C ),
+    .ADDRESS_WIDTH_P      ( FIFO_ADDR_WIDTH_C )
+  ) axi4s_sync_fifo_i0 (
+    .clk                  ( clk               ), // input
+    .rst_n                ( rst_n             ), // input
+    .ing_tready           ( mst0_vif.tready   ), // output
+    .ing_tuser            ( ing_tuser         ), // input
+    .ing_tvalid           ( mst0_vif.tvalid   ), // input
+    .egr_tready           ( slv0_vif.tready   ), // input
+    .egr_tuser            ( egr_tuser         ), // output
+    .egr_tvalid           ( slv0_vif.tvalid   ), // output
+    .sr_fill_level        (                   ), // output
+    .sr_max_fill_level    (                   ), // output
+    .cr_almost_full_level ( '0                )  // input
+  );
 
 
 

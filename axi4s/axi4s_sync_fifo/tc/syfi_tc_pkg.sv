@@ -36,6 +36,7 @@ package syfi_tc_pkg;
   // Include testcase files here
   `include "syfi_base_test.sv"
   `include "tc_syfi_basic.sv"
+  `include "tc_syfi_back_pressure.sv"
 
 endpackage
 

@@ -20,7 +20,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 `include "uvm_macros.svh"
-`include "uvm_pkg.sv"
+import uvm_pkg::*;
 
 // Include RTL files here
 `include "fpga_reg_1c_1w_1r.sv"
