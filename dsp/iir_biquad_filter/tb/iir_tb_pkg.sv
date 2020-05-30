@@ -33,6 +33,7 @@ package iir_tb_pkg;
   import iir_biquad_apb_slave_addr_pkg::*;
   import oscillator_types_pkg::*;
 
+  // DUT constants
   localparam int WAVE_WIDTH_C     = 24;
   localparam int COUNTER_WIDTH_C  = 32;
   localparam int AXI_DATA_WIDTH_C = 32;
@@ -40,10 +41,11 @@ package iir_tb_pkg;
   localparam int N_BITS_C         = 32;
   localparam int Q_BITS_C         = 11;
 
-  localparam int OSC_BASE_ADDR_C = 0;
-  localparam int IIR_BASE_ADDR_C = 16;
-  localparam int OSC_PSEL_BIT_C  = 0;
-  localparam int IIR_PSEL_BIT_C  = 1;
+  // APB base addresses
+  localparam int OSC_BASE_ADDR_C  = 0;
+  localparam int IIR_BASE_ADDR_C  = 16;
+  localparam int OSC_PSEL_BIT_C   = 0;
+  localparam int IIR_PSEL_BIT_C   = 1;
 
   // Configuration of the APB3 VIP
   localparam vip_apb3_cfg_t vip_apb3_cfg = '{

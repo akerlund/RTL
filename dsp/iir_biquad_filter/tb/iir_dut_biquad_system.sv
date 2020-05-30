@@ -21,10 +21,10 @@
 //
 //   - iir_biquad_top         // IIR filter
 //   - iir_biquad_apb_slave   // IIR registers
-//   - clock_enable           // Makes the IIR sample its input
+//   - frequency_enable       // Makes the IIR sample its input
 //   - cordic_axi4s_if        // Sine/Cosine for the IIR
 //   - long_division_axi4s_if // Division for the IIR
-//   - oscillator_top         // Input signal for the IIR
+//   - oscillator_top         // Input signal for the IIR, a triangle wave
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -154,9 +154,11 @@ module iir_dut_biquad_system #(
     .Q_BITS_P          ( Q_BITS_P          )
   ) iir_biquad_top_i0 (
 
+    // Clock and reset
     .clk               ( clk               ), // input
     .rst_n             ( rst_n             ), // input
 
+    // CORDIC interface
     .cordic_egr_tvalid ( iir_cor_tvalid    ), // output
     .cordic_egr_tready ( iir_cor_tready    ), // input
     .cordic_egr_tdata  ( iir_cor_tdata     ), // output
@@ -168,6 +170,7 @@ module iir_dut_biquad_system #(
     .cordic_ing_tdata  ( cor_iir_tdata     ), // input
     .cordic_ing_tlast  ( cor_iir_tlast     ), // input
 
+    // Long division interface
     .div_egr_tvalid    ( iir_div_tvalid    ), // output
     .div_egr_tready    ( iir_div_tready    ), // input
     .div_egr_tdata     ( iir_div_tdata     ), // output
@@ -180,10 +183,13 @@ module iir_dut_biquad_system #(
     .div_ing_tid       ( div_iir_tid       ), // input
     .div_ing_tuser     ( div_iir_tuser     ), // input
 
+    // Filter ports
     .x_valid           ( sampling_enable   ), // input
     .x                 ( x0                ), // input
     .y_valid           (                   ), // output
-    .y                 ( filtered_waveform ), // output // N_BITS_P
+    .y                 ( filtered_waveform ), // output
+
+    // APB registers
     .cr_iir_f0         ( cr_iir_f0         ), // input
     .cr_iir_fs         ( cr_iir_fs         ), // input
     .cr_iir_q          ( cr_iir_q          ), // input

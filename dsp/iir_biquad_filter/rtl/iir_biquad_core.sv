@@ -64,32 +64,32 @@ module iir_biquad_core #(
   localparam int MUL_LOW_C  = Q_BITS_P;
 
   typedef enum {
-    STAGE_0_E,
-    STAGE_1_E,
-    STAGE_2_E,
-    STAGE_3_E,
-    STAGE_4_E,
-    STAGE_5_E
+    WAIT_FOR_X0_VALID_E,
+    CALCULATE_B1_E,
+    CALCULATE_B2_E,
+    CALCULATE_A1_E,
+    CALCULATE_A2_E,
+    CALCULATE_Y0_E
   } iir_state_t;
 
   iir_state_t iir_state;
 
   logic signed [N_BITS_P-1 : 0] x1;
   logic signed [N_BITS_P-1 : 0] x2;
-  logic signed [N_BITS_P-1 : 0] y00;
+  logic signed [N_BITS_P-1 : 0] y00; // Intermediate result register
   logic signed [N_BITS_P-1 : 0] y1;
 
   // DSP multiplication register
   logic signed [2*N_BITS_P-1 : 0] mul_product;
   logic signed   [N_BITS_P-1 : 0] mul_product_section;
 
-  // The product of the multiplications is registered in this vector
+  // The product of a multiplication is stored in this vector
   assign mul_product_section = mul_product[MUL_HIGH_C : MUL_LOW_C];
 
-  always_ff @ (posedge clk or negedge rst_n) begin
+  always_ff @(posedge clk or negedge rst_n) begin
 
     if (!rst_n) begin
-      iir_state   <= STAGE_0_E;
+      iir_state   <= WAIT_FOR_X0_VALID_E;
       x0_ready    <= '0;
       y0_valid    <= '0;
       y0          <= '0;
@@ -103,51 +103,51 @@ module iir_biquad_core #(
 
       case (iir_state)
 
-        // b0*x[n]
-        STAGE_0_E: begin
+        WAIT_FOR_X0_VALID_E: begin
 
           x0_ready <= '1;
           y0_valid <= '0;
 
           if (x0_valid) begin
             x0_ready    <= '0;
-            iir_state   <= STAGE_1_E;
+            iir_state   <= CALCULATE_B1_E;
             mul_product <= cr_zero_b0 * x0;
           end
         end
 
-        // b1*x[n-1]
-        STAGE_1_E: begin
-          iir_state   <= STAGE_2_E;
-          y00         <= mul_product_section;        // Adding (b0*x[n])
+
+        CALCULATE_B1_E: begin
+          iir_state   <= CALCULATE_B2_E;
+          y00         <= mul_product_section;        // Adding (b0 * x[n])
           mul_product <= cr_zero_b1 * x1;
         end
 
-        // b2*[x-2]
-        STAGE_2_E: begin
-          iir_state   <= STAGE_3_E;
-          y00         <= y00 + mul_product_section;  // Adding (b1*x[n-1])
+
+        CALCULATE_B2_E: begin
+          iir_state   <= CALCULATE_A1_E;
+          y00         <= y00 + mul_product_section;  // Adding (b1 * x[n-1])
           mul_product <= cr_zero_b2 * x2;
         end
 
-        // -a1*y[n-1]
-        STAGE_3_E: begin
-          iir_state   <= STAGE_4_E;
-          y00         <= y00 + mul_product_section;  // Adding (b2*x[n-2])
+
+        CALCULATE_A1_E: begin
+          iir_state   <= CALCULATE_A2_E;
+          y00         <= y00 + mul_product_section;  // Adding (b2 * x[n-2])
           mul_product <= cr_pole_a1 * y0;
         end
 
-        // -a2*y[n-2]
-        STAGE_4_E: begin
-          iir_state   <= STAGE_5_E;
-          y00         <= y00 - mul_product_section;  // Subtracting (a1*y[n-1])
+
+        CALCULATE_A2_E: begin
+          iir_state   <= CALCULATE_Y0_E;
+          y00         <= y00 - mul_product_section;  // Subtracting (a1 * y[n-1])
           mul_product <= cr_pole_a2 * y1;
         end
 
-        STAGE_5_E: begin
-          iir_state <= STAGE_0_E;
+
+        CALCULATE_Y0_E: begin
+          iir_state <= WAIT_FOR_X0_VALID_E;
           y0_valid  <= '1;
-          y0        <= y00 - mul_product_section;    // Subtracting (a2*y[n-2])
+          y0        <= y00 - mul_product_section;    // Subtracting (a2 * y[n-2])
           x1        <= x0;
           x2        <= x1;
           y1        <= y0;

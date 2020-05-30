@@ -83,12 +83,16 @@ module iir_biquad_top #(
     input  wire  signed           [N_BITS_P-1 : 0] x,
     output logic                                   y_valid,
     output logic signed           [N_BITS_P-1 : 0] y,
+
+    // -------------------------------------------------------------------------
+    // APB registers
+    // -------------------------------------------------------------------------
+
     input  wire           [APB_DATA_WIDTH_P-1 : 0] cr_iir_f0,
     input  wire           [APB_DATA_WIDTH_P-1 : 0] cr_iir_fs,
     input  wire           [APB_DATA_WIDTH_P-1 : 0] cr_iir_q,
     input  wire           [APB_DATA_WIDTH_P-1 : 0] cr_iir_type,
     input  wire           [APB_DATA_WIDTH_P-1 : 0] cr_bypass,
-  //output logic          [APB_DATA_WIDTH_P-1 : 0] sr_division_overflows // TODO
     output logic signed   [APB_DATA_WIDTH_P-1 : 0] sr_w0,
     output logic signed   [APB_DATA_WIDTH_P-1 : 0] sr_alfa,
     output logic signed   [APB_DATA_WIDTH_P-1 : 0] sr_zero_b0,
@@ -103,8 +107,12 @@ module iir_biquad_top #(
   localparam logic signed [N_BITS_P-1 : 0] PI2_C           = {'0, pi_8_4_pos_n4_q50[53 : 50-Q_BITS_P]};
   localparam int                           CORDIC_Q_BITS_C = AXI_DATA_WIDTH_P - 4;
 
+
   typedef enum {
     INITIALIZE_FILTER_E,
+    // First states solves
+    //  - w0   = 2 * pi * f0 /Fs
+    //  - alfa = sin(w0) / 2Q
     SEND_DIVIDEND_F0_E,
     SEND_DIVISOR_FS_E,
     WAIT_QUOTIENT_F0_FS_E,
@@ -117,10 +125,11 @@ module iir_biquad_top #(
     SEND_DIVIDEND_SINE_W0_E,
     SEND_DIVISOR_2Q_E,
     WAIT_QUOTIENT_W0_SINE_2Q_E,
+    // This state will use the results from the former states
+    // and calculate coefficients depending on the filter type
     CALCULATE_COEFFICIENTS_E,
-    CALCULATE_COEFFICIENTS_1_E,
-
-
+    // The following states are for normalizing to unity gain, i.e.,
+    // divide the coefficients with a0
     SEND_DIVIDEND_B0_E,
     SEND_DIVISOR_A0_0_E,
     WAIT_QUOTIENT_B0_A0_E,
@@ -136,7 +145,6 @@ module iir_biquad_top #(
     SEND_DIVIDEND_A2_E,
     SEND_DIVISOR_A0_4_E,
     WAIT_QUOTIENT_A2_A0_E,
-
     WAIT_FOR_NEW_CONFIGURATION_E
   } top_state_t;
 
@@ -167,6 +175,7 @@ module iir_biquad_top #(
   logic signed         [N_BITS_P-1 : 0] cr_pole_a1;
   logic signed         [N_BITS_P-1 : 0] cr_pole_a2;
 
+  // Status registers to the APB slave
   assign sr_w0      = w0;
   assign sr_alfa    = alfa;
   assign sr_zero_b0 = cr_zero_b0;
@@ -176,7 +185,9 @@ module iir_biquad_top #(
   assign sr_pole_a1 = cr_pole_a1;
   assign sr_pole_a2 = cr_pole_a2;
 
+  // Internal signals of sine and cosine, result from the CORDIC
   assign {cordic_sine, cordic_cosine} = cordic_ing_tdata;
+
 
 
   always_ff @(posedge clk or negedge rst_n) begin
@@ -234,6 +245,11 @@ module iir_biquad_top #(
           end
         end
 
+        // ---------------------------------------------------------------------
+        // Calculating first part of w0; (f0 / fs)
+        // ---------------------------------------------------------------------
+
+
         // Sending the dividend (cut-off frequency f0) to the long divider
         SEND_DIVIDEND_F0_E: begin
 
@@ -248,11 +264,11 @@ module iir_biquad_top #(
         // Handshaking the dividend and sending the divisior (sampling frequency fs) to the long divider
         SEND_DIVISOR_FS_E: begin
           if (div_egr_tready) begin
-            if (!div_egr_tlast) begin                    // Dividend was sent
+            if (!div_egr_tlast) begin
               div_egr_tdata  <= cr_iir_fs;
               div_egr_tlast  <= '1;
             end
-            else begin                                   // Divisor was sent
+            else begin
               div_egr_tvalid <= '0;
               div_egr_tlast  <= '0;
               top_state      <= WAIT_QUOTIENT_F0_FS_E;
@@ -260,16 +276,23 @@ module iir_biquad_top #(
           end
         end
 
+        // ---------------------------------------------------------------------
+        // Quoutient of (f0 / fs) is returned, multiply with 2*pi
+        // ---------------------------------------------------------------------
+
         // Wait for the long divider's result of f0 over fs
         WAIT_QUOTIENT_F0_FS_E: begin
           div_ing_tready <= '1;
           if (div_ing_tvalid) begin
-            w0             <= div_ing_tdata*PI2_C >>> Q_BITS_P; // w0 = 2 * pi * f0 /Fs
+            w0             <= (div_ing_tdata * PI2_C) >>> Q_BITS_P;
             div_ing_tready <= '0;
             top_state      <= SEND_DIVIDEND_W0_E;
           end
         end
 
+        // ---------------------------------------------------------------------
+        // Calculating (w0 / (2*pi)) because the CORDIC only takes values +-2pi
+        // ---------------------------------------------------------------------
 
         // Send dividend to the long divider
         SEND_DIVIDEND_W0_E: begin
@@ -278,20 +301,20 @@ module iir_biquad_top #(
           div_egr_tdata  <= w0;
           div_egr_tlast  <= '0;
           div_egr_tid    <= AXI4S_ID_P;
-          top_state      <= SEND_DIVISOR_2PI_E;           // Wait for first handshake
+          top_state      <= SEND_DIVISOR_2PI_E;
         end
 
         // Send divisior to the long divider
         SEND_DIVISOR_2PI_E: begin
           if (div_egr_tready) begin
-            if (!div_egr_tlast) begin                    // Dividend was sent
+            if (!div_egr_tlast) begin
               div_egr_tdata  <= PI2_C;
               div_egr_tlast  <= '1;
             end
             else begin
               div_egr_tvalid <= '0;
               div_egr_tlast  <= '0;
-              top_state      <= WAIT_QUOTIENT_W0_2PI_E;   // Wait for second handshake
+              top_state      <= WAIT_QUOTIENT_W0_2PI_E;
             end
           end
         end
@@ -300,11 +323,15 @@ module iir_biquad_top #(
         WAIT_QUOTIENT_W0_2PI_E: begin
           div_ing_tready <= '1;
           if (div_ing_tvalid) begin
-            w0             <= (div_ing_tdata[Q_BITS_P-1 : 0] * PI2_C) >>> Q_BITS_P; // w0 = 2 * pi * f0 /Fs % 2PI * 2PI
+            w0             <= (div_ing_tdata[Q_BITS_P-1 : 0] * PI2_C) >>> Q_BITS_P;
             div_ing_tready <= '0;
             top_state      <= SEND_SINE_OF_W0_E;
           end
         end
+
+        // ---------------------------------------------------------------------
+        // Calculating sin(w0) and cos(w0)
+        // ---------------------------------------------------------------------
 
         // Send omega (w0) to the CORDIC
         SEND_SINE_OF_W0_E: begin
@@ -336,6 +363,10 @@ module iir_biquad_top #(
           end
         end
 
+        // ---------------------------------------------------------------------
+        // Calculating alfa = sin(w0) / (2*Q)
+        // ---------------------------------------------------------------------
+
         // Send dividend to the long divider
         SEND_DIVIDEND_SINE_W0_E: begin
 
@@ -343,20 +374,20 @@ module iir_biquad_top #(
           div_egr_tdata  <= sine_of_w0;
           div_egr_tlast  <= '0;
           div_egr_tid    <= AXI4S_ID_P;
-          top_state      <= SEND_DIVISOR_2Q_E;           // Wait for first handshake
+          top_state      <= SEND_DIVISOR_2Q_E;
         end
 
         // Send divisior to the long divider
         SEND_DIVISOR_2Q_E: begin
           if (div_egr_tready) begin
-            if (!div_egr_tlast) begin                    // Dividend was sent
+            if (!div_egr_tlast) begin
               div_egr_tdata  <= cr_iir_q << 1;
               div_egr_tlast  <= '1;
             end
             else begin
               div_egr_tvalid <= '0;
               div_egr_tlast  <= '0;
-              top_state      <= WAIT_QUOTIENT_W0_SINE_2Q_E;   // Wait for second handshake
+              top_state      <= WAIT_QUOTIENT_W0_SINE_2Q_E;
             end
           end
         end
@@ -365,15 +396,24 @@ module iir_biquad_top #(
         WAIT_QUOTIENT_W0_SINE_2Q_E: begin
           div_ing_tready <= '1;
           if (div_ing_tvalid) begin
-            alfa           <= div_ing_tdata;             // alfa = sin(w0) / 2Q
+            alfa           <= div_ing_tdata;
             div_ing_tready <= '0;
             top_state      <= CALCULATE_COEFFICIENTS_E;
           end
         end
 
+        // ---------------------------------------------------------------------
+        // Now we have calculated
+        //   sin(2*pi*f0/fs) / sin(w0)
+        //   cos(2*pi*f0/fs)
+        //   alfa = sin(w0) / (2*Q)
+        //
+        // We can calculate the coefficient for the selected filter type
+        // ---------------------------------------------------------------------
+
         CALCULATE_COEFFICIENTS_E: begin
 
-          top_state <= CALCULATE_COEFFICIENTS_1_E;
+          top_state <= SEND_DIVIDEND_B0_E;
 
           iir_f0   <= cr_iir_f0;
           iir_fs   <= cr_iir_fs;
@@ -386,40 +426,41 @@ module iir_biquad_top #(
           case (cr_iir_type)
 
             IIR_LOW_PASS_E: begin
-              cr_zero_b0 <= (ONE_C - cosine_of_w0) >>> 1;  // b0 = (1 - cos(w0)) / 2
-              cr_zero_b1 <= (ONE_C - cosine_of_w0);        // b1 =  1 - cos(w0)
-              cr_zero_b2 <= (ONE_C - cosine_of_w0) >>> 1;  // b2 = (1 - cos(w0)) / 2
-              cr_pole_a1 <= -(cosine_of_w0 << 1);          // a1 = -2cos(w0)
-              cr_pole_a2 <=  ONE_C - alfa;                 // a2 = 1 - alfa = 1 - sin(w0) / 2Q
+              cr_zero_b0 <= (ONE_C - cosine_of_w0) >>> 1;  // b0 =  (1 - cos(w0)) / 2
+              cr_zero_b1 <= (ONE_C - cosine_of_w0);        // b1 =   1 - cos(w0)
+              cr_zero_b2 <= (ONE_C - cosine_of_w0) >>> 1;  // b2 =  (1 - cos(w0)) / 2
+              cr_pole_a1 <= -(cosine_of_w0 << 1);          // a1 = -(2 * cos(w0))
+              cr_pole_a2 <=  ONE_C - alfa;                 // a2 =   1 - alfa
             end
 
             IIR_HIGH_PASS_E: begin
               cr_zero_b0 <=  (ONE_C + cosine_of_w0) >>> 1; // b0 =  (1 + cos(w0)) / 2
               cr_zero_b1 <= -(ONE_C + cosine_of_w0);       // b1 = -(1 + cos(w0)
-              cr_zero_b2 <=  (ONE_C + cosine_of_w0) >>> 1; // b2 =  (1 + cos(w0))) / 2
-              cr_pole_a1 <= -(cosine_of_w0 << 1);          // a1 = -2cos(w0)
-              cr_pole_a2 <=  ONE_C - alfa;                 // a2 = 1 - alfa = 1 - sin(w0) / 2Q
+              cr_zero_b2 <=  (ONE_C + cosine_of_w0) >>> 1; // b2 =  (1 + cos(w0)) / 2
+              cr_pole_a1 <= -(cosine_of_w0 << 1);          // a1 = -(2 * cos(w0))
+              cr_pole_a2 <=  ONE_C - alfa;                 // a2 =   1 - alfa
             end
 
             IIR_BAND_PASS_E: begin
-              cr_zero_b0 <=  sine_of_w0 >>> 1;             // b0 = sin(w0) / 2
+              cr_zero_b0 <=  sine_of_w0 >>> 1;             // b0 =  sin(w0) / 2
               cr_zero_b1 <= '0;                            // b1 = 0
               cr_zero_b2 <=  -sine_of_w0 >>> 1;            // b2 = -sin(w0) / 2
-              cr_pole_a1 <= -(cosine_of_w0 << 1);          // a1 = -2cos(w0)
-              cr_pole_a2 <=  ONE_C - alfa;                 // a2 = 1 - alfa = 1 - sin(w0) / 2Q
+              cr_pole_a1 <= -(cosine_of_w0 << 1);          // a1 = -(2 * cos(w0))
+              cr_pole_a2 <=  ONE_C - alfa;                 // a2 =   1 - alfa
             end
 
           endcase
         end
 
-        CALCULATE_COEFFICIENTS_1_E: begin
-          top_state <= SEND_DIVIDEND_B0_E;
-
-        end
+        // ---------------------------------------------------------------------
+        // Next steps will normalize the response to unity gain, which means
+        // we are scaling coefficients by a0, the output gain.
+        // ---------------------------------------------------------------------
 
         // ---------------------------------------------------------------------
         // Normalizing b0 (divide with a0)
         // ---------------------------------------------------------------------
+
         SEND_DIVIDEND_B0_E: begin
 
           div_egr_tvalid <= '1;
@@ -455,6 +496,7 @@ module iir_biquad_top #(
         // ---------------------------------------------------------------------
         // Normalizing b1 (divide with a0)
         // ---------------------------------------------------------------------
+
         SEND_DIVIDEND_B1_E: begin
 
           div_egr_tvalid <= '1;
@@ -490,6 +532,7 @@ module iir_biquad_top #(
         // ---------------------------------------------------------------------
         // Normalizing b2 (divide with a0)
         // ---------------------------------------------------------------------
+
         SEND_DIVIDEND_B2_E: begin
 
           div_egr_tvalid <= '1;
@@ -525,6 +568,7 @@ module iir_biquad_top #(
         // ---------------------------------------------------------------------
         // Normalizing a1 (divide with a0)
         // ---------------------------------------------------------------------
+
         SEND_DIVIDEND_A1_E: begin
 
           div_egr_tvalid <= '1;
@@ -560,6 +604,7 @@ module iir_biquad_top #(
         // ---------------------------------------------------------------------
         // Normalizing a2 (divide with a0)
         // ---------------------------------------------------------------------
+
         SEND_DIVIDEND_A2_E: begin
 
           div_egr_tvalid <= '1;
@@ -640,7 +685,6 @@ module iir_biquad_top #(
     .cr_zero_b1 ( cr_zero_b1 ), // input
     .cr_zero_b2 ( cr_zero_b2 )  // input
   );
-
 
 endmodule
 
