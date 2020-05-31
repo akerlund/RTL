@@ -25,10 +25,14 @@ class osc_base_test extends uvm_test;
 
   osc_env               tb_env;
   osc_config            tb_cfg;
-
   osc_virtual_sequencer v_sqr;
+  uvm_table_printer     printer;
 
-  uvm_table_printer printer;
+  // Oscillator parameters
+  real                osc_f;
+  real                osc_duty_cycle;
+  osc_waveform_type_t osc_waveform_type;
+
 
   function new(string name = "osc_base_test", uvm_component parent = null);
 

@@ -19,15 +19,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-class tc_osc_simple_test extends osc_base_test;
+class tc_osc_frequency_test extends osc_base_test;
 
-  osc_square_seq #(vip_apb3_cfg) osc_square_seq0;
+  osc_frequency_seq #(vip_apb3_cfg) osc_frequency_seq0;
 
-  `uvm_component_utils(tc_osc_simple_test)
+  `uvm_component_utils(tc_osc_frequency_test)
 
 
 
-  function new(string name = "tc_osc_simple_test", uvm_component parent = null);
+  function new(string name = "tc_osc_frequency_test", uvm_component parent = null);
 
     super.new(name, parent);
 
@@ -48,8 +48,28 @@ class tc_osc_simple_test extends osc_base_test;
     super.run_phase(phase);
     phase.raise_objection(this);
 
-    osc_square_seq0 = new();
-    osc_square_seq0.start(v_sqr.apb3_sequencer);
+    osc_f             = 5000.0;
+    osc_duty_cycle    = 250;
+    osc_waveform_type = OSC_SQUARE_E;
+
+    osc_frequency_seq0 = new();
+    osc_frequency_seq0.osc_f             = osc_f;
+    osc_frequency_seq0.osc_duty_cycle    = osc_duty_cycle;
+    osc_frequency_seq0.osc_waveform_type = osc_waveform_type;
+
+    osc_frequency_seq0.start(v_sqr.apb3_sequencer);
+
+    #400us;
+
+    osc_f = 4000.0;
+    osc_frequency_seq0.osc_f = osc_f;
+    osc_frequency_seq0.start(v_sqr.apb3_sequencer);
+
+    #500us;
+
+
+    #10ms;
+
 
     phase.drop_objection(this);
 

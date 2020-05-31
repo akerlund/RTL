@@ -22,16 +22,18 @@
 `default_nettype none
 
 module oscillator_top #(
-    parameter int SYS_CLK_FREQUENCY_P = -1,
-    parameter int PRIME_FREQUENCY_P   = -1,
-    parameter int AXI_DATA_WIDTH_P    = -1,
-    parameter int AXI_ID_WIDTH_P      = -1,
-    parameter int AXI_ID_P            = -1,
-    parameter int APB_BASE_ADDR_P     = -1,
-    parameter int APB_ADDR_WIDTH_P    = -1,
-    parameter int APB_DATA_WIDTH_P    = -1,
-    parameter int WAVE_WIDTH_P        = -1,
-    parameter int Q_BITS_P            = -1
+    parameter int SYS_CLK_FREQUENCY_P  = -1,
+    parameter int PRIME_FREQUENCY_P    = -1,
+    parameter int WAVE_WIDTH_P         = -1,
+    parameter int DUTY_CYCLE_DIVIDER_P = -1, // Needs to be high so the vector will fit [N_BITS_P-1 : 0]
+    parameter int N_BITS_P             = -1,
+    parameter int Q_BITS_P             = -1,
+    parameter int AXI_DATA_WIDTH_P     = -1,
+    parameter int AXI_ID_WIDTH_P       = -1,
+    parameter int AXI_ID_P             = -1,
+    parameter int APB_BASE_ADDR_P      = -1,
+    parameter int APB_ADDR_WIDTH_P     = -1,
+    parameter int APB_DATA_WIDTH_P     = -1
   )(
     // Clock and reset
     input  wire                                 clk,
@@ -64,38 +66,90 @@ module oscillator_top #(
     input  wire        [APB_DATA_WIDTH_P-1 : 0] apb3_pwdata
   );
 
-  logic  [APB_DATA_WIDTH_P-1 : 0] cr_waveform_select;
-  logic  [APB_DATA_WIDTH_P-1 : 0] cr_frequency;
-  logic  [APB_DATA_WIDTH_P-1 : 0] cr_duty_cycle;
 
+  // Waveform outputs from the core
+  logic signed     [WAVE_WIDTH_P-1 : 0] wave_square;
+  logic signed     [WAVE_WIDTH_P-1 : 0] wave_triangle;
+
+
+  // APB signals
+  logic        [APB_DATA_WIDTH_P-1 : 0] cr_waveform_select;
+  logic        [APB_DATA_WIDTH_P-1 : 0] cr_frequency;
+  logic        [APB_DATA_WIDTH_P-1 : 0] cr_duty_cycle;
+  logic                         [1 : 0] cr_nq_waveform_select;
+  logic                [N_BITS_P-1 : 0] cr_nq_frequency;
+  logic                [N_BITS_P-1 : 0] cr_nq_duty_cycle;
+
+  // Type converting the configuration in "cr_waveform_select"
+  osc_waveform_type_t osc_selected_waveform;
+  assign osc_selected_waveform = osc_waveform_type_t'(cr_waveform_select);
+
+  // Resizing the configuration registers
+  assign cr_nq_waveform_select = cr_waveform_select[1 : 0];
+  assign cr_nq_frequency       = cr_frequency[N_BITS_P-1 : 0];
+  assign cr_nq_duty_cycle      = cr_duty_cycle[N_BITS_P-1 : 0];
+
+
+  // Waveform output selection
+  always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      waveform <= '0;
+    end
+    else begin
+
+      case (osc_selected_waveform)
+
+        OSC_SQUARE_E: begin
+          waveform <= wave_square   >>> (WAVE_WIDTH_P - Q_BITS_P - 1);
+        end
+
+        OSC_TRIANGLE_E: begin
+          waveform <= wave_triangle >>> (WAVE_WIDTH_P - Q_BITS_P - 1);
+        end
+
+        // OSC_SAW_E: begin
+
+        // end
+
+        // OSC_SINE_E: begin
+
+        // end
+
+      endcase
+
+    end
+
+  end
 
   oscillator_core #(
-    .SYS_CLK_FREQUENCY_P ( SYS_CLK_FREQUENCY_P ),
-    .PRIME_FREQUENCY_P   ( PRIME_FREQUENCY_P   ),
-    .AXI_DATA_WIDTH_P    ( AXI_DATA_WIDTH_P    ),
-    .AXI_ID_WIDTH_P      ( AXI_ID_WIDTH_P      ),
-    .AXI_ID_P            ( AXI_ID_P            ),
-    .APB_DATA_WIDTH_P    ( APB_DATA_WIDTH_P    ),
-    .WAVE_WIDTH_P        ( WAVE_WIDTH_P        ),
-    .Q_BITS_P            ( Q_BITS_P            )
+    .SYS_CLK_FREQUENCY_P  ( SYS_CLK_FREQUENCY_P   ),
+    .PRIME_FREQUENCY_P    ( PRIME_FREQUENCY_P     ),
+    .WAVE_WIDTH_P         ( WAVE_WIDTH_P          ),
+    .DUTY_CYCLE_DIVIDER_P ( DUTY_CYCLE_DIVIDER_P  ),
+    .N_BITS_P             ( N_BITS_P              ),
+    .Q_BITS_P             ( Q_BITS_P              ),
+    .AXI_DATA_WIDTH_P     ( AXI_DATA_WIDTH_P      ),
+    .AXI_ID_WIDTH_P       ( AXI_ID_WIDTH_P        ),
+    .AXI_ID_P             ( AXI_ID_P              )
   ) oscillator_core_i0 (
-    .clk                 ( clk                 ), // input
-    .rst_n               ( rst_n               ), // input
-    .waveform            ( waveform            ), // output
-    .div_egr_tvalid      ( div_egr_tvalid      ), // output
-    .div_egr_tready      ( div_egr_tready      ), // input
-    .div_egr_tdata       ( div_egr_tdata       ), // output
-    .div_egr_tlast       ( div_egr_tlast       ), // output
-    .div_egr_tid         ( div_egr_tid         ), // output
-    .div_ing_tvalid      ( div_ing_tvalid      ), // input
-    .div_ing_tready      ( div_ing_tready      ), // output
-    .div_ing_tdata       ( div_ing_tdata       ), // input
-    .div_ing_tlast       ( div_ing_tlast       ), // input
-    .div_ing_tid         ( div_ing_tid         ), // input
-    .div_ing_tuser       ( div_ing_tuser       ), // input
-    .cr_waveform_select  ( cr_waveform_select  ), // input
-    .cr_frequency        ( cr_frequency        ), // input
-    .cr_duty_cycle       ( cr_duty_cycle       )  // input
+    .clk                  ( clk                   ), // input
+    .rst_n                ( rst_n                 ), // input
+    .wave_square          ( wave_square           ), // output
+    .wave_triangle        ( wave_triangle         ), // output
+    .div_egr_tvalid       ( div_egr_tvalid        ), // output
+    .div_egr_tready       ( div_egr_tready        ), // input
+    .div_egr_tdata        ( div_egr_tdata         ), // output
+    .div_egr_tlast        ( div_egr_tlast         ), // output
+    .div_egr_tid          ( div_egr_tid           ), // output
+    .div_ing_tvalid       ( div_ing_tvalid        ), // input
+    .div_ing_tready       ( div_ing_tready        ), // output
+    .div_ing_tdata        ( div_ing_tdata         ), // input
+    .div_ing_tlast        ( div_ing_tlast         ), // input
+    .div_ing_tid          ( div_ing_tid           ), // input
+    .div_ing_tuser        ( div_ing_tuser         ), // input
+    .cr_waveform_select   ( cr_nq_waveform_select ), // input
+    .cr_frequency         ( cr_nq_frequency       ), // input
+    .cr_duty_cycle        ( cr_nq_duty_cycle      )  // input
   );
 
 

@@ -28,40 +28,86 @@ module osc_tb_top;
   bit clk;
   bit rst_n;
 
-  time clk_period = 5000ps;
+  time clk_period = 4ns;
 
   // IF
   vip_apb3_if #(vip_apb3_cfg) apb3_vif(clk, rst_n);
 
-  logic [WAVE_WIDTH_C-1 : 0] waveform;
+  // AXI4-S signals betwwen the Oscillator top and the divider
+  logic                          osc_div_tvalid;
+  logic                          osc_div_tready;
+  logic [AXI_DATA_WIDTH_C-1 : 0] osc_div_tdata;
+  logic                          osc_div_tlast;
+  logic   [AXI_ID_WIDTH_C-1 : 0] osc_div_tid;
+  logic                          div_osc_tvalid;
+  logic                          div_osc_tready;
+  logic [AXI_DATA_WIDTH_C-1 : 0] div_osc_tdata;
+  logic                          div_osc_tlast;
+  logic   [AXI_ID_WIDTH_C-1 : 0] div_osc_tid;
+  logic                          div_osc_tuser;
 
 
 
   oscillator_top #(
-
-    .WAVE_WIDTH_P      ( WAVE_WIDTH_C                  ), // Resolution of the waves
-    .COUNTER_WIDTH_P   ( COUNTER_WIDTH_C               ), // Resolution of the counters
-    .APB3_BASE_ADDR_P  ( '0                            ),
-    .APB3_ADDR_WIDTH_P ( vip_apb3_cfg.APB_ADDR_WIDTH_P ),
-    .APB3_DATA_WIDTH_P ( vip_apb3_cfg.APB_DATA_WIDTH_P )
-
+    .SYS_CLK_FREQUENCY_P  ( SYS_CLK_FREQUENCY_C             ),
+    .PRIME_FREQUENCY_P    ( PRIME_FREQUENCY_C               ),
+    .WAVE_WIDTH_P         ( WAVE_WIDTH_C                    ),
+    .DUTY_CYCLE_DIVIDER_P ( DUTY_CYCLE_DIVIDER_C            ),
+    .N_BITS_P             ( N_BITS_C                        ),
+    .Q_BITS_P             ( Q_BITS_C                        ),
+    .AXI_DATA_WIDTH_P     ( AXI_DATA_WIDTH_C                ),
+    .AXI_ID_WIDTH_P       ( AXI_ID_WIDTH_C                  ),
+    .AXI_ID_P             ( AXI_ID_C                        ),
+    .APB_BASE_ADDR_P      ( OSC_BASE_ADDR_C                 ),
+    .APB_ADDR_WIDTH_P     ( vip_apb3_cfg.APB_ADDR_WIDTH_P   ),
+    .APB_DATA_WIDTH_P     ( vip_apb3_cfg.APB_DATA_WIDTH_P   )
   ) oscillator_top_i0 (
-
-    // Clock and reset
-    .clk               ( clk                           ),
-    .rst_n             ( rst_n                         ),
-
-    // Waveform output
-    .waveform          ( waveform                      ),
-
+    .clk                  ( clk                             ), // input
+    .rst_n                ( rst_n                           ), // input
+    .waveform             (                                 ), // output
+    .div_egr_tvalid       ( osc_div_tvalid                  ), // output
+    .div_egr_tready       ( osc_div_tready                  ), // input
+    .div_egr_tdata        ( osc_div_tdata                   ), // output
+    .div_egr_tlast        ( osc_div_tlast                   ), // output
+    .div_egr_tid          ( osc_div_tid                     ), // output
+    .div_ing_tvalid       ( div_osc_tvalid                  ), // input
+    .div_ing_tready       ( div_osc_tready                  ), // output
+    .div_ing_tdata        ( div_osc_tdata                   ), // input
+    .div_ing_tlast        ( div_osc_tlast                   ), // input
+    .div_ing_tid          ( div_osc_tid                     ), // input
+    .div_ing_tuser        ( div_osc_tuser                   ), // input
     // APB interface
-    .apb3_paddr        ( apb3_vif.paddr                ),
-    .apb3_psel         ( apb3_vif.psel                 ),
-    .apb3_penable      ( apb3_vif.penable              ),
-    .apb3_pwrite       ( apb3_vif.pwrite               ),
-    .apb3_pwdata       ( apb3_vif.pwdata               ),
-    .apb3_pready       ( apb3_vif.pready               ),
-    .apb3_prdata       ( apb3_vif.prdata               )
+    .apb3_paddr           ( apb3_vif.paddr                  ), // input
+    .apb3_psel            ( apb3_vif.psel[OSC_PSEL_BIT_C]   ), // output
+    .apb3_penable         ( apb3_vif.penable                ), // output
+    .apb3_pwrite          ( apb3_vif.pwrite                 ), // input
+    .apb3_pwdata          ( apb3_vif.pwdata                 ), // input
+    .apb3_pready          ( apb3_vif.pready[OSC_PSEL_BIT_C] ), // input
+    .apb3_prdata          ( apb3_vif.prdata[OSC_PSEL_BIT_C] )  // input
+  );
+
+
+  long_division_axi4s_if #(
+    .AXI_DATA_WIDTH_P ( AXI_DATA_WIDTH_C ),
+    .AXI_ID_WIDTH_P   ( AXI_ID_WIDTH_C   ),
+    .N_BITS_P         ( AXI_DATA_WIDTH_C ),
+    .Q_BITS_P         ( Q_BITS_C         )
+  ) long_division_axi4s_if_i0 (
+
+    .clk              ( clk              ), // input
+    .rst_n            ( rst_n            ), // input
+
+    .ing_tvalid       ( osc_div_tvalid   ), // input
+    .ing_tready       ( osc_div_tready   ), // output
+    .ing_tdata        ( osc_div_tdata    ), // input
+    .ing_tlast        ( osc_div_tlast    ), // input
+    .ing_tid          ( osc_div_tid      ), // input
+
+    .egr_tvalid       ( div_osc_tvalid   ), // output
+    .egr_tdata        ( div_osc_tdata    ), // output
+    .egr_tlast        ( div_osc_tlast    ), // output
+    .egr_tid          ( div_osc_tid      ), // output
+    .egr_tuser        ( div_osc_tuser    )  // output
   );
 
   initial begin

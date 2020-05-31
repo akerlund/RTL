@@ -19,20 +19,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-package osc_tc_pkg;
+`ifndef OSC_APB_SLAVE_ADDR_PKG
+`define OSC_APB_SLAVE_ADDR_PKG
 
-  `include "uvm_macros.svh"
-  import uvm_pkg::*;
+package osc_apb_slave_addr_pkg;
 
-  import vip_apb3_types_pkg::*;
-  import vip_apb3_pkg::*;
-  import oscillator_types_pkg::*;
-
-  // Import testbench and agent packages here
-  import osc_tb_pkg::*;
-
-  // Include testcase files here
-  `include "osc_base_test.sv"
-  `include "tc_osc_frequency_test.sv"
+  localparam int CR_OSC_WAVEFORM_SELECT_ADDR_C = 0;
+  localparam int CR_OSC_FREQUENCY_ADDR_C       = 4;
+  localparam int CR_OSC_DUTY_CYCLE_ADDR_C      = 8;
 
 endpackage
+
+`endif

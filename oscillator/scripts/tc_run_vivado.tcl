@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
 # Select testcase
 #-------------------------------------------------------------------------------
-set test_case "tc_osc_simple_test";
+set test_case "tc_osc_frequency_test";
 
 set  script_dir [pwd]
 cd   rundir

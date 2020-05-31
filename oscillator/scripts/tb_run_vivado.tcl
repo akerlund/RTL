@@ -12,6 +12,7 @@ cd   rundir
 
 set rtl_directories [list \
   "$git_root/clock_enable/rtl" \
+  "$git_root/math/division/long_division/rtl" \
   "$module_path/rtl"];
 
 set uvm_directories [list \
@@ -21,6 +22,8 @@ set uvm_directories [list \
 
 set package_files [list \
   "$git_root/vip/vip_apb3_agent/vip_apb3_types_pkg.sv" \
+  "$git_root/vip/vip_fixed_point/vip_fixed_point_pkg.sv" \
+  "$module_path/rtl/osc_apb_slave_addr_pkg.sv" \
   "$module_path/rtl/oscillator_types_pkg.sv"];
 
 set header_files [list \
@@ -53,8 +56,5 @@ exec xvlog -sv -f compile_list.txt -L uvm
 
 puts "INFO \[xelab\] Elaborating the design"
 exec xelab osc_tb_top -debug all -relax -s top -timescale 1ns/1ps
-
-# Debug, verbosity set to highest
-#exec xelab -v 2 osc_tb_top -debug all -relax -s top -timescale 1ns/1ps
 
 cd $script_dir

@@ -24,21 +24,23 @@ import oscillator_types_pkg::*;
 `default_nettype none
 
 module oscillator_core #(
-    parameter int SYS_CLK_FREQUENCY_P = -1,
-    parameter int PRIME_FREQUENCY_P   = -1,
-    parameter int AXI_DATA_WIDTH_P    = -1,
-    parameter int AXI_ID_WIDTH_P      = -1,
-    parameter int AXI_ID_P            = -1,
-    parameter int APB_DATA_WIDTH_P    = -1,
-    parameter int WAVE_WIDTH_P        = -1,
-    parameter int Q_BITS_P            = -1
+    parameter int SYS_CLK_FREQUENCY_P  = -1,
+    parameter int PRIME_FREQUENCY_P    = -1,
+    parameter int WAVE_WIDTH_P         = -1,
+    parameter int DUTY_CYCLE_DIVIDER_P = -1, // Needs to be high so the vector will fit [N_BITS_P-1 : 0]
+    parameter int N_BITS_P             = -1,
+    parameter int Q_BITS_P             = -1,
+    parameter int AXI_DATA_WIDTH_P     = -1,
+    parameter int AXI_ID_WIDTH_P       = -1,
+    parameter int AXI_ID_P             = -1
   )(
     // Clock and reset
     input  wire                                  clk,
     input  wire                                  rst_n,
 
     // Waveform output
-    output logic signed     [WAVE_WIDTH_P-1 : 0] waveform,
+    output logic signed     [WAVE_WIDTH_P-1 : 0] wave_square,
+    output logic signed     [WAVE_WIDTH_P-1 : 0] wave_triangle,
 
     // Long division interface
     output logic                                 div_egr_tvalid,
@@ -55,70 +57,54 @@ module oscillator_core #(
     input  wire                                  div_ing_tuser,     // Overflow
 
     // Configuration registers
-    input  wire         [APB_DATA_WIDTH_P-1 : 0] cr_waveform_select,
-    input  wire         [APB_DATA_WIDTH_P-1 : 0] cr_frequency,
-    input  wire         [APB_DATA_WIDTH_P-1 : 0] cr_duty_cycle
+    input  wire                          [1 : 0] cr_waveform_select,
+    input  wire                 [N_BITS_P-1 : 0] cr_frequency,
+    input  wire                 [N_BITS_P-1 : 0] cr_duty_cycle
   );
 
-  // This is used for frequency calculations
-  typedef enum {
-    WAIT_FOR_CR_FREQUENCY_E,
-    SEND_DIVIDEND_0_E,
-    SEND_DIVISOR_0_E,
-    WAIT_QUOTIENT_0_E,
-    SEND_DIVIDEND_1_E,
-    SEND_DIVISOR_1_E,
-    WAIT_QUOTIENT_1_E
-  } divider_state_t;
-
-  divider_state_t divider_state;
+  // The prime (or higest/base) frequency's period in system clock periods, e.g.,
+  // 200MHz / 1MHz = 200
+  localparam int PERIOD_IN_SYS_CLKS_C = SYS_CLK_FREQUENCY_P / PRIME_FREQUENCY_P;
 
   // Counters maximum width
-  localparam int COUNTER_WIDTH_C = $clog2(SYS_CLK_FREQUENCY_P); // Maybe this can be smaller?
+  localparam int COUNTER_WIDTH_C = $ceil($clog2(SYS_CLK_FREQUENCY_P)); // Maybe this can be smaller?
+
+  // Maximum duty cycle
+  localparam logic [N_BITS_P-1 : 0] MAXIMUM_DUTY_CYCLE_C = (DUTY_CYCLE_DIVIDER_P-1) << Q_BITS_P;
+
+  // The value in "cr_duty_cycle" corresponds to a delay of a factor with this value
+  // For example, 250M / 1k = 250000 and 18 bits are needed, N32Q11 should do the job
+  localparam logic [N_BITS_P-1 : 0] DUTY_CYCLE_STEP_P    = (SYS_CLK_FREQUENCY_P / DUTY_CYCLE_DIVIDER_P) << Q_BITS_P;
 
 
-  // Internal reegister
+  // The FSM for calculations
+  typedef enum {
+    WAIT_FOR_CR_FREQUENCY_E,
+    SEND_DIVIDEND_PRIME_FREQUENCY_E,
+    SEND_DIVISOR_CR_FREQUENCY_E,
+    WAIT_QUOTIENT_PRIME_CR_E,
+    SEND_DIVIDEND_DUTY_CYCLE_STEP_E,
+    SEND_DIVISOR_FREQUENCY_1_E,
+    WAIT_QUOTIENT_DUTY_CYCLE_STEP_FREQUENCY_E,
+    MULTIPLY_DUTY_CYCLE_E,
+    WRITE_CONFIGURATION_E
+  } osc_core_state_t;
 
-  osc_waveform_type_t osc_selected_waveform;
+  osc_core_state_t osc_core_state;
 
-  logic         [COUNTER_WIDTH_C-1 : 0] sqr_enable_period;
-  logic         [COUNTER_WIDTH_C-1 : 0] tri_enable_period;
-  logic        [APB_DATA_WIDTH_P-1 : 0] cr_frequency_d0;
-  logic signed     [WAVE_WIDTH_P-1 : 0] wave_square;
-  logic signed     [WAVE_WIDTH_P-1 : 0] wave_triangle;
 
-  assign osc_selected_waveform = osc_waveform_type_t'(cr_waveform_select);
+  // Internal registers
+  logic   [N_BITS_P-1 : 0] cr_frequency_d0;        // Copy of cr_frequency, used to re-calculate when new input
+  logic [2*N_BITS_P-1 : 0] multiplication_product;
 
-  // Waveform process
-  always_ff @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
-      waveform <= '0;
-    end
-    else begin
 
-      case (osc_selected_waveform)
+  logic   [N_BITS_P-1 : 0] enable_period;          // Intermediate register the triangle and square enable periods
+  logic   [N_BITS_P-1 : 0] duty_cycle;             // Intermediate register the square duty cycle
 
-        OSC_SQUARE_E: begin
-          waveform <= wave_square >>> (WAVE_WIDTH_P - Q_BITS_P - 1);
-        end
-
-        OSC_TRIANGLE_E: begin
-          waveform <= wave_triangle >>> (WAVE_WIDTH_P - Q_BITS_P - 1);
-        end
-
-        // OSC_SAW_E: begin
-
-        // end
-
-        // OSC_SINE_E: begin
-
-        // end
-
-      endcase
-
-    end
-
-  end
+  // Internal signals
+  logic   [N_BITS_P-1 : 0] tri_enable_period;
+  logic   [N_BITS_P-1 : 0] sqr_enable_period;
+  logic   [N_BITS_P-1 : 0] sqr_duty_cycle;
 
 
   // FSM for interfacing with the divider and calculate for the
@@ -127,107 +113,140 @@ module oscillator_core #(
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
 
-      divider_state     <= WAIT_FOR_CR_FREQUENCY_E;
-      cr_frequency_d0   <= '0;
-      sqr_enable_period <= '0;
-      tri_enable_period <= '0;
+      // Internal signals
+      osc_core_state         <= WAIT_FOR_CR_FREQUENCY_E;
+      tri_enable_period      <= '0;
+      sqr_enable_period      <= '0;
+      sqr_duty_cycle         <= '0;
+      multiplication_product <= '0;
+
+      // Registers
+      cr_frequency_d0        <= '0;
+      enable_period          <= '0;
+      duty_cycle             <= '0;
 
       // Ports
-      div_egr_tvalid    <= '0;
-      div_egr_tdata     <= '0;
-      div_egr_tlast     <= '0;
-      div_egr_tid       <= '0;
-      div_ing_tready    <= '0;
+      div_egr_tvalid         <= '0;
+      div_egr_tdata          <= '0;
+      div_egr_tlast          <= '0;
+      div_egr_tid            <= '0;
+      div_ing_tready         <= '0;
 
     end
     else begin
 
       div_egr_tid <= AXI_ID_P;
 
-      case (divider_state)
+      case (osc_core_state)
 
         WAIT_FOR_CR_FREQUENCY_E: begin
 
           if (cr_frequency != cr_frequency_d0) begin
             cr_frequency_d0 <= cr_frequency;
-            divider_state   <= SEND_DIVIDEND_0_E;
+            osc_core_state  <= SEND_DIVIDEND_PRIME_FREQUENCY_E;
           end
         end
 
 
-        SEND_DIVIDEND_0_E: begin
+        SEND_DIVIDEND_PRIME_FREQUENCY_E: begin
 
-          divider_state  <= SEND_DIVISOR_0_E;
+          osc_core_state <= SEND_DIVISOR_CR_FREQUENCY_E;
           div_egr_tvalid <= '1;
           div_egr_tdata  <= PRIME_FREQUENCY_P << Q_BITS_P;
           div_egr_tlast  <= '0;
         end
 
 
-        SEND_DIVISOR_0_E: begin
+        SEND_DIVISOR_CR_FREQUENCY_E: begin
 
           if (div_egr_tready) begin
 
             // Dividend was sent
             if (!div_egr_tlast) begin
-              div_egr_tdata  <= cr_frequency_d0 << Q_BITS_P;
+              div_egr_tdata  <= cr_frequency_d0;
               div_egr_tlast  <= '1;
             end
             // Divisor was sent
             else begin
               div_egr_tvalid <= '0;
               div_egr_tlast  <= '0;
-              divider_state  <= WAIT_QUOTIENT_0_E;
+              osc_core_state <= WAIT_QUOTIENT_PRIME_CR_E;
             end
           end
         end
 
 
-        WAIT_QUOTIENT_0_E: begin
+        WAIT_QUOTIENT_PRIME_CR_E: begin
           div_ing_tready <= '1;
           if (div_ing_tvalid) begin
-            div_ing_tready    <= '0;
-            tri_enable_period <= div_ing_tdata >> Q_BITS_P;
-            divider_state     <= SEND_DIVIDEND_1_E;
+            div_ing_tready <= '0;
+            // Truncating the decimals
+            enable_period  <= div_ing_tdata >> Q_BITS_P;
+            osc_core_state <= SEND_DIVIDEND_DUTY_CYCLE_STEP_E;
           end
         end
 
+        // ---------------------------------------------------------------------
+        // Duty cycle
+        // ---------------------------------------------------------------------
 
-        SEND_DIVIDEND_1_E: begin
+        SEND_DIVIDEND_DUTY_CYCLE_STEP_E: begin
 
-          divider_state  <= SEND_DIVISOR_1_E;
+          osc_core_state <= SEND_DIVISOR_FREQUENCY_1_E;
           div_egr_tvalid <= '1;
-          div_egr_tdata  <= (SYS_CLK_FREQUENCY_P >> 4) << Q_BITS_P;
+          div_egr_tdata  <= DUTY_CYCLE_STEP_P;
           div_egr_tlast  <= '0;
         end
 
 
-        SEND_DIVISOR_1_E: begin
+        SEND_DIVISOR_FREQUENCY_1_E: begin
 
           if (div_egr_tready) begin
 
-            // Dividend was sent
             if (!div_egr_tlast) begin
-              div_egr_tdata  <= cr_frequency_d0 << Q_BITS_P;
+              div_egr_tdata  <= cr_frequency_d0;
               div_egr_tlast  <= '1;
             end
-            // Divisor was sent
             else begin
               div_egr_tvalid <= '0;
               div_egr_tlast  <= '0;
-              divider_state  <= WAIT_QUOTIENT_1_E;
+              osc_core_state <= WAIT_QUOTIENT_DUTY_CYCLE_STEP_FREQUENCY_E;
             end
           end
         end
 
 
-        WAIT_QUOTIENT_1_E: begin
+        WAIT_QUOTIENT_DUTY_CYCLE_STEP_FREQUENCY_E: begin
+
           div_ing_tready <= '1;
+
           if (div_ing_tvalid) begin
-            div_ing_tready    <= '0;
-            sqr_enable_period <= (div_ing_tdata >> Q_BITS_P) << 4;
-            divider_state     <= WAIT_FOR_CR_FREQUENCY_E;
+
+            osc_core_state <= MULTIPLY_DUTY_CYCLE_E;
+            div_ing_tready <= '0;
+
+            if (cr_duty_cycle > MAXIMUM_DUTY_CYCLE_C) begin
+              multiplication_product <= div_ing_tdata * MAXIMUM_DUTY_CYCLE_C;
+            end
+            else begin
+              multiplication_product <= div_ing_tdata * (cr_duty_cycle << Q_BITS_P);
+            end
+
           end
+        end
+
+
+        MULTIPLY_DUTY_CYCLE_E: begin
+          multiplication_product <= (multiplication_product >> Q_BITS_P);
+          osc_core_state         <= WRITE_CONFIGURATION_E;
+        end
+
+
+        WRITE_CONFIGURATION_E: begin
+          tri_enable_period <= enable_period;
+          sqr_enable_period <= enable_period;
+          sqr_duty_cycle    <= multiplication_product >> (Q_BITS_P); // Also, truncate the decimals
+          osc_core_state    <= WAIT_FOR_CR_FREQUENCY_E;
         end
 
       endcase
@@ -237,15 +256,16 @@ module oscillator_core #(
 
 
   osc_square_top #(
-    .WAVE_WIDTH_P     ( WAVE_WIDTH_P      ),
-    .COUNTER_WIDTH_P  ( COUNTER_WIDTH_C   ),
-    .APB_DATA_WIDTH_P ( APB_DATA_WIDTH_P  )
+    .SYS_CLK_FREQUENCY_P ( SYS_CLK_FREQUENCY_P ),
+    .PRIME_FREQUENCY_P   ( PRIME_FREQUENCY_P   ),
+    .WAVE_WIDTH_P        ( WAVE_WIDTH_P        ),
+    .N_BITS_P            ( N_BITS_P            )
   ) osc_square_top_i0 (
-    .clk              ( clk               ), // input
-    .rst_n            ( rst_n             ), // input
-    .osc_square       ( wave_square       ), // output
-    .cr_duty_cycle    ( cr_duty_cycle     ), // input
-    .cr_clock_enable  ( sqr_enable_period )  // input  - SYS_CLK_FREQUENCY_P / cr_frequency
+    .clk                 ( clk                 ), // input
+    .rst_n               ( rst_n               ), // input
+    .osc_square          ( wave_square         ), // output
+    .cr_clock_enable     ( sqr_enable_period   ), // input
+    .cr_duty_cycle       ( sqr_duty_cycle      )  // input
   );
 
 
@@ -257,7 +277,7 @@ module oscillator_core #(
     .clk                 ( clk                 ), // input
     .rst_n               ( rst_n               ), // input
     .osc_triangle        ( wave_triangle       ), // output
-    .cr_clock_enable     ( tri_enable_period   )  // input  - PRIME_FREQUENCY_P / cr_frequency
+    .cr_clock_enable     ( tri_enable_period   )  // input
   );
 
 endmodule
