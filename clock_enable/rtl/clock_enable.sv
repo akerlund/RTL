@@ -26,6 +26,7 @@ module clock_enable #(
   )(
     input  wire                          clk,
     input  wire                          rst_n,
+    input  wire                          reset_counter_n,
     output logic                         enable,
     input  wire  [COUNTER_WIDTH_P-1 : 0] cr_enable_period
   );
@@ -43,7 +44,10 @@ module clock_enable #(
       enable               <= '0;
       clock_enable_counter <= clock_enable_counter + 1;
 
-      if (clock_enable_counter >= cr_enable_period-1) begin
+      if (!reset_counter_n) begin
+        clock_enable_counter <= '0;
+      end
+      else if (clock_enable_counter >= cr_enable_period-1) begin
         enable               <= '1;
         clock_enable_counter <= '0;
       end

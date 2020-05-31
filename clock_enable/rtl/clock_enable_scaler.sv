@@ -21,49 +21,41 @@
 
 `default_nettype none
 
-module delay_enable #(
+module clock_enable_scaler #(
     parameter int COUNTER_WIDTH_P = -1
   )(
     input  wire                          clk,
     input  wire                          rst_n,
     input  wire                          reset_counter_n,
-    input  wire                          start,
-    output logic                         delay_out,
-    input  wire  [COUNTER_WIDTH_P-1 : 0] cr_delay_period
+    input  wire                          ing_enable,
+    output logic                         egr_enable,
+    input  wire  [COUNTER_WIDTH_P-1 : 0] cr_enable_period
   );
 
-  logic [COUNTER_WIDTH_P-1 : 0] delay_counter;
-  logic                         delaying;
+  logic [COUNTER_WIDTH_P-1 : 0] clock_enable_counter;
+
 
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-      delay_out     <= '0;
-      delaying      <= '0;
-      delay_counter <= '0;
+      egr_enable           <= '0;
+      clock_enable_counter <= '0;
     end
     else begin
 
-      delay_out <= '0;
+      egr_enable <= '0;
 
       if (!reset_counter_n) begin
-        delay_counter <= '0;
+        clock_enable_counter <= '0;
       end
-      else if (delaying == '0 && start == '1) begin
-        delaying      <= '1;
-        delay_counter <= '0;
-      end
-      else begin
-        if (delaying == '1) begin
-          if (delay_counter >= cr_delay_period-1) begin
-            delaying      <= '0;
-            delay_counter <= '0;
-            delay_out     <= '1;
-          end
-          else begin
-            delay_counter <= delay_counter + 1;
-          end
+      else if (ing_enable) begin
+        clock_enable_counter <= clock_enable_counter + 1;
+
+        if (clock_enable_counter >= cr_enable_period-1) begin
+          egr_enable           <= '1;
+          clock_enable_counter <= '0;
         end
       end
+
     end
   end
 
