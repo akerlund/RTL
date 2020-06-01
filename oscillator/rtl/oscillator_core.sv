@@ -71,7 +71,10 @@ module oscillator_core #(
   localparam int COUNTER_WIDTH_C = $ceil($clog2(SYS_CLK_FREQUENCY_P)); // Maybe this can be smaller?
 
   // Maximum duty cycle
-  localparam logic [N_BITS_P-1 : 0] MAXIMUM_DUTY_CYCLE_C = (DUTY_CYCLE_DIVIDER_P-1) << Q_BITS_P;
+  localparam logic signed [N_BITS_P-1 : 0] MAXIMUM_DUTY_CYCLE_C = (DUTY_CYCLE_DIVIDER_P-1) << Q_BITS_P;
+
+  // Minimum duty cycle TODO: Doesn't work as expected, still outputs the highest if < 0
+  localparam logic signed [N_BITS_P-1 : 0] MINIMUM_DUTY_CYCLE_C = 1 << Q_BITS_P;
 
   // The value in "cr_duty_cycle" corresponds to a delay of a factor with this value
   // For example, 250M / 1k = 250000 and 18 bits are needed, N32Q11 should do the job
@@ -80,7 +83,7 @@ module oscillator_core #(
 
   // The FSM for calculations
   typedef enum {
-    WAIT_FOR_CR_FREQUENCY_E,
+    WAIT_FOR_CONFIGURATIONS_E,
     SEND_DIVIDEND_PRIME_FREQUENCY_E,
     SEND_DIVISOR_CR_FREQUENCY_E,
     WAIT_QUOTIENT_PRIME_CR_E,
@@ -95,8 +98,9 @@ module oscillator_core #(
 
 
   // Internal registers
-  logic   [N_BITS_P-1 : 0] cr_frequency_d0;        // Copy of cr_frequency, used to re-calculate when new input
-  logic [2*N_BITS_P-1 : 0] multiplication_product;
+  logic          [N_BITS_P-1 : 0] cr_frequency_d0;        // Copy of cr_frequency, used to re-calculate when new input
+  logic signed   [N_BITS_P-1 : 0] cr_duty_cycle_d0;       // Copy of cr_duty_cycle
+  logic signed [2*N_BITS_P-1 : 0] multiplication_product;
 
 
   logic   [N_BITS_P-1 : 0] enable_period;          // Intermediate register the triangle and square enable periods
@@ -115,7 +119,7 @@ module oscillator_core #(
     if (!rst_n) begin
 
       // Internal signals
-      osc_core_state         <= WAIT_FOR_CR_FREQUENCY_E;
+      osc_core_state         <= WAIT_FOR_CONFIGURATIONS_E;
       tri_enable_period      <= '0;
       sqr_enable_period      <= '0;
       sqr_duty_cycle         <= '0;
@@ -123,6 +127,7 @@ module oscillator_core #(
 
       // Registers
       cr_frequency_d0        <= '0;
+      cr_duty_cycle_d0       <= '0;
       enable_period          <= '0;
       duty_cycle             <= '0;
 
@@ -140,12 +145,19 @@ module oscillator_core #(
 
       case (osc_core_state)
 
-        WAIT_FOR_CR_FREQUENCY_E: begin
+        WAIT_FOR_CONFIGURATIONS_E: begin
 
+          // New frequency
           if (cr_frequency != cr_frequency_d0) begin
             cr_frequency_d0 <= cr_frequency;
             osc_core_state  <= SEND_DIVIDEND_PRIME_FREQUENCY_E;
           end
+
+          // New duty cycle
+          if (cr_duty_cycle != cr_duty_cycle_d0) begin
+            osc_core_state  <= SEND_DIVIDEND_DUTY_CYCLE_STEP_E;
+          end
+
         end
 
 
@@ -226,11 +238,14 @@ module oscillator_core #(
             osc_core_state <= MULTIPLY_DUTY_CYCLE_E;
             div_ing_tready <= '0;
 
-            if (cr_duty_cycle > MAXIMUM_DUTY_CYCLE_C) begin
+            if ((cr_duty_cycle <<< Q_BITS_P) > MAXIMUM_DUTY_CYCLE_C) begin
               multiplication_product <= div_ing_tdata * MAXIMUM_DUTY_CYCLE_C;
             end
+            else if ((cr_duty_cycle <<< Q_BITS_P) < MINIMUM_DUTY_CYCLE_C) begin
+              multiplication_product <= div_ing_tdata * MINIMUM_DUTY_CYCLE_C;
+            end
             else begin
-              multiplication_product <= div_ing_tdata * (cr_duty_cycle << Q_BITS_P);
+              multiplication_product <= div_ing_tdata * (cr_duty_cycle <<< Q_BITS_P);
             end
 
           end
@@ -247,7 +262,7 @@ module oscillator_core #(
           tri_enable_period <= enable_period;
           sqr_enable_period <= enable_period;
           sqr_duty_cycle    <= multiplication_product >> (Q_BITS_P); // Also, truncate the decimals
-          osc_core_state    <= WAIT_FOR_CR_FREQUENCY_E;
+          osc_core_state    <= WAIT_FOR_CONFIGURATIONS_E;
         end
 
       endcase

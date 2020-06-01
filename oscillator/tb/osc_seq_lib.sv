@@ -82,7 +82,6 @@ class osc_frequency_seq #(
     pwdata = osc_duty_cycle;
     write_word(paddr, pwdata);
 
-    #5000us;
 
   endtask
 

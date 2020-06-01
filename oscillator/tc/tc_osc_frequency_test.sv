@@ -91,9 +91,6 @@ class tc_osc_frequency_test extends osc_base_test;
     osc_frequency_seq0.osc_duty_cycle = osc_duty_cycle;
     osc_frequency_seq0.start(v_sqr.apb3_sequencer);
 
-    #500us;
-
-
     #10ms;
 
 

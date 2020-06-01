@@ -2,6 +2,7 @@
 # Select testcase
 #-------------------------------------------------------------------------------
 set test_case "tc_osc_frequency_test";
+set test_case "tc_osc_duty_cycle_sweep";
 
 set  script_dir [pwd]
 cd   rundir

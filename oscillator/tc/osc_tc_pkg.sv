@@ -34,5 +34,6 @@ package osc_tc_pkg;
   // Include testcase files here
   `include "osc_base_test.sv"
   `include "tc_osc_frequency_test.sv"
+  `include "tc_osc_duty_cycle_sweep.sv"
 
 endpackage
