@@ -21,147 +21,142 @@
 
 `default_nettype none
 
-module rotary_encoder (
+module rotary_encoder_core (
     input  wire  clk,
     input  wire  rst_n,
 
-    input  wire  encoder_pin_A,
-    input  wire  encoder_pin_B,
+    input  wire  encoder_pin_a,
+    input  wire  encoder_pin_b,
     output logic valid_change,
     output logic rotation_direction
   );
 
   typedef enum {
-    idle_e = 0,
-    r1_e,
-    r2_e,
-    r3_e,
-    right_e,
-    l1_e,
-    l2_e,
-    l3_e,
-    left_e
+    IDLE_E,
+    R1_E,
+    R2_E,
+    R3_E,
+    RIGHT_E,
+    L1_E,
+    L2_E,
+    L3_E,
+    LEFT_E
   } state_t;
 
-  state_t current_state;
-  state_t next_state;
-
-  logic encoder_A;
-  logic encoder_B;
+  state_t enc_state;
 
   // Encoder FSM
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-      current_state      <= idle_e;
-      next_state         <= idle_e;
+      enc_state          <= IDLE_E;
       valid_change       <= '0;
       rotation_direction <= '0;
     end
     else begin
 
-      current_state <= next_state;
+      enc_state <= enc_state;
       valid_change  <= '0;
 
-      case (current_state)
+      case (enc_state)
 
-        idle_e: begin
-          if (!encoder_pin_B) begin
-            next_state <= r1_e;
+        IDLE_E: begin
+          if (!encoder_pin_b) begin
+            enc_state <= R1_E;
           end
           else if (!encoder_pin_A) begin
-            next_state <= l1_e;
+            enc_state <= L1_E;
           end
           else begin
-            next_state <= idle_e;
+            enc_state <= IDLE_E;
           end
         end
 
-        r1_e: begin
-          if (encoder_pin_B) begin
-            next_state <= idle_e;
+        R1_E: begin
+          if (encoder_pin_b) begin
+            enc_state <= IDLE_E;
           end
           else if (!encoder_pin_A) begin
-            next_state <=  r2_e;
+            enc_state <=  R2_E;
           end
           else begin
-            next_state <= r1_e;
+            enc_state <= R1_E;
           end
         end
 
-        r2_e: begin
+        R2_E: begin
           if (encoder_pin_A) begin
-            next_state <= r1_e;
+            enc_state <= R1_E;
           end
-          else if (encoder_pin_B) begin
-            next_state <= r3_e;
+          else if (encoder_pin_b) begin
+            enc_state <= R3_E;
           end
           else begin
-            next_state <= r2_e;
+            enc_state <= R2_E;
           end
         end
 
-        r3_e: begin
-          if (!encoder_pin_B) begin
-            next_state <= r2_e;
+        R3_E: begin
+          if (!encoder_pin_b) begin
+            enc_state <= R2_E;
           end
           else if (encoder_pin_A) begin
-            next_state <= right_e;
+            enc_state <= RIGHT_E;
           end
           else begin
-            next_state <= r3_e;
+            enc_state <= R3_E;
           end
         end
 
-        right_e: begin
+        RIGHT_E: begin
           rotation_direction <= 1;
           valid_change       <= 1;
-          next_state         <= idle_e;
+          enc_state         <= IDLE_E;
         end
 
-        l1_e: begin
+        L1_E: begin
           if (encoder_pin_A) begin
-            next_state <= idle_e;
+            enc_state <= IDLE_E;
           end
-          else if (!encoder_pin_B) begin
-            next_state <= l2_e;
+          else if (!encoder_pin_b) begin
+            enc_state <= L2_E;
           end
           else begin
-            next_state <= l1_e;
+            enc_state <= L1_E;
           end
         end
 
-        l2_e: begin
-          if (encoder_pin_B) begin
-            next_state <= l1_e;
+        L2_E: begin
+          if (encoder_pin_b) begin
+            enc_state <= L1_E;
           end
           else if (encoder_pin_A) begin
-            next_state <= l3_e;
+            enc_state <= L3_E;
           end
           else begin
-            next_state <= l2_e;
+            enc_state <= L2_E;
           end
         end
 
-        l3_e: begin
+        L3_E: begin
           if (!encoder_pin_A) begin
-            next_state <= l2_e;
+            enc_state <= L2_E;
           end
-          else if (encoder_pin_B) begin
-            next_state <= left_e;
+          else if (encoder_pin_b) begin
+            enc_state <= LEFT_E;
           end
           else begin
-            next_state <= l3_e;
+            enc_state <= L3_E;
           end
         end
 
-        left_e: begin
+        LEFT_E: begin
           rotation_direction <= '0;
           valid_change       <= 1;
-          next_state         <= idle_e;
+          enc_state         <= IDLE_E;
         end
 
         default: begin
-          current_state <= next_state;
+          enc_state <= enc_state;
           valid_change  <= '0;
         end
 
