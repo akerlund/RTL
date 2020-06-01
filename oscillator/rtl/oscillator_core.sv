@@ -41,6 +41,7 @@ module oscillator_core #(
     // Waveform output
     output logic signed     [WAVE_WIDTH_P-1 : 0] wave_square,
     output logic signed     [WAVE_WIDTH_P-1 : 0] wave_triangle,
+    output logic signed     [WAVE_WIDTH_P-1 : 0] wave_saw,
 
     // Long division interface
     output logic                                 div_egr_tvalid,
@@ -278,6 +279,18 @@ module oscillator_core #(
     .rst_n               ( rst_n               ), // input
     .osc_triangle        ( wave_triangle       ), // output
     .cr_clock_enable     ( tri_enable_period   )  // input
+  );
+
+
+  osc_saw_top #(
+    .SYS_CLK_FREQUENCY_P ( SYS_CLK_FREQUENCY_P ),
+    .PRIME_FREQUENCY_P   ( PRIME_FREQUENCY_P   ),
+    .WAVE_WIDTH_P        ( WAVE_WIDTH_P        )
+  ) osc_saw_top_i0 (
+    .clk                 ( clk                 ), // input
+    .rst_n               ( rst_n               ), // input
+    .osc_saw             ( wave_saw            ), // output
+    .cr_clock_enable     ( sqr_enable_period   )  // input
   );
 
 endmodule

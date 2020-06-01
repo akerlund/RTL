@@ -62,7 +62,33 @@ class tc_osc_frequency_test extends osc_base_test;
     #400us;
 
     osc_f = 4000.0;
-    osc_frequency_seq0.osc_f = osc_f;
+    osc_duty_cycle                    = 200;
+    osc_frequency_seq0.osc_f          = osc_f;
+    osc_frequency_seq0.osc_duty_cycle = osc_duty_cycle;
+    osc_frequency_seq0.start(v_sqr.apb3_sequencer);
+
+    #500us;
+
+    osc_f = 3000.0;
+    osc_duty_cycle                    = 100;
+    osc_frequency_seq0.osc_f          = osc_f;
+    osc_frequency_seq0.osc_duty_cycle = osc_duty_cycle;
+    osc_frequency_seq0.start(v_sqr.apb3_sequencer);
+
+    #500us;
+
+    osc_f = 2000.0;
+    osc_duty_cycle                    = 750;
+    osc_frequency_seq0.osc_f          = osc_f;
+    osc_frequency_seq0.osc_duty_cycle = osc_duty_cycle;
+    osc_frequency_seq0.start(v_sqr.apb3_sequencer);
+
+    #500us;
+
+    osc_f = 1000.0;
+    osc_duty_cycle                    = 800;
+    osc_frequency_seq0.osc_f          = osc_f;
+    osc_frequency_seq0.osc_duty_cycle = osc_duty_cycle;
     osc_frequency_seq0.start(v_sqr.apb3_sequencer);
 
     #500us;

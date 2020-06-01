@@ -28,7 +28,7 @@
 
 `default_nettype none
 
-module osc_triangle_top #(
+module osc_saw_top #(
     parameter int SYS_CLK_FREQUENCY_P = -1, // System clock's frequency
     parameter int PRIME_FREQUENCY_P   = -1, // Output frequency then clock enable is always high
     parameter int WAVE_WIDTH_P        = -1, // Width of the wave
@@ -39,7 +39,7 @@ module osc_triangle_top #(
     input  wire                                 rst_n,
 
     // Waveform output
-    output logic signed    [WAVE_WIDTH_P-1 : 0] osc_triangle,
+    output logic signed    [WAVE_WIDTH_P-1 : 0] osc_saw,
 
     // The counter period of the Clock Enable, i.e., PRIME_FREQUENCY_P / frequency
     input  wire         [COUNTER_WIDTH_P-1 : 0] cr_clock_enable
@@ -51,25 +51,25 @@ module osc_triangle_top #(
 
   // The increment value of the counter depending on the given maximum frequency, e.g.,
   // (2**24 -1) / (200/2) = 16777215 / 100 = 167772
-  localparam logic signed [WAVE_WIDTH_P-1 : 0] WAVE_AMPLITUDE_INC_C =
-    (2**WAVE_WIDTH_P-1) / (PERIOD_IN_SYS_CLKS_C/2);
+  localparam int WAVE_AMPLITUDE_INC_C =
+    (2**WAVE_WIDTH_P-1) / (PERIOD_IN_SYS_CLKS_C);
 
   // The max amplitude of the wave is (minimum amplitude) plus increment size times number of increments, e.g.,
   // -2**(24-1) + 167772*200/2 = -8388608 + 16777200 = 8388592
   localparam logic signed [WAVE_WIDTH_P-1 : 0] WAVE_AMPLITUDE_MAX_C =
-    -2**(WAVE_WIDTH_P-1) + WAVE_AMPLITUDE_INC_C*PERIOD_IN_SYS_CLKS_C/2;
+    -2**(WAVE_WIDTH_P-1) + WAVE_AMPLITUDE_INC_C*PERIOD_IN_SYS_CLKS_C;
 
   logic clock_enable;
 
-  osc_triangle_core #(
+  osc_saw_core #(
     .WAVE_WIDTH_P         ( WAVE_WIDTH_P         ), // Width of the wave
     .WAVE_AMPLITUDE_INC_P ( WAVE_AMPLITUDE_INC_C ), // Increment of amplitude at every clock enable
     .WAVE_AMPLITUDE_MAX_P ( WAVE_AMPLITUDE_MAX_C )  // Max amplitude of the triangle
-  ) osc_triangle_core_i0 (
+  ) osc_saw_core_i0 (
     .clk                  ( clk                  ),
     .rst_n                ( rst_n                ),
     .clock_enable         ( clock_enable         ),
-    .osc_triangle         ( osc_triangle         )
+    .osc_saw              ( osc_saw         )
   );
 
 

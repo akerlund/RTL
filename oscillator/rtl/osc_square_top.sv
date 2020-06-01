@@ -43,6 +43,7 @@ module osc_square_top #(
 
   localparam int COUNTER_WIDTH_C = $ceil($clog2(SYS_CLK_FREQUENCY_P));
 
+  logic sqr_is_started;
   logic sqr_enable;
   logic egr_prime_enable;
   logic frequency_enable;
@@ -58,6 +59,7 @@ module osc_square_top #(
   // Waveform output selection
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
+      sqr_is_started     <= '0;
       cr_duty_cycle_d0   <= '0;
       cr_clock_enable_d0 <= '0;
       reset_enable       <= '1;
@@ -70,7 +72,12 @@ module osc_square_top #(
       if (cr_duty_cycle_d0 != cr_duty_cycle || cr_clock_enable_d0 != cr_clock_enable) begin
 
         // Update the registers on last clock of the negative flank
-        if (sqr_enable && osc_square[WAVE_WIDTH_P-1]) begin
+        if (!sqr_is_started) begin
+          sqr_is_started     <= '1;
+          cr_duty_cycle_d0   <= cr_duty_cycle;
+          cr_clock_enable_d0 <= cr_clock_enable;
+        end
+        else if (egr_prime_enable && osc_square[WAVE_WIDTH_P-1]) begin
           cr_duty_cycle_d0   <= cr_duty_cycle;
           cr_clock_enable_d0 <= cr_clock_enable;
           reset_enable       <= '0;
@@ -125,13 +132,13 @@ module osc_square_top #(
   // ---------------------------------------------------------------------------
 
   clock_enable #(
-    .COUNTER_WIDTH_P  ( COUNTER_WIDTH_C  )
+    .COUNTER_WIDTH_P  ( COUNTER_WIDTH_C    )
   ) clock_enable_i0 (
-    .clk              ( clk              ), // input
-    .rst_n            ( rst_n            ), // input
-    .reset_counter_n  ( reset_enable     ), // input
-    .enable           ( frequency_enable ), // output
-    .cr_enable_period ( cr_clock_enable  )  // input
+    .clk              ( clk                ), // input
+    .rst_n            ( rst_n              ), // input
+    .reset_counter_n  ( reset_enable       ), // input
+    .enable           ( frequency_enable   ), // output
+    .cr_enable_period ( cr_clock_enable_d0 )  // input
   );
 
 
@@ -149,7 +156,7 @@ module osc_square_top #(
     .reset_counter_n ( reset_enable      ), // input
     .start           ( egr_prime_enable  ), // input
     .delay_out       ( duty_cycle_enable ), // output
-    .cr_delay_period ( cr_duty_cycle     )  // input
+    .cr_delay_period ( cr_duty_cycle_d0  )  // input
   );
 
 endmodule

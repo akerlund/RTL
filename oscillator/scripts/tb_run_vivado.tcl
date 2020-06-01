@@ -55,6 +55,6 @@ puts "INFO \[xvlog\] Parsing the compile list"
 exec xvlog -sv -f compile_list.txt -L uvm
 
 puts "INFO \[xelab\] Elaborating the design"
-exec xelab osc_tb_top -debug all -relax -s top -timescale 1ns/1ps
+exec xelab osc_tb_top -debug all -s top -timescale 1ns/1ps
 
 cd $script_dir

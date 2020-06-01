@@ -34,6 +34,8 @@ import vip_apb3_types_pkg::*;
 `include "osc_square_top.sv"
 `include "osc_triangle_core.sv"
 `include "osc_triangle_top.sv"
+`include "osc_saw_core.sv"
+`include "osc_saw_top.sv"
 `include "oscillator_apb_slave.sv"
 `include "oscillator_core.sv"
 `include "oscillator_top.sv"

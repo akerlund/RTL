@@ -70,6 +70,7 @@ module oscillator_top #(
   // Waveform outputs from the core
   logic signed     [WAVE_WIDTH_P-1 : 0] wave_square;
   logic signed     [WAVE_WIDTH_P-1 : 0] wave_triangle;
+  logic signed     [WAVE_WIDTH_P-1 : 0] wave_saw;
 
 
   // APB signals
@@ -107,9 +108,9 @@ module oscillator_top #(
           waveform <= wave_triangle >>> (WAVE_WIDTH_P - Q_BITS_P - 1);
         end
 
-        // OSC_SAW_E: begin
-
-        // end
+         OSC_SAW_E: begin
+          waveform <= wave_saw      >>> (WAVE_WIDTH_P - Q_BITS_P - 1);
+         end
 
         // OSC_SINE_E: begin
 
@@ -136,6 +137,7 @@ module oscillator_top #(
     .rst_n                ( rst_n                 ), // input
     .wave_square          ( wave_square           ), // output
     .wave_triangle        ( wave_triangle         ), // output
+    .wave_saw             ( wave_saw              ), // output
     .div_egr_tvalid       ( div_egr_tvalid        ), // output
     .div_egr_tready       ( div_egr_tready        ), // input
     .div_egr_tdata        ( div_egr_tdata         ), // output

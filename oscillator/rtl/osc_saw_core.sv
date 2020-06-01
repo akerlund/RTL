@@ -21,9 +21,9 @@
 
 `default_nettype none
 
-module osc_triangle_core #(
+module osc_saw_core #(
     parameter int                               WAVE_WIDTH_P         = -1, // Width of the wave
-    parameter logic signed [WAVE_WIDTH_P-1 : 0] WAVE_AMPLITUDE_INC_P = -1, // Increment of amplitude at every clock enable
+    parameter int                               WAVE_AMPLITUDE_INC_P = -1, // Increment of amplitude at every clock enable
     parameter logic signed [WAVE_WIDTH_P-1 : 0] WAVE_AMPLITUDE_MAX_P = -1  // Max amplitude of the triangle
   )(
     // Clock and reset
@@ -34,54 +34,25 @@ module osc_triangle_core #(
     input  wire                              clock_enable,
 
     // Waveform output
-    output logic signed [WAVE_WIDTH_P-1 : 0] osc_triangle
+    output logic signed [WAVE_WIDTH_P-1 : 0] osc_saw
   );
 
-  localparam logic signed [WAVE_WIDTH_P-1 : 0] TRIANGLE_LOW_C  = {1'b1, {(WAVE_WIDTH_P-1){1'b0}}};
+  localparam logic signed [WAVE_WIDTH_P-1 : 0] SAW_LOW_C  = {1'b1, {(WAVE_WIDTH_P-1){1'b0}}};
 
-  typedef enum {
-    TRIANGLE_RISING_E,
-    TRIANGLE_FALLING_E
-  } triangle_direction_t;
-
-  triangle_direction_t triangle_direction;
 
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-      triangle_direction <= TRIANGLE_RISING_E;
-      osc_triangle       <= TRIANGLE_LOW_C;
+      osc_saw <= SAW_LOW_C;
     end
     else begin
 
       if (clock_enable) begin
 
-        // Going up
-        case (triangle_direction)
+        osc_saw <= osc_saw + WAVE_AMPLITUDE_INC_P;
 
-          TRIANGLE_RISING_E: begin
-
-            if (osc_triangle >= WAVE_AMPLITUDE_MAX_P) begin
-              triangle_direction <= TRIANGLE_FALLING_E;
-              osc_triangle       <= osc_triangle - WAVE_AMPLITUDE_INC_P;
-            end
-            else begin
-              osc_triangle       <= osc_triangle + WAVE_AMPLITUDE_INC_P;
-            end
-
-          end
-
-          TRIANGLE_FALLING_E: begin
-
-            if (osc_triangle == TRIANGLE_LOW_C) begin
-              triangle_direction <= TRIANGLE_RISING_E;
-              osc_triangle       <= osc_triangle + WAVE_AMPLITUDE_INC_P;
-            end
-            else begin
-              osc_triangle       <= osc_triangle - WAVE_AMPLITUDE_INC_P;
-            end
-          end
-
-        endcase
+        if (osc_saw >= WAVE_AMPLITUDE_MAX_P) begin
+          osc_saw <= SAW_LOW_C;
+        end
 
       end
     end
