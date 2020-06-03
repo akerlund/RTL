@@ -13,6 +13,7 @@ cd   rundir
 set rtl_directories [list \
   "$git_root/clock_enable/rtl" \
   "$git_root/math/division/long_division/rtl" \
+  "$git_root/math/cordic/rtl" \
   "$module_path/rtl"];
 
 set uvm_directories [list \
@@ -23,6 +24,8 @@ set uvm_directories [list \
 set package_files [list \
   "$git_root/vip/vip_apb3_agent/vip_apb3_types_pkg.sv" \
   "$git_root/vip/vip_fixed_point/vip_fixed_point_pkg.sv" \
+  "$git_root/math/cordic/rtl/cordic_axi4s_types_pkg.sv" \
+  "$git_root/math/cordic/rtl/cordic_atan_radian_table_pkg.sv" \
   "$module_path/rtl/osc_apb_slave_addr_pkg.sv" \
   "$module_path/rtl/oscillator_types_pkg.sv"];
 

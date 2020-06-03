@@ -61,6 +61,10 @@ module osc_triangle_top #(
 
   logic clock_enable;
 
+  logic period_debug;
+  assign period_debug = osc_triangle == {1'b1, {(WAVE_WIDTH_P-1){1'b0}}} ? '1 : '0;
+
+
   osc_triangle_core #(
     .WAVE_WIDTH_P         ( WAVE_WIDTH_P         ), // Width of the wave
     .WAVE_AMPLITUDE_INC_P ( WAVE_AMPLITUDE_INC_C ), // Increment of amplitude at every clock enable
@@ -78,6 +82,7 @@ module osc_triangle_top #(
   ) clock_enable_i0 (
     .clk              ( clk             ), // input
     .rst_n            ( rst_n           ), // input
+    .reset_counter_n  ( '1              ), // input
     .enable           ( clock_enable    ), // output
     .cr_enable_period ( cr_clock_enable )  // input
   );

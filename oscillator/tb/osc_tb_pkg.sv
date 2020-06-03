@@ -54,6 +54,7 @@ package osc_tb_pkg;
     APB_NR_OF_SLAVES_P : 1
   };
 
+
   `include "osc_config.sv"
   `include "osc_scoreboard.sv"
   `include "osc_virtual_sequencer.sv"

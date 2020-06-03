@@ -35,32 +35,45 @@ module oscillator_core #(
     parameter int AXI_ID_P             = -1
   )(
     // Clock and reset
-    input  wire                                  clk,
-    input  wire                                  rst_n,
+    input  wire                                    clk,
+    input  wire                                    rst_n,
 
     // Waveform output
-    output logic signed     [WAVE_WIDTH_P-1 : 0] wave_square,
-    output logic signed     [WAVE_WIDTH_P-1 : 0] wave_triangle,
-    output logic signed     [WAVE_WIDTH_P-1 : 0] wave_saw,
+    output logic signed       [WAVE_WIDTH_P-1 : 0] wave_square,
+    output logic signed       [WAVE_WIDTH_P-1 : 0] wave_triangle,
+    output logic signed       [WAVE_WIDTH_P-1 : 0] wave_saw,
+    output logic signed       [WAVE_WIDTH_P-1 : 0] wave_sin,
 
     // Long division interface
-    output logic                                 div_egr_tvalid,
-    input  wire                                  div_egr_tready,
-    output logic        [AXI_DATA_WIDTH_P-1 : 0] div_egr_tdata,
-    output logic                                 div_egr_tlast,
-    output logic          [AXI_ID_WIDTH_P-1 : 0] div_egr_tid,
+    output logic                                   div_egr_tvalid,
+    input  wire                                    div_egr_tready,
+    output logic          [AXI_DATA_WIDTH_P-1 : 0] div_egr_tdata,
+    output logic                                   div_egr_tlast,
+    output logic            [AXI_ID_WIDTH_P-1 : 0] div_egr_tid,
 
-    input  wire                                  div_ing_tvalid,
-    output logic                                 div_ing_tready,
-    input  wire         [AXI_DATA_WIDTH_P-1 : 0] div_ing_tdata,     // Quotient
-    input  wire                                  div_ing_tlast,
-    input  wire           [AXI_ID_WIDTH_P-1 : 0] div_ing_tid,
-    input  wire                                  div_ing_tuser,     // Overflow
+    input  wire                                    div_ing_tvalid,
+    output logic                                   div_ing_tready,
+    input  wire           [AXI_DATA_WIDTH_P-1 : 0] div_ing_tdata,     // Quotient
+    input  wire                                    div_ing_tlast,
+    input  wire             [AXI_ID_WIDTH_P-1 : 0] div_ing_tid,
+    input  wire                                    div_ing_tuser,     // Overflow
+
+    // CORDIC interface
+    output logic                                   cordic_egr_tvalid,
+    input  wire                                    cordic_egr_tready,
+    output logic signed   [AXI_DATA_WIDTH_P-1 : 0] cordic_egr_tdata,
+    output logic                                   cordic_egr_tlast,
+    output logic            [AXI_ID_WIDTH_P-1 : 0] cordic_egr_tid,
+    output logic                                   cordic_egr_tuser,  // Vector selection
+    input  wire                                    cordic_ing_tvalid,
+    output logic                                   cordic_ing_tready,
+    input  wire  signed [2*AXI_DATA_WIDTH_P-1 : 0] cordic_ing_tdata,
+    input  wire                                    cordic_ing_tlast,
 
     // Configuration registers
-    input  wire                          [1 : 0] cr_waveform_select,
-    input  wire                 [N_BITS_P-1 : 0] cr_frequency,
-    input  wire                 [N_BITS_P-1 : 0] cr_duty_cycle
+    input  wire                            [1 : 0] cr_waveform_select,
+    input  wire                   [N_BITS_P-1 : 0] cr_frequency,
+    input  wire                   [N_BITS_P-1 : 0] cr_duty_cycle
   );
 
   // The prime (or higest/base) frequency's period in system clock periods, e.g.,
@@ -307,6 +320,32 @@ module oscillator_core #(
     .osc_saw             ( wave_saw            ), // output
     .cr_clock_enable     ( sqr_enable_period   )  // input
   );
+
+  osc_sin_top #(
+    .SYS_CLK_FREQUENCY_P ( SYS_CLK_FREQUENCY_P ),
+    .PRIME_FREQUENCY_P   ( PRIME_FREQUENCY_P   ),
+    .AXI_DATA_WIDTH_P    ( AXI_DATA_WIDTH_P    ),
+    .AXI_ID_WIDTH_P      ( AXI_ID_WIDTH_P      ),
+    .AXI_ID_P            ( AXI_ID_P            ),
+    .N_BITS_P            ( N_BITS_P            ),
+    .Q_BITS_P            ( Q_BITS_P            )
+  ) osc_sin_top_i0 (
+    .clk                 ( clk                 ),
+    .rst_n               ( rst_n               ),
+    .osc_sine            ( wave_sin            ),
+    .cr_clock_enable     ( tri_enable_period   ),
+    .cordic_egr_tvalid   ( cordic_egr_tvalid   ),
+    .cordic_egr_tready   ( cordic_egr_tready   ),
+    .cordic_egr_tdata    ( cordic_egr_tdata    ),
+    .cordic_egr_tlast    ( cordic_egr_tlast    ),
+    .cordic_egr_tid      ( cordic_egr_tid      ),
+    .cordic_egr_tuser    ( cordic_egr_tuser    ),
+    .cordic_ing_tvalid   ( cordic_ing_tvalid   ),
+    .cordic_ing_tready   ( cordic_ing_tready   ),
+    .cordic_ing_tdata    ( cordic_ing_tdata    ),
+    .cordic_ing_tlast    ( cordic_ing_tlast    )
+  );
+
 
 endmodule
 

@@ -52,14 +52,17 @@ module osc_saw_top #(
   // The increment value of the counter depending on the given maximum frequency, e.g.,
   // (2**24 -1) / (200/2) = 16777215 / 100 = 167772
   localparam int WAVE_AMPLITUDE_INC_C =
-    (2**WAVE_WIDTH_P-1) / (PERIOD_IN_SYS_CLKS_C);
+    (2**WAVE_WIDTH_P-1) / (PERIOD_IN_SYS_CLKS_C-1);
 
   // The max amplitude of the wave is (minimum amplitude) plus increment size times number of increments, e.g.,
   // -2**(24-1) + 167772*200/2 = -8388608 + 16777200 = 8388592
   localparam logic signed [WAVE_WIDTH_P-1 : 0] WAVE_AMPLITUDE_MAX_C =
-    -2**(WAVE_WIDTH_P-1) + WAVE_AMPLITUDE_INC_C*PERIOD_IN_SYS_CLKS_C;
+    -2**(WAVE_WIDTH_P-1) + WAVE_AMPLITUDE_INC_C*(PERIOD_IN_SYS_CLKS_C-1);
 
   logic clock_enable;
+
+  logic period_debug;
+  assign period_debug = osc_saw == {1'b1, {(WAVE_WIDTH_P-1){1'b0}}} ? '1 : '0;
 
   osc_saw_core #(
     .WAVE_WIDTH_P         ( WAVE_WIDTH_P         ), // Width of the wave
@@ -69,7 +72,7 @@ module osc_saw_top #(
     .clk                  ( clk                  ),
     .rst_n                ( rst_n                ),
     .clock_enable         ( clock_enable         ),
-    .osc_saw              ( osc_saw         )
+    .osc_saw              ( osc_saw              )
   );
 
 
@@ -78,6 +81,7 @@ module osc_saw_top #(
   ) clock_enable_i0 (
     .clk              ( clk             ), // input
     .rst_n            ( rst_n           ), // input
+    .reset_counter_n  ( '1              ), // input
     .enable           ( clock_enable    ), // output
     .cr_enable_period ( cr_clock_enable )  // input
   );

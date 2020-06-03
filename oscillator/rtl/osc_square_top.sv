@@ -56,6 +56,9 @@ module osc_square_top #(
   // The prime frequency counter is enabled by either of these
   assign sqr_enable = egr_prime_enable || duty_cycle_enable;
 
+  logic period_debug;
+  assign period_debug = osc_square == {1'b1, {(WAVE_WIDTH_P-1){1'b0}}} ? '1 : '0;
+
   // Waveform output selection
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
