@@ -40,7 +40,7 @@ module cordic_radian_top #(
   logic [DATA_WIDTH_P-1 : 0] ing_y_vector;
 
   assign ing_y_vector = '0;
-  assign ing_x_vector = gain_table_32stage_n4q60[NR_OF_STAGES_P-1][63 : 63-DATA_WIDTH_P+1];
+  assign ing_x_vector = gain_table_32stage_n64q60[NR_OF_STAGES_P-1][63 : 63-DATA_WIDTH_P+1];
 
   cordic_radian_core #(
     .DATA_WIDTH_P      ( DATA_WIDTH_P      ),

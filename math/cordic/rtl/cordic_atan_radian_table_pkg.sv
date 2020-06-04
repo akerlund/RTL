@@ -25,19 +25,19 @@
 package cordic_atan_radian_table_pkg;
 
   // Positive values of n/4*pi in fixed point representation
-  localparam logic signed [53 : 0] pi_2_4_pos_n4_q50 = 54'b000110010010000111111011010101000100010000101101000110; // 90  deg  |  1.570796326795 rad | pi/2
-  localparam logic signed [53 : 0] pi_4_4_pos_n4_q50 = 54'b001100100100001111110110101010001000100001011010001100; // 180 deg  |  3.141592653590 rad | pi
-  localparam logic signed [53 : 0] pi_6_4_pos_n4_q50 = 54'b010010110110010111110001111111001100110010000111010010; // 270 deg  |  4.712388980385 rad | pi*6/4
-  localparam logic signed [53 : 0] pi_8_4_pos_n4_q50 = 54'b011001001000011111101101010100010001000010110100011000; // 360 deg  |  6.283185307180 rad | pi*2
+  localparam logic signed [53 : 0] pi_2_4_pos_n54_q50 = 54'b000110010010000111111011010101000100010000101101000110; // 90  deg  |  1.570796326795 rad | pi/2
+  localparam logic signed [53 : 0] pi_4_4_pos_n54_q50 = 54'b001100100100001111110110101010001000100001011010001100; // 180 deg  |  3.141592653590 rad | pi
+  localparam logic signed [53 : 0] pi_6_4_pos_n54_q50 = 54'b010010110110010111110001111111001100110010000111010010; // 270 deg  |  4.712388980385 rad | pi*6/4
+  localparam logic signed [53 : 0] pi_8_4_pos_n54_q50 = 54'b011001001000011111101101010100010001000010110100011000; // 360 deg  |  6.283185307180 rad | pi*2
 
   // Negative values of n/4*pi in fixed point representation
-  localparam logic signed [53 : 0] pi_2_4_neg_n4_q50 = 54'b111001101101111000000100101010111011101111010010111010; // -90  deg | -1.570796326795 rad | -pi/2
-  localparam logic signed [53 : 0] pi_4_4_neg_n4_q50 = 54'b110011011011110000001001010101110111011110100101110100; // -180 deg | -3.141592653590 rad | -pi
-  localparam logic signed [53 : 0] pi_6_4_neg_n4_q50 = 54'b101101001001101000001110000000110011001101111000101110; // -270 deg | -4.712388980385 rad | -pi*6/4
+  localparam logic signed [53 : 0] pi_2_4_neg_n54_q50 = 54'b111001101101111000000100101010111011101111010010111010; // -90  deg | -1.570796326795 rad | -pi/2
+  localparam logic signed [53 : 0] pi_4_4_neg_n54_q50 = 54'b110011011011110000001001010101110111011110100101110100; // -180 deg | -3.141592653590 rad | -pi
+  localparam logic signed [53 : 0] pi_6_4_neg_n54_q50 = 54'b101101001001101000001110000000110011001101111000101110; // -270 deg | -4.712388980385 rad | -pi*6/4
 
   // This table contains a fixed point representation in radians of the rotating
   // theta vector in the CORDIC algorithm.
-  localparam logic signed [63 : 0] atan_radian_table_32stage_n4q60 [31] = {
+  localparam logic signed [63 : 0] atan_radian_table_32stage_n64q60 [31] = {
     64'b0000110010010000111111011010101000100010000101101000110000000000, // atan(2^-0)  -> 45.000000000 degrees -> 0.785398163 radians
     64'b0000011101101011000110011100000101011000011011101101001111000000, // atan(2^-1)  -> 26.565051177 degrees -> 0.463647609 radians
     64'b0000001111101011011011101011111100100101100100000001101110100000, // atan(2^-2)  -> 14.036243468 degrees -> 0.244978663 radians
@@ -74,7 +74,7 @@ package cordic_atan_radian_table_pkg;
   // This table contains a fixed point representation of the gain that is
   // inherent from the CORDIC algorithm. Depending on how many stages that
   // are used, one of these vectors shall be assinged as the input X vector.
-  localparam logic signed [63 : 0] gain_table_32stage_n4q60 [31] = {
+  localparam logic signed [63 : 0] gain_table_32stage_n64q60 [31] = {
     64'b0000101101010000010011110011001100111111100111011110011000000000, // -> 0.707106781187 (Gain for 1  stages = 1.414213562373)
     64'b0000101000011110100010011011000100100100001001001000011110000000, // -> 0.632455532034 (Gain for 2  stages = 1.581138830084)
     64'b0000100111010001001100001101110100110110101111010001101100000000, // -> 0.613571991078 (Gain for 3  stages = 1.629800601301)

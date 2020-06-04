@@ -40,10 +40,10 @@ module cordic_radian_core #(
  );
 
   // Positive radian values
-  localparam logic signed [DATA_WIDTH_P-1 : 0] pos_pi_2_quarter = pi_2_4_pos_n4_q50[53 : 53-DATA_WIDTH_P+1];
-  localparam logic signed [DATA_WIDTH_P-1 : 0] pos_pi_4_quarter = pi_4_4_pos_n4_q50[53 : 53-DATA_WIDTH_P+1];
-  localparam logic signed [DATA_WIDTH_P-1 : 0] pos_pi_6_quarter = pi_6_4_pos_n4_q50[53 : 53-DATA_WIDTH_P+1];
-  localparam logic signed [DATA_WIDTH_P-1 : 0] pos_pi_8_quarter = pi_8_4_pos_n4_q50[53 : 53-DATA_WIDTH_P+1];
+  localparam logic signed [DATA_WIDTH_P-1 : 0] pos_pi_2_quarter = pi_2_4_pos_n54_q50[53 : 53-DATA_WIDTH_P+1];
+  localparam logic signed [DATA_WIDTH_P-1 : 0] pos_pi_4_quarter = pi_4_4_pos_n54_q50[53 : 53-DATA_WIDTH_P+1];
+  localparam logic signed [DATA_WIDTH_P-1 : 0] pos_pi_6_quarter = pi_6_4_pos_n54_q50[53 : 53-DATA_WIDTH_P+1];
+  localparam logic signed [DATA_WIDTH_P-1 : 0] pos_pi_8_quarter = pi_8_4_pos_n54_q50[53 : 53-DATA_WIDTH_P+1];
 
   // CORDIC vectors
   logic signed [DATA_WIDTH_P-1 : 0] theta_vector;
@@ -108,7 +108,7 @@ module cordic_radian_core #(
       assign y_shr = y_vector[i] >>> i;
 
       // Value of atan(2^-i)
-      assign atan_value = atan_radian_table_32stage_n4q60[i][63 : 63-DATA_WIDTH_P+1];
+      assign atan_value = atan_radian_table_32stage_n64q60[i][63 : 63-DATA_WIDTH_P+1];
 
       // The sign of the current rotation angle
       assign z_sign = z_vector[i][31];
