@@ -104,7 +104,8 @@ class vip_axi4s_monitor #(
       if (vif.tvalid && vif.tready) begin
         tdata_transactions.push_back(vif.tdata);
         tstrb_transactions.push_back(vif.tstrb);
-        tuser_transactions.push_back(vif.tuser);
+        tkeep_transactions.push_back(vif.tstrb);
+        tuser_transactions.push_back(vif.tkeep);
       end
 
       // Upon 'tlast'
@@ -115,6 +116,7 @@ class vip_axi4s_monitor #(
         transfer_counter     = tdata_transactions.size();
         collected_item.tdata = new[transfer_counter];
         collected_item.tstrb = new[transfer_counter];
+        collected_item.tkeep = new[transfer_counter];
         collected_item.tuser = new[transfer_counter];
 
         // Append 'tdata'
@@ -127,14 +129,23 @@ class vip_axi4s_monitor #(
           collected_item.tstrb[i] = tstrb_transactions[i];
         end
 
+        // Append 'tkeep'
+        foreach (tkeep_transactions[i]) begin
+          collected_item.tkeep[i] = tkeep_transactions[i];
+        end
+
         // Append 'tuser'
         foreach (tuser_transactions[i]) begin
           collected_item.tuser[i] = tuser_transactions[i];
         end
 
+        collected_item.tid   = vif.tid;
+        collected_item.tdest = vif.tdest;
+
         // Delete the saved transactions
         tdata_transactions.delete();
         tstrb_transactions.delete();
+        tkeep_transactions.delete();
         tuser_transactions.delete();
 
         `uvm_info(get_type_name(), $sformatf("Collected transfer:\n%s", collected_item.sprint()), UVM_HIGH)
