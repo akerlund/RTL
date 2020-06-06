@@ -15,7 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
-// Description:
+// Description: Essentialy a clock-enable enable. On every clock asserted
+// "ing_enable" the counter is incremented.
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -48,6 +49,7 @@ module clock_enable_scaler #(
         clock_enable_counter <= '0;
       end
       else if (ing_enable) begin
+
         clock_enable_counter <= clock_enable_counter + 1;
 
         if (clock_enable_counter >= cr_enable_period-1) begin
