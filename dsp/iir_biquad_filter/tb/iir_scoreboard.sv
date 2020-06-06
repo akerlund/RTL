@@ -216,7 +216,7 @@ class iir_scoreboard extends uvm_scoreboard;
                    $sformatf("  a1:   %f\n", bqc.a1),
                    $sformatf("  a2:   %f\n", bqc.a2)};
 
-    `uvm_info(get_type_name(), $sformatf("Bi-Quad Coefficients:\n%s", coef), UVM_LOW)
+    `uvm_info(get_type_name(), $sformatf("\n%s\n", coef), UVM_LOW)
 
   endfunction
 

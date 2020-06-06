@@ -20,6 +20,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 import iir_biquad_apb_slave_addr_pkg::*;
+//import osc_apb_slave_addr_pkg::*;
 
 class iir_base_seq #(
   vip_apb3_cfg_t vip_cfg = '{default: '0}
@@ -88,12 +89,12 @@ class iir_configuration_seq #(
 
     // Write frequency
     paddr  = OSC_BASE_ADDR_C + CR_OSC_FREQUENCY_ADDR_C;
-    pwdata = osc_f;
+    pwdata = (osc_f << Q_BITS_C);
     write_word(paddr, pwdata, psel);
 
     // Write duty cycle
     paddr  = OSC_BASE_ADDR_C + CR_OSC_DUTY_CYCLE_ADDR_C;
-    pwdata = osc_duty_cycle;
+    pwdata = (osc_duty_cycle << Q_BITS_C);
     write_word(paddr, pwdata, psel);
 
 

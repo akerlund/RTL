@@ -298,6 +298,7 @@ module iir_dut_biquad_system #(
     .APB_ADDR_WIDTH_P    ( APB_ADDR_WIDTH_P        ),
     .APB_DATA_WIDTH_P    ( APB_DATA_WIDTH_P        ),
     .WAVE_WIDTH_P        ( WAVE_WIDTH_P            ),
+    .N_BITS_P            ( N_BITS_P                ),
     .Q_BITS_P            ( Q_BITS_P                )
   ) oscillator_top_i0 (
     .clk                 ( clk                     ), // input

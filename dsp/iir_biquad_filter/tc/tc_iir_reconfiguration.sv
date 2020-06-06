@@ -41,8 +41,8 @@ class tc_iir_reconfiguration extends iir_base_test;
     iir_bypass = '0;
 
     // Oscillator parameters
-    osc_f             = 1000;
-    osc_duty_cycle    = 0;
+    osc_f             = 1000; // Hz
+    osc_duty_cycle    = 500;  // Percentage/1000
     osc_waveform_type = OSC_TRIANGLE_E;
 
   endfunction

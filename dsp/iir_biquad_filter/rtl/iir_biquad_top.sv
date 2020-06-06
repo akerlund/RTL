@@ -104,7 +104,7 @@ module iir_biquad_top #(
   );
 
   localparam logic signed [N_BITS_P-1 : 0] ONE_C           = (1 << Q_BITS_P);
-  localparam logic signed [N_BITS_P-1 : 0] PI2_C           = {'0, pi_8_4_pos_n4_q50[53 : 50-Q_BITS_P]};
+  localparam logic signed [N_BITS_P-1 : 0] PI2_C           = {'0, pi_8_4_pos_n54_q50[53 : 50-Q_BITS_P]};
   localparam int                           CORDIC_Q_BITS_C = AXI_DATA_WIDTH_P - 4;
 
 
