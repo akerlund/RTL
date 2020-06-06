@@ -4,7 +4,7 @@
 
 set top_module_name "arb_tb_top";
 set git_root        [exec git rev-parse --show-toplevel];
-set module_path     $git_root/axi4s/axi4s_arbiter/axi4s_s2m_2s_arbiter;
+set module_path     $git_root/axi4s/axi4s_arbiter/axi4s_s2m_2m_arbiter;
 set script_dir      [pwd]
 
 file mkdir "rundir"

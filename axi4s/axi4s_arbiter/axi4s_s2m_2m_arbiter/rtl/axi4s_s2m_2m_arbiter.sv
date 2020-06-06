@@ -198,7 +198,9 @@ module axi4s_s2m_2m_arbiter #(
 
         if (slv_tvalid) begin
 
-          next_arbiter_state = WAIT_ING_TLAST;
+          if (!slv_tlast) begin
+            next_arbiter_state = WAIT_ING_TLAST;
+          end
 
           case (slv_tid)
 

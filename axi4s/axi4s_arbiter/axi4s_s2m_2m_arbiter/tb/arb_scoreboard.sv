@@ -123,6 +123,11 @@ class arb_scoreboard extends uvm_scoreboard;
 
     current_phase.raise_objection(this);
 
+    if (trans.tid != 0) begin
+      `uvm_error(get_name(), $sformatf("Id is not (0), it is (%0d)", trans.tid))
+      number_of_failed++;
+    end
+
     if (master_items.size() && slave_items.size()) begin
       compare();
       current_phase.drop_objection(this);
@@ -130,11 +135,17 @@ class arb_scoreboard extends uvm_scoreboard;
 
   endfunction
 
+
   virtual function void write_collected_port_mst1(vip_axi4s_item #(vip_axi4s_cfg) trans);
 
     number_of_master_items++;
     master_items.push_back(trans);
     all_master_items.push_back(trans);
+
+    if (trans.tid != 1) begin
+      `uvm_error(get_name(), $sformatf("Id is not (1), it is (%0d)", trans.tid))
+      number_of_failed++;
+    end
 
     current_phase.raise_objection(this);
 
