@@ -37,39 +37,39 @@ module axi4s_m2s_2m_arbiter #(
     // Ingress
     // -------------------------------------------------------------------------
 
-    input  wire                           ing0_tvalid,
-    output logic                          ing0_tready,
-    input  wire  [AXI_DATA_WIDTH_P-1 : 0] ing0_tdata,
-    input  wire  [AXI_STRB_WIDTH_P-1 : 0] ing0_tstrb,
-    input  wire  [AXI_KEEP_WIDTH_P-1 : 0] ing0_tkeep,
-    input  wire                           ing0_tlast,
-    input  wire    [AXI_ID_WIDTH_P-1 : 0] ing0_tid,
-    input  wire  [AXI_DEST_WIDTH_P-1 : 0] ing0_tdest,
-    input  wire  [AXI_USER_WIDTH_P-1 : 0] ing0_tuser,
+    input  wire                           mst0_tvalid,
+    output logic                          mst0_tready,
+    input  wire  [AXI_DATA_WIDTH_P-1 : 0] mst0_tdata,
+    input  wire  [AXI_STRB_WIDTH_P-1 : 0] mst0_tstrb,
+    input  wire  [AXI_KEEP_WIDTH_P-1 : 0] mst0_tkeep,
+    input  wire                           mst0_tlast,
+    input  wire    [AXI_ID_WIDTH_P-1 : 0] mst0_tid,
+    input  wire  [AXI_DEST_WIDTH_P-1 : 0] mst0_tdest,
+    input  wire  [AXI_USER_WIDTH_P-1 : 0] mst0_tuser,
 
-    input  wire                           ing1_tvalid,
-    output logic                          ing1_tready,
-    input  wire  [AXI_DATA_WIDTH_P-1 : 0] ing1_tdata,
-    input  wire  [AXI_STRB_WIDTH_P-1 : 0] ing1_tstrb,
-    input  wire  [AXI_KEEP_WIDTH_P-1 : 0] ing1_tkeep,
-    input  wire                           ing1_tlast,
-    input  wire    [AXI_ID_WIDTH_P-1 : 0] ing1_tid,
-    input  wire  [AXI_DEST_WIDTH_P-1 : 0] ing1_tdest,
-    input  wire  [AXI_USER_WIDTH_P-1 : 0] ing1_tuser,
+    input  wire                           mst1_tvalid,
+    output logic                          mst1_tready,
+    input  wire  [AXI_DATA_WIDTH_P-1 : 0] mst1_tdata,
+    input  wire  [AXI_STRB_WIDTH_P-1 : 0] mst1_tstrb,
+    input  wire  [AXI_KEEP_WIDTH_P-1 : 0] mst1_tkeep,
+    input  wire                           mst1_tlast,
+    input  wire    [AXI_ID_WIDTH_P-1 : 0] mst1_tid,
+    input  wire  [AXI_DEST_WIDTH_P-1 : 0] mst1_tdest,
+    input  wire  [AXI_USER_WIDTH_P-1 : 0] mst1_tuser,
 
     // -------------------------------------------------------------------------
     // Egress
     // -------------------------------------------------------------------------
 
-    output logic                          egr_tvalid,
-    input  wire                           egr_tready,
-    output logic [AXI_DATA_WIDTH_P-1 : 0] egr_tdata,
-    output logic [AXI_STRB_WIDTH_P-1 : 0] egr_tstrb,
-    output logic [AXI_KEEP_WIDTH_P-1 : 0] egr_tkeep,
-    output logic                          egr_tlast,
-    output logic   [AXI_ID_WIDTH_P-1 : 0] egr_tid,
-    output logic [AXI_DEST_WIDTH_P-1 : 0] egr_tdest,
-    output logic [AXI_USER_WIDTH_P-1 : 0] egr_tuser
+    output logic                          slv_tvalid,
+    input  wire                           slv_tready,
+    output logic [AXI_DATA_WIDTH_P-1 : 0] slv_tdata,
+    output logic [AXI_STRB_WIDTH_P-1 : 0] slv_tstrb,
+    output logic [AXI_KEEP_WIDTH_P-1 : 0] slv_tkeep,
+    output logic                          slv_tlast,
+    output logic   [AXI_ID_WIDTH_P-1 : 0] slv_tid,
+    output logic [AXI_DEST_WIDTH_P-1 : 0] slv_tdest,
+    output logic [AXI_USER_WIDTH_P-1 : 0] slv_tuser
   );
 
   typedef enum {
@@ -93,59 +93,59 @@ module axi4s_m2s_2m_arbiter #(
   // Combinatorial multiplexing of the connected masters
   always_comb begin
 
-    ing0_tready = '0;
-    ing1_tready = '0;
+    mst0_tready = '0;
+    mst1_tready = '0;
 
     case (selected_master)
 
       NO_SELECTED_E: begin
-        ing0_tready = '0;
-        ing1_tready = '0;
-        egr_tvalid  = '0;
-        egr_tdata   = '0;
-        egr_tstrb   = '0;
-        egr_tkeep   = '0;
-        egr_tlast   = '0;
-        egr_tid     = '0;
-        egr_tdest   = '0;
-        egr_tuser   = '0;
+        mst0_tready = '0;
+        mst1_tready = '0;
+        slv_tvalid  = '0;
+        slv_tdata   = '0;
+        slv_tstrb   = '0;
+        slv_tkeep   = '0;
+        slv_tlast   = '0;
+        slv_tid     = '0;
+        slv_tdest   = '0;
+        slv_tuser   = '0;
       end
 
       MASTER0_E: begin
-        egr_tvalid  = ing0_tvalid;
-        ing0_tready = egr_tready;
-        egr_tdata   = ing0_tdata;
-        egr_tstrb   = ing0_tstrb;
-        egr_tkeep   = ing0_tkeep;
-        egr_tlast   = ing0_tlast;
-        egr_tid     = ing0_tid;
-        egr_tdest   = ing0_tdest;
-        egr_tuser   = ing0_tuser;
+        slv_tvalid  = mst0_tvalid;
+        mst0_tready = slv_tready;
+        slv_tdata   = mst0_tdata;
+        slv_tstrb   = mst0_tstrb;
+        slv_tkeep   = mst0_tkeep;
+        slv_tlast   = mst0_tlast;
+        slv_tid     = mst0_tid;
+        slv_tdest   = mst0_tdest;
+        slv_tuser   = mst0_tuser;
       end
 
       MASTER1_E: begin
-        egr_tvalid  = ing1_tvalid;
-        ing1_tready = egr_tready;
-        egr_tdata   = ing1_tdata;
-        egr_tstrb   = ing1_tstrb;
-        egr_tkeep   = ing1_tkeep;
-        egr_tlast   = ing1_tlast;
-        egr_tid     = ing1_tid;
-        egr_tdest   = ing1_tdest;
-        egr_tuser   = ing1_tuser;
+        slv_tvalid  = mst1_tvalid;
+        mst1_tready = slv_tready;
+        slv_tdata   = mst1_tdata;
+        slv_tstrb   = mst1_tstrb;
+        slv_tkeep   = mst1_tkeep;
+        slv_tlast   = mst1_tlast;
+        slv_tid     = mst1_tid;
+        slv_tdest   = mst1_tdest;
+        slv_tuser   = mst1_tuser;
       end
 
       default: begin
-        ing0_tready = '0;
-        ing1_tready = '0;
-        egr_tvalid  = '0;
-        egr_tdata   = '0;
-        egr_tstrb   = '0;
-        egr_tkeep   = '0;
-        egr_tlast   = '0;
-        egr_tid     = '0;
-        egr_tdest   = '0;
-        egr_tuser   = '0;
+        mst0_tready = '0;
+        mst1_tready = '0;
+        slv_tvalid  = '0;
+        slv_tdata   = '0;
+        slv_tstrb   = '0;
+        slv_tkeep   = '0;
+        slv_tlast   = '0;
+        slv_tid     = '0;
+        slv_tdest   = '0;
+        slv_tuser   = '0;
       end
 
     endcase
@@ -164,14 +164,14 @@ module axi4s_m2s_2m_arbiter #(
       // -----------------------------------------------------------------------
 
       RR_PRIO_MST_0: begin
-        selected_master        = NO_SELECTED_E;
+        selected_master = NO_SELECTED_E;
 
-        if (egr_tready) begin
+        if (slv_tready) begin
 
-          if (ing0_tvalid) begin      // Master 0
+          if (mst0_tvalid) begin      // Master 0
             next_rr_priority_state = BURST_MST_0;
           end
-          else if (ing1_tvalid) begin // Master 1
+          else if (mst1_tvalid) begin // Master 1
             next_rr_priority_state = BURST_MST_1;
           end
         end
@@ -182,14 +182,14 @@ module axi4s_m2s_2m_arbiter #(
 
 
       RR_PRIO_MST_1: begin
-        selected_master        = NO_SELECTED_E;
+        selected_master = NO_SELECTED_E;
 
-        if (egr_tready) begin
+        if (slv_tready) begin
 
-          if (ing1_tvalid) begin      // Master 1
+          if (mst1_tvalid) begin      // Master 1
             next_rr_priority_state = BURST_MST_1;
           end
-          else if (ing0_tvalid) begin // Master 0
+          else if (mst0_tvalid) begin // Master 0
             next_rr_priority_state = BURST_MST_0;
           end
         end
@@ -204,7 +204,7 @@ module axi4s_m2s_2m_arbiter #(
 
       BURST_MST_0: begin
         selected_master = MASTER0_E;
-        if (ing0_tvalid && ing0_tready && ing0_tlast) begin
+        if (mst0_tvalid && mst0_tready && mst0_tlast) begin
           next_rr_priority_state = RR_PRIO_MST_1;
         end
         else begin
@@ -215,7 +215,7 @@ module axi4s_m2s_2m_arbiter #(
       BURST_MST_1: begin
         next_rr_priority_state = next_rr_priority_state;
         selected_master = MASTER1_E;
-        if (ing1_tvalid && ing1_tready && ing1_tlast) begin
+        if (mst1_tvalid && mst1_tready && mst1_tlast) begin
           next_rr_priority_state = RR_PRIO_MST_0;
         end
         else begin

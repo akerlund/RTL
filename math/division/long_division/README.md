@@ -1,8 +1,7 @@
 # Long Division with Fixed Point
 
-![Build Status](https://img.shields.io/badge/build-passes-green)
 ![Test  Status](https://img.shields.io/badge/test-passes-green)
-![Synth Status](https://img.shields.io/badge/synthesis-N/A-lightgrey)
+![Synth Status](https://img.shields.io/badge/synthesis-passes-green)
 ![FPGA  Status](https://img.shields.io/badge/fpga-N/A-lightgrey)
 
 Parameterizable fixed-point divider
@@ -90,3 +89,28 @@ when comparing its prediction to the data from the Monitor. This is because I ca
 
  - Fix the rounding issue in the Scoreboard, i.e., fixed point to real and vice versa. The Scoreboard is predicting wrong because of the conversion in the VIP package does not round the value down.
  - Scoreboard also checks the remainder.
+
+## Synthesis
+
+Out of context synthesis for a "7z020clg484-1" FPGA yields the following
+
+
+```
+parameter int AXI_DATA_WIDTH_P = 32
+parameter int AXI_ID_WIDTH_P   = 2
+parameter int N_BITS_P         = 32
+parameter int Q_BITS_P         = 15
+
++-------------------------+------+-------+-----------+-------+
+|        Site Type        | Used | Fixed | Available | Util% |
++-------------------------+------+-------+-----------+-------+
+| Slice LUTs*             |  344 |     0 |     53200 |  0.65 |
+|   LUT as Logic          |  344 |     0 |     53200 |  0.65 |
+|   LUT as Memory         |    0 |     0 |     17400 |  0.00 |
+| Slice Registers         |  309 |     0 |    106400 |  0.29 |
+|   Register as Flip Flop |  277 |     0 |    106400 |  0.26 |
+|   Register as Latch     |   32 |     0 |    106400 |  0.03 |
+| F7 Muxes                |    0 |     0 |     26600 |  0.00 |
+| F8 Muxes                |    0 |     0 |     13300 |  0.00 |
++-------------------------+------+-------+-----------+-------+
+```

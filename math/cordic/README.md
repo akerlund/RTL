@@ -1,8 +1,7 @@
 # CORDIC - System Verilog
 
-![Build Status](https://img.shields.io/badge/build-passes-green)
-![Test  Status](https://img.shields.io/badge/test-basic-green)
-![Synth Status](https://img.shields.io/badge/synthesis-N/A-lightgrey)
+![Test  Status](https://img.shields.io/badge/test-pass-green)
+![Synth Status](https://img.shields.io/badge/synthesis-pass-green)
 ![FPGA  Status](https://img.shields.io/badge/fpga-N/A-lightgrey)
 
 This is a System Verilog implementation of the CORDIC algorithm. The design use fixed point representation of the input and output vectors. The input should be between ±2π with four integer bits and the rest as fractional bits and the output will be between ±1.
@@ -29,6 +28,56 @@ This implementation of the CORDIC algorithm can yield a simulation like this
      - tid
      - tdata, ingress tuser to select either sine or cosine
 
+## Synthesis
+
+Out of context synthesis for a "7z020clg484-1" FPGA yields the following
+
+
+```
+...
+parameter int AXI_DATA_WIDTH_P = 32,
+parameter int AXI_ID_WIDTH_P   = 3,
+parameter int NR_OF_STAGES_P   = 16
+...
+
++----------------------------+------+-------+-----------+-------+
+|          Site Type         | Used | Fixed | Available | Util% |
++----------------------------+------+-------+-----------+-------+
+| Slice LUTs*                | 1632 |     0 |     53200 |  3.07 |
+|   LUT as Logic             | 1628 |     0 |     53200 |  3.06 |
+|   LUT as Memory            |    4 |     0 |     17400 |  0.02 |
+|     LUT as Distributed RAM |    0 |     0 |           |       |
+|     LUT as Shift Register  |    4 |     0 |           |       |
+| Slice Registers            | 1437 |     0 |    106400 |  1.35 |
+|   Register as Flip Flop    | 1437 |     0 |    106400 |  1.35 |
+|   Register as Latch        |    0 |     0 |    106400 |  0.00 |
+| F7 Muxes                   |    0 |     0 |     26600 |  0.00 |
+| F8 Muxes                   |    0 |     0 |     13300 |  0.00 |
++----------------------------+------+-------+-----------+-------+
+```
+
+```
+...
+parameter int AXI_DATA_WIDTH_P = 16,
+parameter int AXI_ID_WIDTH_P   = 3,
+parameter int NR_OF_STAGES_P   = 16
+...
+
++----------------------------+------+-------+-----------+-------+
+|          Site Type         | Used | Fixed | Available | Util% |
++----------------------------+------+-------+-----------+-------+
+| Slice LUTs*                |  537 |     0 |     53200 |  1.01 |
+|   LUT as Logic             |  533 |     0 |     53200 |  1.00 |
+|   LUT as Memory            |    4 |     0 |     17400 |  0.02 |
+|     LUT as Distributed RAM |    0 |     0 |           |       |
+|     LUT as Shift Register  |    4 |     0 |           |       |
+| Slice Registers            |  510 |     0 |    106400 |  0.48 |
+|   Register as Flip Flop    |  510 |     0 |    106400 |  0.48 |
+|   Register as Latch        |    0 |     0 |    106400 |  0.00 |
+| F7 Muxes                   |    0 |     0 |     26600 |  0.00 |
+| F8 Muxes                   |    0 |     0 |     13300 |  0.00 |
++----------------------------+------+-------+-----------+-------+
+```
 
 ## CORDIC Theory
 
