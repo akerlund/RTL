@@ -1,0 +1,51 @@
+test_apb_slave:
+  - register:
+    name: test_reg_0
+    type: SR
+    mode: R
+    desc: status_register
+    bit_fields:
+      - field: {
+        name:        status_bit_0,
+        description: description,
+        reset_value: 0x0,
+        size:        1
+      }
+      - field: {
+        name:        status_vector_0,
+        description: description,
+        reset_value: 0x0,
+        size:        11
+      }
+
+  - register:
+    name: test_reg_1
+    type: CMD
+    mode: W
+    desc: command_register
+    bit_fields:
+      - field: {
+        name:        command_bit_0,
+        description: description,
+        reset_value: 0x0,
+        size:        1
+      }
+      - field: {
+        name:        command_bit_1,
+        description: description,
+        reset_value: 0x0,
+        size:        1
+      }
+
+  - register:
+    name: test_reg_2
+    type: CR
+    mode: R
+    desc: configuration_registers
+    bit_fields:
+      - field: {
+        name:        configuration_bit_0,
+        description: description,
+        reset_value: 0x0,
+        size:        32
+      }
