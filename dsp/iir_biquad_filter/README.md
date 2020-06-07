@@ -1,7 +1,7 @@
 # IIR Bi-Quad Filter
 
-![Test  Status](https://img.shields.io/badge/test-N/A-green)
-![Synth Status](https://img.shields.io/badge/synthesis-N/A-lightgrey)
+![Test  Status](https://img.shields.io/badge/test-passes-green)
+![Synth Status](https://img.shields.io/badge/synthesis-passes-green)
 ![FPGA  Status](https://img.shields.io/badge/fpga-N/A-lightgrey)
 
 This IIR filter's test case *tc_iir_reconfiguration* will give this waveform
@@ -24,6 +24,38 @@ The system (*iir_dut_biquad_system*) is used for testing and contains:
 - oscillator_top         // Input signal for the IIR, a triangle wave
 ```
 
+## Synthesis
+
+Out of context synthesis for a "7z020clg484-1" FPGA yields the following
+
+```
+parameter int AXI_DATA_WIDTH_P = 32
+parameter int AXI_ID_WIDTH_P   = 2
+parameter int AXI4S_ID_P       = 0
+parameter int APB_DATA_WIDTH_P = 32
+parameter int N_BITS_P         = 32
+parameter int Q_BITS_P         = 11
+
++-------------------------+------+-------+-----------+-------+
+|        Site Type        | Used | Fixed | Available | Util% |
++-------------------------+------+-------+-----------+-------+
+| Slice LUTs*             |  814 |     0 |     53200 |  1.53 |
+|   LUT as Logic          |  814 |     0 |     53200 |  1.53 |
+|   LUT as Memory         |    0 |     0 |     17400 |  0.00 |
+| Slice Registers         |  647 |     0 |    106400 |  0.61 |
+|   Register as Flip Flop |  647 |     0 |    106400 |  0.61 |
+|   Register as Latch     |    0 |     0 |    106400 |  0.00 |
+| F7 Muxes                |   32 |     0 |     26600 |  0.12 |
+| F8 Muxes                |    0 |     0 |     13300 |  0.00 |
++-------------------------+------+-------+-----------+-------+
+
++----------------+------+-------+-----------+-------+
+|    Site Type   | Used | Fixed | Available | Util% |
++----------------+------+-------+-----------+-------+
+| DSPs           |    5 |     0 |       220 |  2.27 |
+|   DSP48E1 only |    5 |       |           |       |
++----------------+------+-------+-----------+-------+
+```
 
 # Theory
 

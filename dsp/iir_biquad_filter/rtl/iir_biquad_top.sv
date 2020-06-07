@@ -27,6 +27,7 @@
 
 import cordic_axi4s_types_pkg::*;
 import cordic_atan_radian_table_pkg::*;
+import iir_biquad_types_pkg::*;
 
 `default_nettype none
 
