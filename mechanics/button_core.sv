@@ -44,16 +44,16 @@ module button_core #(
     .bit_egress  ( synchronized_button )
   );
 
-  if ( connection_type_p == "OPEN" ) begin
+  if (connection_type_p == "OPEN") begin
     assign button_in = synchronized_button;
   end
 
-  if ( connection_type_p == "CLOSED" ) begin
+  if (connection_type_p == "CLOSED") begin
     assign button_in = ~synchronized_button;
   end
 
   // Debouncer
-  always_ff @( posedge clk or negedge rst_n ) begin
+  always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
       button_is_debounced <= '0;
       button_counter      <= '0;
@@ -61,8 +61,8 @@ module button_core #(
     end
     else begin
       button_press_toggle <= '0;
-     	if ( button_in && !button_is_debounced ) begin
-        if ( button_counter == nr_of_debounce_clks_p ) begin
+     	if (button_in && !button_is_debounced) begin
+        if (button_counter == nr_of_debounce_clks_p) begin
           button_is_debounced <= 1;
           button_counter      <= '0;
           button_press_toggle <= 1;
@@ -71,7 +71,7 @@ module button_core #(
           button_counter <= button_counter + 1;
         end
       end
-      else if ( !button_in && button_is_debounced ) begin
+      else if (!button_in && button_is_debounced) begin
         button_is_debounced <= '0;
       end
     end
