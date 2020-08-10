@@ -33,7 +33,7 @@ module io_synchronizer (
     output logic bit_egress
   );
 
-  io_synchronizer_core io_synchronizer_core_i0(
+  io_synchronizer_core io_synchronizer_core_i0 (
     .clk         ( clk         ),
     .rst_n       ( rst_n       ),
     .bit_ingress ( bit_ingress ),
