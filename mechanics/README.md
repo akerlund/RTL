@@ -24,4 +24,10 @@ button_core #(
 
 ## Rotary Encoder
 
+![Synth Status](https://img.shields.io/badge/synthesis-N/A-green)
+![FPGA  Status](https://img.shields.io/badge/fpga-N/A-green)
+
 ## Switch Core
+
+![Synth Status](https://img.shields.io/badge/synthesis-N/A-green)
+![FPGA  Status](https://img.shields.io/badge/fpga-N/A-green)

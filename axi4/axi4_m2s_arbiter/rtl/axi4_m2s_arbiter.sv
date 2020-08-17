@@ -121,6 +121,7 @@ module axi4_m2s_arbiter #(
     output logic                                                  slv_rready
   );
 
+  import axi4_types_pkg::*;
 
   // ---------------------------------------------------------------------------
   // Write Channel signals
@@ -172,9 +173,9 @@ module axi4_m2s_arbiter #(
   assign slv_arprot  = '0;
   assign slv_arqos   = '0;
 
-  for (int i = 0; i < NR_OF_MASTERS_P) begin
-    assign mst_rdata[i] <= slv_rdata;
-    assign mst_rlast[i] <= slv_rlast;
+  for (genvar i = 0; i < NR_OF_MASTERS_P; i++) begin
+    assign mst_rdata[i] = slv_rdata;
+    assign mst_rlast[i] = slv_rlast;
   end
 
   // ---------------------------------------------------------------------------

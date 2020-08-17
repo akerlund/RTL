@@ -24,7 +24,7 @@
 // By using a wrapper around the core we will always find any instance
 // of 'reset_synchronizer_core_i0' within a 'reset_synchronizer_iX'.
 // Thus, we can constraint them all with, e.g.,
-// set_property -quiet ASYNC_REG TRUE [get_cells -hier -regexp .*reset_synchronizer_core_i0/reset_origin_n]
+// set_property -quiet ASYNC_REG TRUE [get_cells -hier -regexp .*reset_synchronizer_core_i0/reset_origin_n.*]
 // set_property -quiet ASYNC_REG TRUE [get_cells -hier -regexp .*io_synchronizer_core_i0/bit_egress.*]
 
 module reset_synchronizer (
