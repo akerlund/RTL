@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2020 Fredrik Åkerlund
+// Copyright (C) 2020 Fredrik Ãkerlund
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -56,19 +56,6 @@ module axi4_m2s_arbiter #(
     input  wire  [0 : NR_OF_MASTERS_P-1]                          mst_wvalid,
     output logic [0 : NR_OF_MASTERS_P-1]                          mst_wready,
 
-    // Read Address Channel
-    input  wire  [0 : NR_OF_MASTERS_P-1]   [AXI_ID_WIDTH_P-1 : 0] mst_arid,
-    input  wire  [0 : NR_OF_MASTERS_P-1] [AXI_ADDR_WIDTH_P-1 : 0] mst_araddr,
-    input  wire  [0 : NR_OF_MASTERS_P-1]                  [7 : 0] mst_arlen,
-    input  wire  [0 : NR_OF_MASTERS_P-1]                          mst_arvalid,
-    output logic [0 : NR_OF_MASTERS_P-1]                          mst_arready,
-
-    // Read Data Channel
-    output logic [0 : NR_OF_MASTERS_P-1] [AXI_DATA_WIDTH_P-1 : 0] mst_rdata,
-    output logic [0 : NR_OF_MASTERS_P-1]                          mst_rlast,
-    output logic [0 : NR_OF_MASTERS_P-1]                          mst_rvalid,
-    input  wire  [0 : NR_OF_MASTERS_P-1]                          mst_rready,
-
     // -------------------------------------------------------------------------
     // AXI4 Slave
     // -------------------------------------------------------------------------
@@ -97,29 +84,9 @@ module axi4_m2s_arbiter #(
     input  wire                            [AXI_ID_WIDTH_P-1 : 0] slv_bid,
     input  wire                                           [1 : 0] slv_bresp,
     input  wire                                                   slv_bvalid,
-    output logic                                                  slv_bready,
-
-    // Read Address Channel
-    output logic                           [AXI_ID_WIDTH_P-1 : 0] slv_arid,
-    output logic                         [AXI_ADDR_WIDTH_P-1 : 0] slv_araddr,
-    output logic                                          [7 : 0] slv_arlen,
-    output logic                                          [2 : 0] slv_arsize,
-    output logic                                          [1 : 0] slv_arburst,
-    output logic                                                  slv_arlock,
-    output logic                                          [3 : 0] slv_arcache,
-    output logic                                          [2 : 0] slv_arprot,
-    output logic                                          [3 : 0] slv_arqos,
-    output logic                                                  slv_arvalid,
-    input  wire                                                   slv_arready,
-
-    // Read Data Channel
-    input  wire                            [AXI_ID_WIDTH_P-1 : 0] slv_rid,
-    input  wire                                           [1 : 0] slv_rresp,
-    input  wire                          [AXI_DATA_WIDTH_P-1 : 0] slv_rdata,
-    input  wire                                                   slv_rlast,
-    input  wire                                                   slv_rvalid,
-    output logic                                                  slv_rready
+    output logic                                                  slv_bready
   );
+
 
   import axi4_types_pkg::*;
 
@@ -129,54 +96,28 @@ module axi4_m2s_arbiter #(
 
   typedef enum {
     FIND_MST_AWVALID_E,
-    WAIT_FOR_BVALID_E
+    WAIT_FOR_BVALID_E,
+    WAIT_MST_WLAST_E
   } write_state_t;
 
   write_state_t write_state;
 
-  logic [NR_OF_MASTERS_P-1 : 0] wr_rotating_mst;
-  logic [NR_OF_MASTERS_P-1 : 0] wr_selected_mst;
-  logic [NR_OF_MASTERS_P-1 : 0] wr_mst_is_chosen;
-
-  // ---------------------------------------------------------------------------
-  // Read Channel signals
-  // ---------------------------------------------------------------------------
-
-  typedef enum {
-    FIND_MST_ARVALID_E,
-    WAIT_FOR_RLAST_E
-  } read_state_t;
-
-  read_state_t read_state;
-
-  logic [NR_OF_MASTERS_P-1 : 0] rd_rotating_mst;
-  logic [NR_OF_MASTERS_P-1 : 0] rd_selected_mst;
-  logic [NR_OF_MASTERS_P-1 : 0] rd_mst_is_chosen;
+  logic [$clog2(NR_OF_MASTERS_P)-1 : 0] wr_rotating_mst;
+  logic [$clog2(NR_OF_MASTERS_P)-1 : 0] wr_selected_mst;
+  logic         [NR_OF_MASTERS_P-1 : 0] wr_mst_is_chosen;
 
   // ---------------------------------------------------------------------------
   // Port assignments
   // ---------------------------------------------------------------------------
 
   // AXI4 Write Channel
-  assign slv_awsize  = burst_size_as_enum(AXI_STRB_WIDTH_P);
-  assign slv_awburst = AXI4_BURST_INCR_C;
+  assign slv_awsize  =  3'b100;
+  assign slv_awburst =  2'b01;
   assign slv_awlock  = '0;
   assign slv_awcache = '0;
   assign slv_awprot  = '0;
   assign slv_awqos   = '0;
 
-  // AXI4 Read Channel
-  assign slv_arsize  = burst_size_as_enum(AXI_STRB_WIDTH_P);
-  assign slv_arburst = AXI4_BURST_INCR_C;
-  assign slv_arlock  = '0;
-  assign slv_arcache = '0;
-  assign slv_arprot  = '0;
-  assign slv_arqos   = '0;
-
-  for (genvar i = 0; i < NR_OF_MASTERS_P; i++) begin
-    assign mst_rdata[i] = slv_rdata;
-    assign mst_rlast[i] = slv_rlast;
-  end
 
   // ---------------------------------------------------------------------------
   // Write processes
@@ -190,19 +131,48 @@ module axi4_m2s_arbiter #(
       wr_selected_mst  <= '0;                 // MUX select
       wr_mst_is_chosen <= '0;                 // Output enable
       slv_bready       <= '0;                 // Write Response Channel
+      mst_awready      <= '0;
     end
     else begin
+
+      mst_awready <= '0;
 
       case (write_state)
 
         FIND_MST_AWVALID_E: begin
 
-          wr_rotating_mst <= wr_rotating_mst + 1;
+          if (slv_awready) begin
 
-          if (mst_awvalid[wr_rotating_mst]) begin
-            write_state      <= WAIT_FOR_BVALID_E;
-            wr_selected_mst  <= wr_rotating_mst;
-            wr_mst_is_chosen <= '1;
+            if (wr_rotating_mst == NR_OF_MASTERS_P-1) begin
+              wr_rotating_mst <= '0;
+            end
+            else begin
+              wr_rotating_mst <= wr_rotating_mst + 1;
+            end
+
+            if (mst_awvalid[wr_rotating_mst]) begin
+              write_state                  <= WAIT_MST_WLAST_E;
+              mst_awready[wr_rotating_mst] <= '1;
+              wr_selected_mst              <= wr_rotating_mst;
+              wr_mst_is_chosen             <= '1;
+            end
+
+          end
+        end
+
+
+        WAIT_MST_WLAST_E: begin
+
+          if (slv_awready) begin
+            mst_awready <= '0;
+          end
+          else begin
+            mst_awready <= mst_awready;
+          end
+
+          if (slv_wlast && slv_wvalid && slv_wready) begin
+            write_state <= WAIT_FOR_BVALID_E;
+            slv_bready  <= '1;
           end
 
         end
@@ -210,12 +180,10 @@ module axi4_m2s_arbiter #(
 
         WAIT_FOR_BVALID_E: begin
 
-          if (wr_rotating_mst >= NR_OF_MASTERS_P) begin
-            wr_rotating_mst <= '0;
-          end
 
           if (slv_bvalid) begin
             write_state      <= FIND_MST_AWVALID_E;
+            slv_bready       <= '0;
             wr_mst_is_chosen <= '0;
           end
 
@@ -236,7 +204,6 @@ module axi4_m2s_arbiter #(
       slv_awaddr  <= '0;
       slv_awlen   <= '0;
       slv_awvalid <= '0;
-      mst_awready <= '0;
 
       // Write Data Channel
       slv_wdata   <= '0;
@@ -249,15 +216,13 @@ module axi4_m2s_arbiter #(
     else begin
 
       // Default
-      mst_awready                  <= '0;
       mst_wready                   <= '0;
 
       // Write Address Channel
-      slv_awid                     <= {'0, wr_selected_mst};
+      slv_awid                     <= mst_awid    [wr_selected_mst];
       slv_awaddr                   <= mst_awaddr  [wr_selected_mst];
       slv_awlen                    <= mst_awlen   [wr_selected_mst];
       slv_awvalid                  <= mst_awvalid [wr_selected_mst];
-      mst_awready[wr_selected_mst] <= slv_awready;
 
       // Write Data Channel
       slv_wdata                    <= mst_wdata  [wr_selected_mst];
@@ -265,93 +230,6 @@ module axi4_m2s_arbiter #(
       slv_wlast                    <= mst_wlast  [wr_selected_mst];
       slv_wvalid                   <= mst_wvalid [wr_selected_mst];
       mst_wready[wr_selected_mst]  <= slv_wready;
-
-    end
-
-  end
-
-  // ---------------------------------------------------------------------------
-  // Read processes
-  // ---------------------------------------------------------------------------
-
-  // FSM
-  always_ff @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
-      read_state       <= FIND_MST_ARVALID_E;
-      rd_rotating_mst  <= '0;                 // Round Robin counter
-      rd_selected_mst  <= '0;                 // MUX select
-      rd_mst_is_chosen <= '0;                 // Output enable
-    end
-    else begin
-
-      case (read_state)
-
-        FIND_MST_ARVALID_E: begin
-
-          rd_rotating_mst <= rd_rotating_mst + 1;
-
-          if (mst_awvalid[rd_rotating_mst]) begin
-            read_state       <= WAIT_FOR_RLAST_E;
-            rd_selected_mst  <= rd_rotating_mst;
-            rd_mst_is_chosen <= '1;
-          end
-
-        end
-
-
-        WAIT_FOR_RLAST_E: begin
-
-          if (rd_rotating_mst >= NR_OF_MASTERS_P) begin
-            rd_rotating_mst <= '0;
-          end
-
-          if (slv_rlast && slv_rvalid && mst_rready[rd_selected_mst]) begin
-            read_state       <= FIND_MST_ARVALID_E;
-            rd_mst_is_chosen <= '0;
-          end
-
-        end
-
-      endcase
-    end
-  end
-
-
-  // MUX
-  always_comb begin
-
-    if (!rd_mst_is_chosen) begin
-
-      // Read Address Channel
-      slv_arid    <= '0;
-      slv_araddr  <= '0;
-      slv_arlen   <= '0;
-      slv_arvalid <= '0;
-      mst_arready <= '0;
-
-      // Read Data Channel
-      mst_rlast   <= '0;
-      mst_rvalid  <= '0;
-      slv_rready  <= '0;
-
-    end
-    else begin
-
-      // Default
-      mst_arready                  <= '0;
-      mst_rvalid                   <= '0;
-
-      // Read Address Channel
-      slv_arid                     <= {'0, rd_selected_mst};
-      slv_araddr                   <= mst_araddr  [rd_selected_mst];
-      slv_arlen                    <= mst_arlen   [rd_selected_mst];
-      slv_arvalid                  <= mst_arvalid [rd_selected_mst];
-      mst_arready[rd_selected_mst] <= slv_arready;
-
-      // Read Data Channel
-      mst_rlast[rd_selected_mst]   <= slv_rlast;
-      mst_rvalid[rd_selected_mst]  <= slv_rvalid;
-      slv_rready                   <= mst_rready [rd_selected_mst];
 
     end
 
