@@ -30,7 +30,7 @@ module rotary_encoder_top #(
     input  wire  encoder_pin_a,
     input  wire  encoder_pin_b,
 
-    output logic egr_valid,
+    output logic rotation_valid,
     output logic rotation_direction
   );
 
@@ -52,12 +52,12 @@ module rotary_encoder_top #(
     .bit_egress  ( encoder_b     )
   );
 
-  rotary_encoder_core rotary_encoder_core_i0 (
+  rotary_encoder_fsm rotary_encoder_fsm_i0 (
     .clk                ( clk                ),
     .rst_n              ( rst_n              ),
     .encoder_pin_a      ( encoder_a          ),
     .encoder_pin_b      ( encoder_b          ),
-    .valid_change       ( egr_valid          ),
+    .valid_change       ( rotation_valid     ),
     .rotation_direction ( rotation_direction )
   );
 

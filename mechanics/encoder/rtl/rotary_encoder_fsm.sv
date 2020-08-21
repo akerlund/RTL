@@ -21,7 +21,7 @@
 
 `default_nettype none
 
-module rotary_encoder_core (
+module rotary_encoder_fsm (
     input  wire  clk,
     input  wire  rst_n,
 
