@@ -12,3 +12,5 @@
 **rundir
 **.Xil
 **vivado_synth
+**verilator/logs/*
+**verilator/obj_dir/*

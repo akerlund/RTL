@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2020 Fredrik Ãkerlund
+// Copyright (C) 2020 Fredrik Åkerlund
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,15 +17,11 @@
 //
 // Description:
 //
-//   Arbiter for connecting several AXI4 Masters to one AXI4 Slave.
-//   When a Master is given access it is only allowed to send one "awaddr"
-//   and the arbiter is hard coded to forward "awburst" as incremental mode.
-//
 ////////////////////////////////////////////////////////////////////////////////
 
 `default_nettype none
 
-module axi4_m2s_arbiter #(
+module axi4_write_arbiter #(
     parameter int AXI_ID_WIDTH_P    = 3,
     parameter int AXI_ADDR_WIDTH_P  = 32,
     parameter int AXI_DATA_WIDTH_P  = 32,
@@ -43,18 +39,18 @@ module axi4_m2s_arbiter #(
     // -------------------------------------------------------------------------
 
     // Write Address Channel
-    input  wire  [0 : NR_OF_MASTERS_P-1]   [AXI_ID_WIDTH_P-1 : 0] mst_awid,
-    input  wire  [0 : NR_OF_MASTERS_P-1] [AXI_ADDR_WIDTH_P-1 : 0] mst_awaddr,
-    input  wire  [0 : NR_OF_MASTERS_P-1]                  [7 : 0] mst_awlen,
-    input  wire  [0 : NR_OF_MASTERS_P-1]                          mst_awvalid,
-    output logic [0 : NR_OF_MASTERS_P-1]                          mst_awready,
+    input  wire  [NR_OF_MASTERS_P-1 : 0]   [AXI_ID_WIDTH_P-1 : 0] mst_awid,
+    input  wire  [NR_OF_MASTERS_P-1 : 0] [AXI_ADDR_WIDTH_P-1 : 0] mst_awaddr,
+    input  wire  [NR_OF_MASTERS_P-1 : 0]                  [7 : 0] mst_awlen,
+    input  wire  [NR_OF_MASTERS_P-1 : 0]                          mst_awvalid,
+    output logic [NR_OF_MASTERS_P-1 : 0]                          mst_awready,
 
     // Write Data Channel
-    input  wire  [0 : NR_OF_MASTERS_P-1] [AXI_DATA_WIDTH_P-1 : 0] mst_wdata,
-    input  wire  [0 : NR_OF_MASTERS_P-1] [AXI_STRB_WIDTH_P-1 : 0] mst_wstrb,
-    input  wire  [0 : NR_OF_MASTERS_P-1]                          mst_wlast,
-    input  wire  [0 : NR_OF_MASTERS_P-1]                          mst_wvalid,
-    output logic [0 : NR_OF_MASTERS_P-1]                          mst_wready,
+    input  wire  [NR_OF_MASTERS_P-1 : 0] [AXI_DATA_WIDTH_P-1 : 0] mst_wdata,
+    input  wire  [NR_OF_MASTERS_P-1 : 0] [AXI_STRB_WIDTH_P-1 : 0] mst_wstrb,
+    input  wire  [NR_OF_MASTERS_P-1 : 0]                          mst_wlast,
+    input  wire  [NR_OF_MASTERS_P-1 : 0]                          mst_wvalid,
+    output logic [NR_OF_MASTERS_P-1 : 0]                          mst_wready,
 
     // -------------------------------------------------------------------------
     // AXI4 Slave
@@ -88,7 +84,7 @@ module axi4_m2s_arbiter #(
   );
 
 
-  import axi4_types_pkg::*;
+  localparam logic [$clog2(NR_OF_MASTERS_P)-1 : 0] NR_OF_MASTERS_C = NR_OF_MASTERS_P;
 
   // ---------------------------------------------------------------------------
   // Write Channel signals
@@ -104,7 +100,7 @@ module axi4_m2s_arbiter #(
 
   logic [$clog2(NR_OF_MASTERS_P)-1 : 0] wr_rotating_mst;
   logic [$clog2(NR_OF_MASTERS_P)-1 : 0] wr_selected_mst;
-  logic         [NR_OF_MASTERS_P-1 : 0] wr_mst_is_chosen;
+  logic                                 wr_mst_is_chosen;
 
   // ---------------------------------------------------------------------------
   // Port assignments
@@ -117,7 +113,6 @@ module axi4_m2s_arbiter #(
   assign slv_awcache = '0;
   assign slv_awprot  = '0;
   assign slv_awqos   = '0;
-
 
   // ---------------------------------------------------------------------------
   // Write processes
@@ -143,7 +138,7 @@ module axi4_m2s_arbiter #(
 
           if (slv_awready) begin
 
-            if (wr_rotating_mst == NR_OF_MASTERS_P-1) begin
+            if (wr_rotating_mst == NR_OF_MASTERS_C-1) begin
               wr_rotating_mst <= '0;
             end
             else begin
@@ -197,39 +192,36 @@ module axi4_m2s_arbiter #(
   // MUX
   always_comb begin
 
-    if (!wr_mst_is_chosen) begin
+    if (wr_mst_is_chosen) begin
 
       // Write Address Channel
-      slv_awid    <= '0;
-      slv_awaddr  <= '0;
-      slv_awlen   <= '0;
-      slv_awvalid <= '0;
+      slv_awid    = '0;
+      slv_awaddr  = '0;
+      slv_awlen   = '0;
+      slv_awvalid = '0;
 
       // Write Data Channel
-      slv_wdata   <= '0;
-      slv_wstrb   <= '0;
-      slv_wlast   <= '0;
-      slv_wvalid  <= '0;
-      mst_wready  <= '0;
+      slv_wdata   = '0;
+      slv_wstrb   = '0;
+      slv_wlast   = '0;
+      slv_wvalid  = '0;
+      mst_wready  = '0;
 
     end
     else begin
 
-      // Default
-      mst_wready                   <= '0;
-
       // Write Address Channel
-      slv_awid                     <= mst_awid    [wr_selected_mst];
-      slv_awaddr                   <= mst_awaddr  [wr_selected_mst];
-      slv_awlen                    <= mst_awlen   [wr_selected_mst];
-      slv_awvalid                  <= mst_awvalid [wr_selected_mst];
+      slv_awid                     = mst_awid    [wr_selected_mst];
+      slv_awaddr                   = mst_awaddr  [wr_selected_mst];
+      slv_awlen                    = mst_awlen   [wr_selected_mst];
+      slv_awvalid                  = mst_awvalid [wr_selected_mst];
 
       // Write Data Channel
-      slv_wdata                    <= mst_wdata  [wr_selected_mst];
-      slv_wstrb                    <= mst_wstrb  [wr_selected_mst];
-      slv_wlast                    <= mst_wlast  [wr_selected_mst];
-      slv_wvalid                   <= mst_wvalid [wr_selected_mst];
-      mst_wready[wr_selected_mst]  <= slv_wready;
+      slv_wdata                    = mst_wdata  [wr_selected_mst];
+      slv_wstrb                    = mst_wstrb  [wr_selected_mst];
+      slv_wlast                    = mst_wlast  [wr_selected_mst];
+      slv_wvalid                   = mst_wvalid [wr_selected_mst];
+      mst_wready[wr_selected_mst]  = slv_wready;
 
     end
 
