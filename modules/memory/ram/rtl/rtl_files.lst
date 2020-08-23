@@ -1,4 +1,4 @@
-module_path=$git_root/memory/ram
+module_path=$git_root/modules/memory/ram
 rtl_dirs+="
   +incdir+$module_path/rtl
 "

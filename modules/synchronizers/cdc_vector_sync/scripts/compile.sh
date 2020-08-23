@@ -13,7 +13,7 @@ rtl_top=cdc_vector_sync.sv
 uvm_top=""
 
 # Specify other file lists
-source $git_root/synchronizers/cdc_bit_sync/rtl/rtl_files.lst
+source $git_root/modules/synchronizers/cdc_bit_sync/rtl/rtl_files.lst
 
 # Source the module's file lists
 source ./rtl/rtl_files.lst

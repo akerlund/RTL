@@ -13,7 +13,7 @@ rtl_top=switch_core.sv
 uvm_top=""
 
 # Specify other file lists
-source $git_root/synchronizers/io/rtl/rtl_files.lst
+source $git_root/modules/synchronizers/io/rtl/rtl_files.lst
 
 # Source the module's file lists
 source ./rtl/rtl_files.lst

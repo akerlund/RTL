@@ -4,15 +4,15 @@
 
 set top_module_name "syfi_tb_top";
 set git_root        [exec git rev-parse --show-toplevel];
-set module_path     $git_root/axi4s/axi4s_sync_fifo;
+set module_path     $git_root/modules/axi4s/axi4s_sync_fifo;
 set script_dir      [pwd]
 
 file mkdir "rundir"
 cd   rundir
 
 set rtl_directories [list \
-  "$git_root/fpga_ram_reg/rtl" \
-  "$git_root/fifo/synchronous_fifo/rtl" \
+  "$git_root/modules/memory/reg/rtl" \
+  "$git_root/modules/fifo/synchronous_fifo/rtl" \
   "$module_path/rtl"];
 
 set uvm_directories [list \

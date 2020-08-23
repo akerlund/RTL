@@ -1,4 +1,4 @@
-module_path=$git_root/mechanics/button
+module_path=$git_root/modules/mechanics/button
 
 rtl_dirs+="
   +incdir+$module_path/rtl

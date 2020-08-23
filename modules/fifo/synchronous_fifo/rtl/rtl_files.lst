@@ -1,4 +1,4 @@
-module_path=$git_root/fifo/synchronous_fifo
+module_path=$git_root/modules/fifo/synchronous_fifo
 
 rtl_dirs+="
   +incdir+$module_path/rtl

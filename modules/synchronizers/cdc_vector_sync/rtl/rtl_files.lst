@@ -1,4 +1,4 @@
-module_path=$git_root/synchronizers/cdc_vector_sync
+module_path=$git_root/modules/synchronizers/cdc_vector_sync
 
 rtl_dirs+="
   +incdir+$module_path/rtl

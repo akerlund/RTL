@@ -1,4 +1,4 @@
-module_path=$git_root/math/multiplication
+module_path=$git_root/modules/math/multiplication
 
 rtl_dirs+="
   +incdir+$module_path/rtl

@@ -1,4 +1,4 @@
-module_path=$git_root/oscillator
+module_path=$git_root/modules/oscillator
 
 rtl_dirs+="
   +incdir+$module_path/rtl

@@ -13,7 +13,7 @@ rtl_top=button_core.sv
 uvm_top="osc_tb_top"
 
 # Specify other file lists
-source $git_root/math/cordic/rtl/rtl_files.lst
+source $git_root/modules/math/cordic/rtl/rtl_files.lst
 
 # Source the module's file lists
 source ./rtl/rtl_files.lst

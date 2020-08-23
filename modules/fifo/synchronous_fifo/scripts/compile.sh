@@ -13,8 +13,8 @@ rtl_top=synchronous_fifo.sv
 uvm_top=""
 
 # Specify other file lists
-source $git_root/memory/reg/rtl/rtl_files.lst
-source $git_root/memory/ram/rtl/rtl_files.lst
+source $git_root/modules/memory/reg/rtl/rtl_files.lst
+source $git_root/modules/memory/ram/rtl/rtl_files.lst
 
 # Source the module's file lists
 source ./rtl/rtl_files.lst

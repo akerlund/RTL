@@ -1,4 +1,4 @@
-module_path=$git_root/led/color_hsl_12bit
+module_path=$git_root/modules/led/color_hsl_12bit
 
 rtl_dirs+="
   +incdir+$module_path/rtl

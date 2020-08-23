@@ -1,4 +1,4 @@
-module_path=$git_root/clock_enablers/delay_enable
+module_path=$git_root/modules/clock_enablers/delay_enable
 
 rtl_dirs+="
   +incdir+$module_path/rtl

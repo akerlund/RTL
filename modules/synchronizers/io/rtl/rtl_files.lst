@@ -1,4 +1,4 @@
-module_path=$git_root/synchronizers/io
+module_path=$git_root/modules/synchronizers/io
 
 rtl_dirs+="
   +incdir+$module_path/rtl

@@ -1,4 +1,4 @@
-module_path=$git_root/dsp/iir_biquad_filter
+module_path=$git_root/modules/dsp/iir_biquad_filter
 
 rtl_dirs+="
   +incdir+$module_path/rtl

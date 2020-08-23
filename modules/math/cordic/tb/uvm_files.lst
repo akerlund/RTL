@@ -1,4 +1,4 @@
-module_path=$git_root/math/cordic
+module_path=$git_root/modules/math/cordic
 
 uvm_dirs+="
   +incdir+$module_path/tb/

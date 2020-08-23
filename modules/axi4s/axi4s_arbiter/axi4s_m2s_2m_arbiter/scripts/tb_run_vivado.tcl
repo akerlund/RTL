@@ -4,14 +4,14 @@
 
 set top_module_name "arb_tb_top";
 set git_root        [exec git rev-parse --show-toplevel];
-set module_path     $git_root/axi4s/axi4s_arbiter/axi4s_m2s_2m_arbiter;
+set module_path     $git_root/modules/axi4s/axi4s_arbiter/axi4s_m2s_2m_arbiter;
 
 file mkdir "rundir"
 cd   rundir
 
 set rtl_directories [list \
   "$module_path/rtl/" \
-  "$git_root/axi4s/axi4s_retime/rtl"];
+  "$git_root/modules/axi4s/axi4s_retime/rtl"];
 
 set uvm_directories [list \
   "$git_root/vip/vip_axi4s_agent/" \
