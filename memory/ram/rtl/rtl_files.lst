@@ -1,0 +1,13 @@
+module_path=$git_root/memory/ram
+rtl_dirs+="
+  +incdir+$module_path/rtl
+"
+
+rtl_files+="
+  $module_path/rtl/ram_sdp.sv
+  $module_path/rtl/ram_sdp_bw.sv
+  $module_path/rtl/ram_sp.sv
+  $module_path/rtl/ram_sp_bw.sv
+  $module_path/rtl/ram_tdp.sv
+  $module_path/rtl/ram_tdp_bw.sv
+"
