@@ -17,7 +17,7 @@ if [ "$tool" = "verilator" ]; then
   echo "--------------------------------------------------------------------------------"
   echo ""
 
-  $VERILATOR $VERILATOR_FLAGS $rtl_top $rtl_dirs
+  $VERILATOR $VERILATOR_FLAGS $v_params $rtl_files $rtl_dirs
 
 elif [ "$tool" = "vivado_synthesis" ]; then
 
