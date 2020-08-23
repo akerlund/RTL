@@ -9,8 +9,8 @@
 git_root="$(git rev-parse --show-toplevel)"
 
 # Specify the top files
-rtl_top=axi4_write_arbiter.sv
-uvm_top="awa_tb_top"
+rtl_top=axi4_read_arbiter.sv
+uvm_top="ara_tb_top"
 
 # Specify other file lists
 #source $git_root/other_module/rtl/rtl_files.lst
@@ -22,8 +22,8 @@ source ./tb/uvm_files.lst
 # Verilator parameter override
 v_params+="-pvalue+AXI_ID_WIDTH_P=4 "
 v_params+="-pvalue+AXI_ADDR_WIDTH_P=32 "
-v_params+="-pvalue+AXI_DATA_WIDTH_P=32 "
-v_params+="-pvalue+AXI_STRB_WIDTH_P=2 "
+v_params+="-pvalue+AXI_DATA_WIDTH_P=16 "
+v_params+="-pvalue+NR_OF_MASTERS_P=3 "
 
 # Source the tool script which executes the selected tool
 source $git_root/scripts/make_env/run_tools.sh

@@ -22,11 +22,11 @@
 `default_nettype none
 
 module axi4_write_arbiter #(
-    parameter int AXI_ID_WIDTH_P    = 3,
-    parameter int AXI_ADDR_WIDTH_P  = 32,
-    parameter int AXI_DATA_WIDTH_P  = 32,
-    parameter int AXI_STRB_WIDTH_P  = 4,
-    parameter int NR_OF_MASTERS_P   = 4
+    parameter int AXI_ID_WIDTH_P   = -1,
+    parameter int AXI_ADDR_WIDTH_P = -1,
+    parameter int AXI_DATA_WIDTH_P = -1,
+    parameter int AXI_STRB_WIDTH_P = -1,
+    parameter int NR_OF_MASTERS_P  = -1
   )(
 
     // Clock and reset

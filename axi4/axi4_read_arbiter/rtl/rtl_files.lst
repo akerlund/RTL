@@ -1,0 +1,9 @@
+module_path=$git_root/axi4/axi4_read_arbiter
+
+rtl_dirs+="
+  +incdir+$module_path/rtl
+"
+
+rtl_files+="
+  $module_path/rtl/axi4_read_arbiter.sv
+"
