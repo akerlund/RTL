@@ -30,20 +30,18 @@ else
   VERILATOR_COVERAGE = $(VERILATOR_ROOT)/bin/verilator_coverage
 endif
 
+# Common flags
 VERILATOR_FLAGS =
-VERILATOR_FLAGS += -cc --exe        # Generate C++ in executable form
-#VERILATOR_FLAGS += -MMD            # Generate makefile dependencies (not shown as complicates the Makefile)
-VERILATOR_FLAGS += -Os -x-assign 0  # Optimize
-#VERILATOR_FLAGS += -Wall           # Warn abount lint issues; may not want this on less solid designs
-#VERILATOR_FLAGS += --trace         # Make waveforms
-VERILATOR_FLAGS += --assert         # Check SystemVerilog assertions
-#VERILATOR_FLAGS += --clk clk       # Define the clock port
-#VERILATOR_FLAGS += --coverage      # Generate coverage analysis
-#VERILATOR_FLAGS += --debug         # Run Verilator in debug mode
-#VERILATOR_FLAGS += --gdbbt         # Add this trace to get a backtrace in gdb
-VERILATOR_FLAGS += +incdir+../rtl   # Include the rtl folder
-VERILATOR_INPUT =  ${TOP_FILE}      # Input files for Verilator
-
+VERILATOR_FLAGS += -cc --exe       # Generate C++ in executable form
+#VERILATOR_FLAGS += -MMD           # Generate makefile dependencies (not shown as complicates the Makefile)
+VERILATOR_FLAGS += -Os -x-assign 0 # Optimize
+#VERILATOR_FLAGS += -Wall          # Warn abount lint issues; may not want this on less solid designs
+#VERILATOR_FLAGS += --trace        # Make waveforms
+VERILATOR_FLAGS += --assert        # Check SystemVerilog assertions
+#VERILATOR_FLAGS += --clk clk      # Define the clock port
+#VERILATOR_FLAGS += --coverage     # Generate coverage analysis
+#VERILATOR_FLAGS += --debug        # Run Verilator in debug mode
+#VERILATOR_FLAGS += --gdbbt        # Add this trace to get a backtrace in gdb
 
 export
 
@@ -54,14 +52,14 @@ export
 .PHONY: help build synthesize verilate clean clean_verilator $(TC_LIST)
 
 help:
-	@echo ""
+	@echo "  ------------------------------------------------------------------------------"
 	@echo "  RTL Common Design - Make Environment"
+	@echo "  ------------------------------------------------------------------------------"
 	@echo ""
 	@echo "  USAGE: make <target> [<make_variable>=some_value]"
 	@echo ""
 	@echo "  Targets:"
 	@echo "  ------------------------------------------------------------------------------"
-	@echo "  build           : Build in RUN_DIR"
 	@echo "  synthesize      : Run Vivado's synthesis"
 	@echo "  verilate        : Run Verilator"
 	@echo "  list            : List the module's testcases"
@@ -75,13 +73,16 @@ help:
 	@echo ""
 
 build:
-	@./scripts/compile.sh $(RUN_DIR)
+	@./scripts/compile.sh $(RUN_DIR) no_tool
 
 synthesize:
-	@echo "Not implemented yet"
+	@./scripts/compile.sh $(RUN_DIR) vivado_synthesis
 
 verilate:
-	@make --directory=verilator
+ifneq ($(words $(CURDIR)),1)
+  $(error Unsupported: GNU Make cannot build in directories containing spaces, build elsewhere: '$(CURDIR)')
+endif
+	@./scripts/compile.sh $(RUN_DIR) verilator
 
 list:
 	@echo "List of testcases:"
@@ -95,4 +96,4 @@ clean:
 	@rm -rf ${RUN_DIR}
 
 clean_verilator:
-	@make --directory=verilator clean
+	-rm -rf obj_dir logs *.log *.dmp *.vpd coverage.dat core
