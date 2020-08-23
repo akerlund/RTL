@@ -1,0 +1,12 @@
+module_path=$git_root/oscillator
+
+uvm_dirs+="
+  +incdir+$module_path/tb/
+  +incdir+$module_path/tc/
+"
+
+uvm_files+="
+  $module_path/tb/osc_tb_pkg.sv
+  $module_path/tc/osc_tc_pkg.sv
+  $module_path/tb/osc_tb_top.sv
+"
