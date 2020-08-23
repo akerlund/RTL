@@ -37,12 +37,17 @@ VERILATOR_FLAGS += -cc --exe       # Generate C++ in executable form
 VERILATOR_FLAGS += -Os -x-assign 0 # Optimize
 #VERILATOR_FLAGS += -Wall          # Warn abount lint issues; may not want this on less solid designs
 #VERILATOR_FLAGS += --trace        # Make waveforms
+VERILATOR_FLAGS += -sv             # Enable SystemVerilog parsing
 VERILATOR_FLAGS += --assert        # Check SystemVerilog assertions
+VERILATOR_FLAGS += --lint-only     # Lint, but do not make output
+VERILATOR_FLAGS += --stats
+#VERILATOR_FLAGS += --quiet-exit   # Don't print the command on failure
 #VERILATOR_FLAGS += --clk clk      # Define the clock port
 #VERILATOR_FLAGS += --coverage     # Generate coverage analysis
 #VERILATOR_FLAGS += --debug        # Run Verilator in debug mode
 #VERILATOR_FLAGS += --gdbbt        # Add this trace to get a backtrace in gdb
-
+#VERILATOR_FLAGS += --waiver-output waiver.wv
+VERILATOR_FLAGS += -Wno-fatal      # Disable fatal exit on warnings
 export
 
 # ------------------------------------------------------------------------------

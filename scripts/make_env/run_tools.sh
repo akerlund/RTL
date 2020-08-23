@@ -27,7 +27,40 @@ elif [ "$tool" = "vivado_synthesis" ]; then
   echo "--------------------------------------------------------------------------------"
   echo ""
 
-  source $git_root/scripts/vivado/vivado_synthesis.sh
+  the_time=$(date +'%d_%m_%Y_%H_%M_%S')
+
+  if [ ! -e $rundir/vivado ]; then
+    mkdir -p $rundir/vivado/$the_time
+  the_time=$(date +'%d_%m_%Y_%H_%M_%S')
+  fi
+
+  cd $rundir/vivado/$the_time
+
+  # Copying the script to the run directory
+  echo $rtl_files > rtl_files.lst
+  cp   $git_root/scripts/vivado/vivado_synthesis.tcl ./
+
+  # Prepending the name of the top module
+  sed -i.old '1s;^;set top '$rtl_top'\n;' vivado_synthesis.tcl
+
+  start=`date +%s`
+
+  # Launch Vivado
+  vivado -source vivado_synthesis.tcl -mode batch
+
+  # Print utilization report if successful
+  status=$?
+  if [ $status -ne 0 ]; then
+    echo "ERROR [run_tools] Vivado failed"
+  else
+    echo -e "INFO [run_tools] Vivado Slice Logic Report\n"
+    sed -n '/^+-/,/^* Warning/p;/^* Warning/q' vivado_output/post_synth_util.rpt
+  fi
+
+  end=`date +%s`
+
+  runtime=$((end-start))
+    echo -e "INFO [run_tools] Execution time = "$runtime"\n"
 
 else
 
