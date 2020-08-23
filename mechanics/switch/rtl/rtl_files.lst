@@ -1,0 +1,9 @@
+module_path=$git_root/mechanics/switch
+
+rtl_dirs+="
+  +incdir+$module_path/rtl
+"
+
+rtl_files+="
+  $module_path/rtl/switch_core.sv
+"

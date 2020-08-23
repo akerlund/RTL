@@ -63,7 +63,7 @@ module rotary_encoder_fsm (
           if (!encoder_pin_b) begin
             enc_state <= R1_E;
           end
-          else if (!encoder_pin_A) begin
+          else if (!encoder_pin_a) begin
             enc_state <= L1_E;
           end
           else begin
@@ -75,7 +75,7 @@ module rotary_encoder_fsm (
           if (encoder_pin_b) begin
             enc_state <= IDLE_E;
           end
-          else if (!encoder_pin_A) begin
+          else if (!encoder_pin_a) begin
             enc_state <=  R2_E;
           end
           else begin
@@ -84,7 +84,7 @@ module rotary_encoder_fsm (
         end
 
         R2_E: begin
-          if (encoder_pin_A) begin
+          if (encoder_pin_a) begin
             enc_state <= R1_E;
           end
           else if (encoder_pin_b) begin
@@ -99,7 +99,7 @@ module rotary_encoder_fsm (
           if (!encoder_pin_b) begin
             enc_state <= R2_E;
           end
-          else if (encoder_pin_A) begin
+          else if (encoder_pin_a) begin
             enc_state <= RIGHT_E;
           end
           else begin
@@ -114,7 +114,7 @@ module rotary_encoder_fsm (
         end
 
         L1_E: begin
-          if (encoder_pin_A) begin
+          if (encoder_pin_a) begin
             enc_state <= IDLE_E;
           end
           else if (!encoder_pin_b) begin
@@ -129,7 +129,7 @@ module rotary_encoder_fsm (
           if (encoder_pin_b) begin
             enc_state <= L1_E;
           end
-          else if (encoder_pin_A) begin
+          else if (encoder_pin_a) begin
             enc_state <= L3_E;
           end
           else begin
@@ -138,7 +138,7 @@ module rotary_encoder_fsm (
         end
 
         L3_E: begin
-          if (!encoder_pin_A) begin
+          if (!encoder_pin_a) begin
             enc_state <= L2_E;
           end
           else if (encoder_pin_b) begin

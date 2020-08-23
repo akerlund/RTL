@@ -21,9 +21,7 @@
 
 `default_nettype none
 
-module rotary_encoder_top #(
-    parameter int button_debounce_clk_cnt_p = 1000000
-  )(
+module rotary_encoder_top (
     input  wire  clk,
     input  wire  rst_n,
 
@@ -48,7 +46,7 @@ module rotary_encoder_top #(
   io_synchronizer io_synchronizer_i1 (
     .clk         ( clk           ),
     .rst_n       ( rst_n         ),
-    .bit_ingress ( encoder_pin_B ),
+    .bit_ingress ( encoder_pin_b ),
     .bit_egress  ( encoder_b     )
   );
 

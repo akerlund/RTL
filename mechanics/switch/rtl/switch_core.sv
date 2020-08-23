@@ -22,7 +22,7 @@
 `default_nettype none
 
 module switch_core #(
-    parameter int nr_of_debounce_clks_p = 1000000
+    parameter int NR_OF_DEBOUNCE_CLKS_P = -1
   )(
     input  wire  clk,
     input  wire  rst_n,
@@ -50,8 +50,8 @@ module switch_core #(
     end
     else begin
       debounce_counter_v <= '0;
-     	if ( synchronized_switch_d0 != synchronized_switch ) begin
-        if ( debounce_counter_v == nr_of_debounce_clks_p ) begin
+     	if (synchronized_switch_d0 != synchronized_switch) begin
+        if (debounce_counter_v == NR_OF_DEBOUNCE_CLKS_P) begin
           synchronized_switch_d0 <= switch_out;
           debounce_counter_v     <= '0;
           switch_out             <= switch_out;
