@@ -1,0 +1,9 @@
+module_path=$git_root/clock_enablers/delay_enable
+
+rtl_dirs+="
+  +incdir+$module_path/rtl
+"
+
+rtl_files+="
+  $module_path/rtl/delay_enable.sv
+"
