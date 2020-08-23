@@ -106,7 +106,7 @@ module ram_tdp_bw #(
 
       // synthesis translate_off
       if (port_a_enable && port_a_write_enable && (port_a_address == port_b_address)) begin
-        port_b_data_egr <= {(BYTE_WIDTH_P*8)DATA_WIDTH_P{1'bx}};
+        port_b_data_egr <= {(BYTE_WIDTH_P*8){1'bx}};
       end
       // synthesis translate_on
 

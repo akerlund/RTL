@@ -22,32 +22,32 @@
 `default_nettype none
 
 module synchronous_fifo_register #(
-    parameter int DATA_WIDTH_P    = -1,
-    parameter int ADDRESS_WIDTH_P = -1
+    parameter int DATA_WIDTH_P = -1,
+    parameter int ADDR_WIDTH_P = -1
   )(
-    input  wire                        clk,
-    input  wire                        rst_n,
+    input  wire                       clk,
+    input  wire                       rst_n,
 
-    input  wire                        ing_enable,
-    input  wire   [DATA_WIDTH_P-1 : 0] ing_data,
-    output logic                       ing_full,
+    input  wire                       ing_enable,
+    input  wire  [DATA_WIDTH_P-1 : 0] ing_data,
+    output logic                      ing_full,
 
-    input  wire                        egr_enable,
-    output logic  [DATA_WIDTH_P-1 : 0] egr_data,
-    output logic                       egr_empty,
+    input  wire                       egr_enable,
+    output logic [DATA_WIDTH_P-1 : 0] egr_data,
+    output logic                      egr_empty,
 
-    output logic [ADDRESS_WIDTH_P : 0] sr_fill_level
+    output logic   [ADDR_WIDTH_P : 0] sr_fill_level
   );
 
-  logic                         write_enable;
-  logic [ADDRESS_WIDTH_P-1 : 0] write_address;
-  logic                         read_enable;
-  logic [ADDRESS_WIDTH_P-1 : 0] read_address;
+  logic                      write_enable;
+  logic [ADDR_WIDTH_P-1 : 0] write_address;
+  logic                      read_enable;
+  logic [ADDR_WIDTH_P-1 : 0] read_address;
 
   assign write_enable = ing_enable && !ing_full;
   assign read_enable  = egr_enable  && !egr_empty;
 
-  assign ing_full = sr_fill_level[ADDRESS_WIDTH_P];
+  assign ing_full = sr_fill_level[ADDR_WIDTH_P];
 
   always_ff @ (posedge clk or negedge rst_n) begin
     if (!rst_n) begin
@@ -77,10 +77,10 @@ module synchronous_fifo_register #(
     end
   end
 
-  fpga_reg_1c_1w_1r #(
+  reg_sp_rf #(
     .DATA_WIDTH_P    ( DATA_WIDTH_P    ),
-    .ADDRESS_WIDTH_P ( ADDRESS_WIDTH_P )
-  ) fpga_reg_1c_1w_1r_i0 (
+    .ADDR_WIDTH_P    ( ADDR_WIDTH_P    )
+  ) reg_sp_rf_i0 (
     .clk             ( clk             ), // input
     .port_a_write_en ( write_enable    ), // input
     .port_a_address  ( write_address   ), // input
