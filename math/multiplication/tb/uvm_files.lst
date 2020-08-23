@@ -1,0 +1,12 @@
+module_path=$git_root/math/multiplication
+
+uvm_dirs+="
+  +incdir+$module_path/tb/
+  +incdir+$module_path/tc/
+"
+
+uvm_files+="
+  $module_path/tb/mul_tb_pkg.sv
+  $module_path/tc/mul_tc_pkg.sv
+  $module_path/tb/mul_tb_top.sv
+"

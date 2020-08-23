@@ -1,0 +1,10 @@
+module_path=$git_root/math/division/long_division
+
+rtl_dirs+="
+  +incdir+$module_path/rtl
+"
+
+rtl_files+="
+  $module_path/rtl/long_division_core.sv
+  $module_path/rtl/long_division_axi4s_if.sv
+"

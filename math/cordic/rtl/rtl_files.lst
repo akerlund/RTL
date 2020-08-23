@@ -1,0 +1,13 @@
+module_path=$git_root/math/cordic
+
+rtl_dirs+="
+  +incdir+$module_path/rtl
+"
+
+rtl_files+="
+  $module_path/rtl/cordic_atan_radian_table_pkg.sv
+  $module_path/rtl/cordic_axi4s_types_pkg.sv
+  $module_path/rtl/cordic_radian_core.sv
+  $module_path/rtl/cordic_radian_top.sv
+  $module_path/rtl/cordic_axi4s_if.sv
+"
