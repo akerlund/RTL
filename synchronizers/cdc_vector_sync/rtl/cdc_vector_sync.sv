@@ -130,7 +130,7 @@ module cdc_vector_sync #(
   always_ff @ (posedge clk_dst or negedge rst_dst_n) begin
     if (!rst_dst_n) begin
 
-      dst_vec          <= '0;
+      dst_vector       <= '0;
       dst_new_input_d0 <= '0;
       dst_input_ack    <= '0;
       dst_valid        <= '0;
@@ -140,7 +140,7 @@ module cdc_vector_sync #(
 
       if (!dst_src_rst_n) begin
 
-        dst_vec          <= '0;
+        dst_vector       <= '0;
         dst_new_input_d0 <= '0;
         dst_input_ack    <= '0;
         dst_valid        <= '0;
@@ -152,7 +152,7 @@ module cdc_vector_sync #(
         dst_valid        <= '0;
 
         if (dst_new_input_d0 != dst_new_input) begin
-          dst_vec       <= src_vector_d0;
+          dst_vector    <= src_vector_d0;
           dst_input_ack <= ~dst_input_ack;
           dst_valid     <= '1;
         end

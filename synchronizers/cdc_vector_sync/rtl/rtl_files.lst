@@ -1,0 +1,9 @@
+module_path=$git_root/synchronizers/cdc_vector_sync
+
+rtl_dirs+="
+  +incdir+$module_path/rtl
+"
+
+rtl_files+="
+  $module_path/rtl/cdc_vector_sync.sv
+"
