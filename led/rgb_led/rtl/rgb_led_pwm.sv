@@ -22,46 +22,46 @@
 `default_nettype none
 
 module rgb_led_pwm #(
-    parameter int color_width     = -1,
-    parameter int tid_bit_width_p = -1,
-    parameter int cr_axi4s_tid_p  = -1
+    parameter int COLOR_WIDTH_P   = -1,
+    parameter int TID_BIT_WIDTH_P = -1,
+    parameter int CR_AXI4S_TID_P  = -1
   )(
     // Clock and reset
-    input  wire                        clk,
-    input  wire                        rst_n,
+    input  wire                          clk,
+    input  wire                          rst_n,
 
     // RGB LED pins
-    output logic     [color_width-1:0] pwm_red,
-    output logic     [color_width-1:0] pwm_green,
-    output logic     [color_width-1:0] pwm_blue,
+    output logic   [COLOR_WIDTH_P-1 : 0] pwm_red,
+    output logic   [COLOR_WIDTH_P-1 : 0] pwm_green,
+    output logic   [COLOR_WIDTH_P-1 : 0] pwm_blue,
 
     // HSL
-    input  wire      [color_width-1:0] cr_hue,
-    input  wire      [color_width-1:0] cr_saturation,
-    input  wire      [color_width-1:0] cr_light,
+    input  wire    [COLOR_WIDTH_P-1 : 0] cr_hue,
+    input  wire    [COLOR_WIDTH_P-1 : 0] cr_saturation,
+    input  wire    [COLOR_WIDTH_P-1 : 0] cr_light,
 
     // AXI4-S slave side: For sending HSL data
-    input  wire                        axi4s_o_tready,
-    output logic                [23:0] axi4s_o_tdata,
-    output logic                       axi4s_o_tvalid,
-    output logic [tid_bit_width_p-1:0] axi4s_o_tid,
+    input  wire                          axi4s_o_tready,
+    output logic                [23 : 0] axi4s_o_tdata,
+    output logic                         axi4s_o_tvalid,
+    output logic [TID_BIT_WIDTH_P-1 : 0] axi4s_o_tid,
 
     // AXI4-S master side: For receiving RGB data
-    output logic                       axi4s_i_tready,
-    input  wire                 [23:0] axi4s_i_tdata,
-    input  wire                        axi4s_i_tvalid
+    output logic                         axi4s_i_tready,
+    input  wire                 [23 : 0] axi4s_i_tdata,
+    input  wire                          axi4s_i_tvalid
   );
 
-  localparam logic [tid_bit_width_p-1:0] axi4s_tid_id_c = cr_axi4s_tid_p;
+  localparam logic [TID_BIT_WIDTH_P-1 : 0] axi4s_tid_id_c = CR_AXI4S_TID_P;
 
-  logic  [color_width-1:0] color_red;
-  logic  [color_width-1:0] color_green;
-  logic  [color_width-1:0] color_blue;
+  logic  [COLOR_WIDTH_P-1 : 0] color_red;
+  logic  [COLOR_WIDTH_P-1 : 0] color_green;
+  logic  [COLOR_WIDTH_P-1 : 0] color_blue;
 
-  logic                    axi4s_o_transaction;
-  logic                    axi4s_i_transaction;
+  logic                        axi4s_o_transaction;
+  logic                        axi4s_i_transaction;
 
-  logic             [23:0] axi4s_o_tdata_hsl;
+  logic               [23 : 0] axi4s_o_tdata_hsl;
 
   assign axi4s_o_transaction = axi4s_o_tready && axi4s_o_tvalid;
   assign axi4s_i_transaction = axi4s_i_tready && axi4s_i_tvalid;
@@ -101,7 +101,7 @@ module rgb_led_pwm #(
   end
 
   rgb_led_pwm_core #(
-    .counter_width_p ( color_width )
+    .COUNTER_WIDTH_P ( COLOR_WIDTH_P )
   ) rgb_led_pwm_core_i0 (
     .clk               ( clk         ),
     .rst_n             ( rst_n       ),

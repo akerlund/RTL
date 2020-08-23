@@ -22,19 +22,19 @@
 `default_nettype none
 
 module rgb_led_pwm_core #(
-    parameter int counter_width_p = -1
+    parameter int COUNTER_WIDTH_P = -1
   )(
-    input  wire                        clk,
-    input  wire                        rst_n,
-    output logic                       pwm_red,
-    output logic                       pwm_green,
-    output logic                       pwm_blue,
-    input  wire  [counter_width_p-1:0] cr_pwm_duty_red,
-    input  wire  [counter_width_p-1:0] cr_pwm_duty_green,
-    input  wire  [counter_width_p-1:0] cr_pwm_duty_blue
+    input  wire                          clk,
+    input  wire                          rst_n,
+    output logic                         pwm_red,
+    output logic                         pwm_green,
+    output logic                         pwm_blue,
+    input  wire  [COUNTER_WIDTH_P-1 : 0] cr_pwm_duty_red,
+    input  wire  [COUNTER_WIDTH_P-1 : 0] cr_pwm_duty_green,
+    input  wire  [COUNTER_WIDTH_P-1 : 0] cr_pwm_duty_blue
   );
 
-  logic [counter_width_p-1:0] pwm_counter;
+  logic [COUNTER_WIDTH_P-1 : 0] pwm_counter;
 
   always_ff @ (posedge clk or negedge rst_n) begin
     if (!rst_n) begin

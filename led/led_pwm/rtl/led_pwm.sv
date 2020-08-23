@@ -22,20 +22,20 @@
 `default_nettype none
 
 module led_pwm #(
-    parameter int counter_width_p = -1
+    parameter int COUNTER_WIDTH_P = -1
   )(
     input  wire                        clk,
     input  wire                        rst_n,
-    output logic                       pwm,
-    input  wire  [counter_width_p-1:0] cr_pwm_duty
+    output logic                       pwm_led,
+    input  wire  [COUNTER_WIDTH_P-1:0] cr_pwm_duty
   );
 
   led_pwm_core  #(
-    .counter_width_p ( counter_width_p )
+    .COUNTER_WIDTH_P ( COUNTER_WIDTH_P )
   ) led_pwm_core_i0  (
     .clk             ( clk             ),
     .rst_n           ( rst_n           ),
-    .pwm             ( pwm             ),
+    .pwm_led         ( pwm_led         ),
     .cr_pwm_duty     ( cr_pwm_duty     )
   );
 

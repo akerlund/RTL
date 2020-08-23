@@ -1,0 +1,10 @@
+module_path=$git_root/led/led_pwm
+
+rtl_dirs+="
+  +incdir+$module_path/rtl
+"
+
+rtl_files+="
+  $module_path/rtl/led_pwm_core.sv
+  $module_path/rtl/led_pwm.sv
+"
