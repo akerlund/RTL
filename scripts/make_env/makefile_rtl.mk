@@ -5,7 +5,7 @@
 GIT_ROOT = $(shell git rev-parse --show-toplevel)
 
 # Set build directory to default value if not defined
-RUN_DIR?=rundir
+RUN_DIR?=$(shell pwd)/rundir
 
 # Default UVM parameters
 UVM_TR_RECORD?=UVM_HIGH

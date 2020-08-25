@@ -9,7 +9,7 @@
 git_root="$(git rev-parse --show-toplevel)"
 
 # Specify the top files
-rtl_top=synchronous_fifo.sv
+rtl_top=synchronous_fifo
 uvm_top=""
 
 # Specify other file lists
@@ -20,9 +20,9 @@ source $git_root/modules/memory/ram/rtl/rtl_files.lst
 source ./rtl/rtl_files.lst
 #source ./tb/uvm_files.lst
 
-# Verilator parameter override
-v_params+="-pvalue+DATA_WIDTH_P=32 "
-v_params+="-pvalue+ADDR_WIDTH_P=7 "
+# Parameter override
+parameters+=("DATA_WIDTH_P=32")
+parameters+=("ADDR_WIDTH_P=7")
 
 # Source the tool script which executes the selected tool
 source $git_root/scripts/make_env/run_tools.sh

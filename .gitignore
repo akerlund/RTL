@@ -12,5 +12,8 @@
 **rundir
 **.Xil
 **vivado_synth
+**.jou
+**.log
+**.old
 **/logs
 **/obj_dir

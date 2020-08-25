@@ -9,29 +9,33 @@
 git_root="$(git rev-parse --show-toplevel)"
 
 # Specify the top files
-rtl_top=button_core.sv
+rtl_top=oscillator_top
 uvm_top="osc_tb_top"
 
 # Specify other file lists
 source $git_root/modules/math/cordic/rtl/rtl_files.lst
+source $git_root/modules/clock_enablers/clock_enable/rtl/rtl_files.lst
+source $git_root/modules/clock_enablers/clock_enable_scaler/rtl/rtl_files.lst
+source $git_root/modules/clock_enablers/delay_enable/rtl/rtl_files.lst
+source $git_root/modules/clock_enablers/frequency_enable/rtl/rtl_files.lst
 
 # Source the module's file lists
 source ./rtl/rtl_files.lst
 #source ./tb/uvm_files.lst
 
 # Verilator parameter override
-v_params+="-pvalue+SYS_CLK_FREQUENCY_P=250000000 "
-v_params+="-pvalue+PRIME_FREQUENCY_P=1000000 "
-v_params+="-pvalue+WAVE_WIDTH_P=24 "
-v_params+="-pvalue+DUTY_CYCLE_DIVIDER_P=1000 "
-v_params+="-pvalue+N_BITS_P=32 "
-v_params+="-pvalue+Q_BITS_P=11 "
-v_params+="-pvalue+AXI_DATA_WIDTH_P=32 "
-v_params+="-pvalue+AXI_ID_WIDTH_P=32 "
-v_params+="-pvalue+AXI_ID_P=32'hDEADBEA7 "
-v_params+="-pvalue+APB_BASE_ADDR_P=0 "
-v_params+="-pvalue+APB_ADDR_WIDTH_P=8 "
-v_params+="-pvalue+APB_DATA_WIDTH_P=32 "
+parameters+=("SYS_CLK_FREQUENCY_P=250000000")
+parameters+=("PRIME_FREQUENCY_P=1000000")
+parameters+=("WAVE_WIDTH_P=24")
+parameters+=("DUTY_CYCLE_DIVIDER_P=1000")
+parameters+=("N_BITS_P=32")
+parameters+=("Q_BITS_P=11")
+parameters+=("AXI_DATA_WIDTH_P=32")
+parameters+=("AXI_ID_WIDTH_P=32")
+parameters+=("AXI_ID_P=32'hDEADBEA7")
+parameters+=("APB_BASE_ADDR_P=0")
+parameters+=("APB_ADDR_WIDTH_P=8")
+parameters+=("APB_DATA_WIDTH_P=32")
 
 # Source the tool script which executes the selected tool
 source $git_root/scripts/make_env/run_tools.sh
