@@ -7,6 +7,9 @@ GIT_ROOT = $(shell git rev-parse --show-toplevel)
 # Set build directory to default value if not defined
 RUN_DIR?=$(shell pwd)/rundir
 
+# Set Vivado to run out-of-context (OOC)
+VIV_OOC?=1
+
 # Default UVM parameters
 UVM_TR_RECORD?=UVM_HIGH
 UVM_VERBOSITY?=LOW
@@ -33,21 +36,14 @@ endif
 # Common flags
 VERILATOR_FLAGS =
 VERILATOR_FLAGS += -cc --exe       # Generate C++ in executable form
-#VERILATOR_FLAGS += -MMD           # Generate makefile dependencies (not shown as complicates the Makefile)
 VERILATOR_FLAGS += -Os -x-assign 0 # Optimize
-#VERILATOR_FLAGS += -Wall          # Warn abount lint issues; may not want this on less solid designs
-#VERILATOR_FLAGS += --trace        # Make waveforms
+VERILATOR_FLAGS += -Wall           # Warn abount lint issues; may not want this on less solid designs
 VERILATOR_FLAGS += -sv             # Enable SystemVerilog parsing
 VERILATOR_FLAGS += --assert        # Check SystemVerilog assertions
 VERILATOR_FLAGS += --lint-only     # Lint, but do not make output
 VERILATOR_FLAGS += --stats
-#VERILATOR_FLAGS += --quiet-exit   # Don't print the command on failure
-#VERILATOR_FLAGS += --clk clk      # Define the clock port
-#VERILATOR_FLAGS += --coverage     # Generate coverage analysis
-#VERILATOR_FLAGS += --debug        # Run Verilator in debug mode
-#VERILATOR_FLAGS += --gdbbt        # Add this trace to get a backtrace in gdb
-#VERILATOR_FLAGS += --waiver-output waiver.wv
 VERILATOR_FLAGS += -Wno-fatal      # Disable fatal exit on warnings
+
 export
 
 # ------------------------------------------------------------------------------
@@ -65,23 +61,31 @@ help:
 	@echo ""
 	@echo "  Targets:"
 	@echo "  ------------------------------------------------------------------------------"
-	@echo "  synthesize      : Run Vivado's synthesis"
-	@echo "  verilate        : Run Verilator"
-	@echo "  list            : List the module's testcases"
-	@echo "  tc_*            : Run testcase tc_*"
-	@echo "  clean_verilator : Remove Verilator's files"
-	@echo "  clean           : Remove RUN_DIR"
+	@echo "  synth    : Vivado synthesis"
+	@echo "  place    : Vivado synthesis and design place"
+	@echo "  route    : Vivado synthesis, design place, routing and bitstream"
+	@echo "  verilate : Run Verilator"
+	@echo "  list     : List the module's testcases"
+	@echo "  tc_*     : Run testcase tc_*"
+	@echo "  clean    : Remove RUN_DIR"
 	@echo ""
 	@echo "  Make variables:"
 	@echo "  ------------------------------------------------------------------------------"
-	@echo "  RUN_DIR         : Directory of builds and other runs"
+	@echo "  RUN_DIR  : Directory of builds and other runs"
+	@echo "  VIV_OOC  : Set Vivado to run out-of-context (OOC) (default enabled)"
 	@echo ""
 
 build:
 	@./scripts/compile.sh $(RUN_DIR) no_tool
 
-synthesize:
-	@./scripts/compile.sh $(RUN_DIR) vivado_synthesis
+synth:
+	@./scripts/compile.sh $(RUN_DIR) vivado 0 $(VIV_OOC)
+
+place:
+	@./scripts/compile.sh $(RUN_DIR) vivado 1 $(VIV_OOC)
+
+route:
+	@./scripts/compile.sh $(RUN_DIR) vivado 2 $(VIV_OOC)
 
 verilate:
 ifneq ($(words $(CURDIR)),1)
@@ -100,5 +104,3 @@ clean:
 	@echo "Removing ${RUN_DIR}"
 	@rm -rf ${RUN_DIR}
 
-clean_verilator:
-	-rm -rf obj_dir logs *.log *.dmp *.vpd coverage.dat core
