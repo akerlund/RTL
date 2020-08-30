@@ -23,7 +23,7 @@ class tc_syfi_back_pressure extends syfi_base_test;
 
   `uvm_component_utils(tc_syfi_back_pressure)
 
-  axi4s_counting_seq #(vip_axi4s_cfg) random_seq0;
+  axi4s_counting_seq #(vip_axi4s_cfg) counting_seq0;
 
   int nr_of_bursts            = 2048;
   int max_idle_between_bursts = 0;
@@ -31,7 +31,8 @@ class tc_syfi_back_pressure extends syfi_base_test;
   function new(string name = "tc_syfi_back_pressure", uvm_component parent = null);
 
     super.new(name, parent);
-    tready_back_pressure_enabled = 1;
+
+    vip_axi4s_config_slv.tready_back_pressure_enabled = 1;
 
   endfunction
 
@@ -50,10 +51,10 @@ class tc_syfi_back_pressure extends syfi_base_test;
     super.run_phase(phase);
     phase.raise_objection(this);
 
-    random_seq0 = axi4s_counting_seq #(vip_axi4s_cfg)::type_id::create("random_seq0");
-    random_seq0.nr_of_bursts            = nr_of_bursts;
-    random_seq0.max_idle_between_bursts = max_idle_between_bursts;
-    random_seq0.start(v_sqr.mst0_sequencer);
+    counting_seq0 = axi4s_counting_seq #(vip_axi4s_cfg)::type_id::create("counting_seq0");
+    counting_seq0.nr_of_bursts            = nr_of_bursts;
+    counting_seq0.max_idle_between_bursts = max_idle_between_bursts;
+    counting_seq0.start(v_sqr.mst0_sequencer);
 
     phase.drop_objection(this);
 

@@ -25,12 +25,9 @@ class syfi_env extends uvm_env;
   `uvm_component_utils_end
 
   // Agents
+  clk_rst_agent                    clk_rst_agent0;
   vip_axi4s_agent #(vip_axi4s_cfg) vip_axi4s_agent_mst0;
   vip_axi4s_agent #(vip_axi4s_cfg) vip_axi4s_agent_slv0;
-
-  // Agent configurations
-  vip_axi4s_config vip_axi4s_config_mst;
-  vip_axi4s_config vip_axi4s_config_slv;
 
   // The block configuration, e.g., clk period, reset time
   syfi_config tb_cfg;
@@ -62,20 +59,14 @@ class syfi_env extends uvm_env;
 
     `uvm_info(get_type_name(), {"Configuration:\n", tb_cfg.sprint()}, UVM_LOW)
 
-    // Configurations
-    vip_axi4s_config_mst = vip_axi4s_config::type_id::create("vip_axi4s_config_mst", this);
-    vip_axi4s_config_slv = vip_axi4s_config::type_id::create("vip_axi4s_config_slv", this);
-    vip_axi4s_config_slv.vip_axi4s_agent_type = VIP_AXI4S_SLAVE_AGENT_E;
-
     // Create Agents
+    clk_rst_agent0       = clk_rst_agent::type_id::create("clk_rst_agent0", this);
     vip_axi4s_agent_mst0 = vip_axi4s_agent #(vip_axi4s_cfg)::type_id::create("vip_axi4s_agent_mst0", this);
     vip_axi4s_agent_slv0 = vip_axi4s_agent #(vip_axi4s_cfg)::type_id::create("vip_axi4s_agent_slv0", this);
 
-    uvm_config_db #(int)::set(this, {"vip_axi4s_agent_mst0", "*"}, "id", 0);
-    uvm_config_db #(int)::set(this, {"vip_axi4s_agent_slv0", "*"}, "id", 1);
-
-    uvm_config_db #(vip_axi4s_config)::set(this, {"vip_axi4s_agent_mst0", "*"}, "cfg", vip_axi4s_config_mst);
-    uvm_config_db #(vip_axi4s_config)::set(this, {"vip_axi4s_agent_slv0", "*"}, "cfg", vip_axi4s_config_slv);
+    uvm_config_db #(int)::set(this, {"clk_rst_agent0",       "*"}, "id", 0);
+    uvm_config_db #(int)::set(this, {"vip_axi4s_agent_mst0", "*"}, "id", 1);
+    uvm_config_db #(int)::set(this, {"vip_axi4s_agent_slv0", "*"}, "id", 2);
 
     // Create Scoreboards
     scoreboard0 = syfi_scoreboard::type_id::create("scoreboard0", this);
@@ -95,7 +86,9 @@ class syfi_env extends uvm_env;
     vip_axi4s_agent_mst0.monitor.collected_port.connect(scoreboard0.collected_port_mst0);
     vip_axi4s_agent_slv0.monitor.collected_port.connect(scoreboard0.collected_port_slv0);
 
-    virtual_sequencer.mst0_sequencer = vip_axi4s_agent_mst0.sequencer;
+    virtual_sequencer.mst0_sequencer     = vip_axi4s_agent_mst0.sequencer;
+    virtual_sequencer.slv0_sequencer     = vip_axi4s_agent_slv0.sequencer;
+    virtual_sequencer.clk_rst_sequencer0 = clk_rst_agent0.sequencer;
 
   endfunction
 

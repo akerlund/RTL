@@ -30,6 +30,9 @@ package syfi_tb_pkg;
   import vip_axi4s_types_pkg::*;
   import vip_axi4s_pkg::*;
 
+  import clk_rst_types_pkg::*;
+  import clk_rst_pkg::*;
+
   // Configuration of the AXI4-S VIP
   localparam vip_axi4s_cfg_t vip_axi4s_cfg = '{
     AXI_DATA_WIDTH_P : 32,

@@ -30,6 +30,9 @@ package syfi_tc_pkg;
   import vip_axi4s_types_pkg::*;
   import vip_axi4s_pkg::*;
 
+  import clk_rst_types_pkg::*;
+  import clk_rst_pkg::*;
+
   // Import testbench and agent packages here
   import syfi_tb_pkg::*;
 
@@ -37,6 +40,7 @@ package syfi_tc_pkg;
   `include "syfi_base_test.sv"
   `include "tc_syfi_basic.sv"
   `include "tc_syfi_back_pressure.sv"
+  `include "tc_syfi_fill_up_read_out.sv"
 
 endpackage
 

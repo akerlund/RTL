@@ -23,8 +23,9 @@
 import uvm_pkg::*;
 
 // Include RTL files here
-`include "fpga_reg_1c_1w_1r.sv"
-`include "fpga_ram_1c_1w_1r.sv"
+`include "reg_sp_rf.sv"
+`include "ram_sdp.sv"
 `include "synchronous_fifo_register.sv"
 `include "synchronous_fifo.sv"
 `include "axi4s_sync_fifo.sv"
+`include "clk_rst_if.sv"

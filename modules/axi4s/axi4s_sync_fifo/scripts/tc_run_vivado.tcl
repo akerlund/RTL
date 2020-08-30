@@ -3,6 +3,7 @@
 #-------------------------------------------------------------------------------
 set test_case "tc_syfi_basic";
 set test_case "tc_syfi_back_pressure";
+set test_case "tc_syfi_fill_up_read_out";
 
 set  script_dir [pwd]
 cd   rundir

@@ -22,6 +22,7 @@
 import uvm_pkg::*;
 import syfi_tb_pkg::*;
 import syfi_tc_pkg::*;
+import clk_rst_pkg::*;
 
 module syfi_tb_top;
 
@@ -31,6 +32,7 @@ module syfi_tb_top;
   time clk_period = 10ns;
 
   // IF
+  clk_rst_if                    clk_rst_vif();
   vip_axi4s_if #(vip_axi4s_cfg) mst0_vif(clk, rst_n);
   vip_axi4s_if #(vip_axi4s_cfg) slv0_vif(clk, rst_n);
 
@@ -40,10 +42,11 @@ module syfi_tb_top;
   assign ing_tuser = {mst0_vif.tlast, mst0_vif.tdata};
   assign {slv0_vif.tlast, slv0_vif.tdata} = egr_tuser;
 
+  assign {slv0_vif.tstrb, slv0_vif.tkeep, slv0_vif.tid, slv0_vif.tdest} = '0;
 
   axi4s_sync_fifo #(
     .TUSER_WIDTH_P        ( FIFO_USER_WIDTH_C ),
-    .ADDRESS_WIDTH_P      ( FIFO_ADDR_WIDTH_C )
+    .ADDR_WIDTH_P         ( FIFO_ADDR_WIDTH_C )
   ) axi4s_sync_fifo_i0 (
     .clk                  ( clk               ), // input
     .rst_n                ( rst_n             ), // input
@@ -62,6 +65,7 @@ module syfi_tb_top;
 
   initial begin
 
+    uvm_config_db #(virtual clk_rst_if)::set(uvm_root::get(),                    "uvm_test_top.tb_env.clk_rst_agent0*",       "vif", clk_rst_vif);
     uvm_config_db #(virtual vip_axi4s_if #(vip_axi4s_cfg))::set(uvm_root::get(), "uvm_test_top.tb_env.vip_axi4s_agent_mst0*", "vif", mst0_vif);
     uvm_config_db #(virtual vip_axi4s_if #(vip_axi4s_cfg))::set(uvm_root::get(), "uvm_test_top.tb_env.vip_axi4s_agent_slv0*", "vif", slv0_vif);
 

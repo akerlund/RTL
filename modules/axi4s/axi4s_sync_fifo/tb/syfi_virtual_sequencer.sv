@@ -24,6 +24,8 @@ class syfi_virtual_sequencer extends uvm_virtual_sequencer;
   `uvm_component_utils(syfi_virtual_sequencer)
 
   vip_axi4s_sequencer #(vip_axi4s_cfg) mst0_sequencer;
+  vip_axi4s_sequencer #(vip_axi4s_cfg) slv0_sequencer;
+  clk_rst_sequencer                    clk_rst_sequencer0;
 
   function new(string name = "virtual_sequencer", uvm_component parent = null);
     super.new(name, parent);

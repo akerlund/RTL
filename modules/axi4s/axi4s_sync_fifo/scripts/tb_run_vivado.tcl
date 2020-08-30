@@ -12,21 +12,24 @@ cd   rundir
 
 set rtl_directories [list \
   "$git_root/modules/memory/reg/rtl" \
+  "$git_root/modules/memory/ram/rtl" \
   "$git_root/modules/fifo/synchronous_fifo/rtl" \
   "$module_path/rtl"];
 
 set uvm_directories [list \
+  "$git_root/vip/vip_clk_rst_agent/" \
   "$git_root/vip/vip_axi4s_agent/" \
   "$module_path/tb/" \
   "$module_path/tc/"];
 
 set package_files [list \
+  "$git_root/vip/vip_clk_rst_agent/clk_rst_types_pkg.sv" \
+  "$git_root/vip/vip_clk_rst_agent/clk_rst_pkg.sv" \
   "$git_root/vip/vip_axi4s_agent/vip_axi4s_types_pkg.sv"];
 
 set header_files [list \
   "$module_path/tb/tb.svh" \
   "$git_root/vip/vip_axi4s_agent/vip_axi4s.svh"];
-
 
 set tb_files [list \
   "$module_path/tb/syfi_tb_pkg.sv" \
@@ -53,6 +56,6 @@ puts "INFO \[xvlog\] Parsing the compile list"
 exec xvlog -sv -f compile_list.txt -L uvm
 
 puts "INFO \[xelab\] Elaborating the design"
-exec xelab syfi_tb_top -debug all -relax -s top -timescale 1ns/1ps
+exec xelab syfi_tb_top -v 2 -debug all -relax -s top -timescale 1ns/1ps
 
 cd $script_dir

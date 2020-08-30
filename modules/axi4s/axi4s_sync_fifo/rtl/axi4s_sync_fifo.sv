@@ -22,8 +22,8 @@
 `default_nettype none
 
 module axi4s_sync_fifo #(
-    parameter int TUSER_WIDTH_P   = -1,
-    parameter int ADDRESS_WIDTH_P = -1
+    parameter int TUSER_WIDTH_P = -1,
+    parameter int ADDR_WIDTH_P  = -1
   )(
     input  wire                        clk,
     input  wire                        rst_n,
@@ -36,9 +36,9 @@ module axi4s_sync_fifo #(
     output logic [TUSER_WIDTH_P-1 : 0] egr_tuser,
     output logic                       egr_tvalid,
 
-    output logic [ADDRESS_WIDTH_P : 0] sr_fill_level,
-    output logic [ADDRESS_WIDTH_P : 0] sr_max_fill_level,
-    input  wire  [ADDRESS_WIDTH_P : 0] cr_almost_full_level
+    output logic    [ADDR_WIDTH_P : 0] sr_fill_level,
+    output logic    [ADDR_WIDTH_P : 0] sr_max_fill_level,
+    input  wire     [ADDR_WIDTH_P : 0] cr_almost_full_level
   );
 
   logic wp_fifo_full;
@@ -54,7 +54,7 @@ module axi4s_sync_fifo #(
 
   synchronous_fifo #(
     .DATA_WIDTH_P         ( TUSER_WIDTH_P        ),
-    .ADDRESS_WIDTH_P      ( ADDRESS_WIDTH_P      )
+    .ADDR_WIDTH_P         ( ADDR_WIDTH_P         )
   ) synchronous_fifo_i0 (
     .clk                  ( clk                  ), // input
     .rst_n                ( rst_n                ), // input
