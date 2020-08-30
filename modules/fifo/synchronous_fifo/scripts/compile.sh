@@ -22,7 +22,7 @@ source ./rtl/rtl_files.lst
 
 # Parameter override
 parameters+=("DATA_WIDTH_P=32")
-parameters+=("ADDR_WIDTH_P=7")
+parameters+=("ADDR_WIDTH_P=3")
 
 # Source the tool script which executes the selected tool
 source $git_root/scripts/make_env/run_tools.sh

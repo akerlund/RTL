@@ -46,7 +46,7 @@ module synchronous_fifo #(
     input  wire     [ADDR_WIDTH_P : 0] cr_almost_full_level
   );
 
-  // FPGA will use RAM if the memory is larger than 2048 bits
+  // FPGA will use RAM if the memory is larger than 2048 bits (256 bytes)
   localparam bit GENERATE_FIFO_REG_C = DATA_WIDTH_P * 2**ADDR_WIDTH_P <= 2048 ? 1'b1 : 1'b0;
 
   // Maximum fill level
@@ -56,7 +56,7 @@ module synchronous_fifo #(
   logic read_enable;
 
   assign write_enable = ing_enable && (!ing_full || egr_enable);
-  assign read_enable  = egr_enable  && !egr_empty;
+  assign read_enable  = egr_enable && !egr_empty;
 
   generate
 

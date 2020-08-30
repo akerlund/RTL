@@ -45,34 +45,43 @@ module synchronous_fifo_register #(
   logic [ADDR_WIDTH_P-1 : 0] read_address;
 
   assign write_enable = ing_enable && !ing_full;
-  assign read_enable  = egr_enable  && !egr_empty;
+  assign read_enable  = egr_enable && !egr_empty;
 
   assign ing_full = sr_fill_level[ADDR_WIDTH_P];
 
   always_ff @ (posedge clk or negedge rst_n) begin
     if (!rst_n) begin
+
       write_address <= '0;
       read_address  <= '0;
       sr_fill_level <= '0;
-      egr_empty <= '1;
+      egr_empty     <= '1;
+
     end
     else begin
+
       if (write_enable) begin
+
         write_address <= write_address + 1;
+
         if (read_enable) begin
           read_address <= read_address + 1;
         end
         else begin
+          egr_empty     <= '0;
           sr_fill_level <= sr_fill_level + 1;
-          egr_empty <= '0;
         end
+
       end
       else if (read_enable) begin
+
         read_address  <= read_address  + 1;
         sr_fill_level <= sr_fill_level - 1;
+
         if (sr_fill_level == 1) begin
           egr_empty <= '1;
         end
+
       end
     end
   end
