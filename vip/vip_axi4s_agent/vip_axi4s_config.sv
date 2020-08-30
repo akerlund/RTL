@@ -28,6 +28,8 @@ class vip_axi4s_config extends uvm_object;
   // Slave configurations
   //----------------------------------------------------------------------------
 
+  int drive_sequence_items = 0;
+
   // Back pressure on 'tready'. Time and period are number of clock periods.
   int tready_back_pressure_enabled = 0;
 

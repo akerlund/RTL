@@ -162,6 +162,8 @@ class axi4s_single_transaction_seq #(
     vip_axi4s_item #(vip_cfg) axi4s_item;
     counter = 0;
 
+    `uvm_info(get_name(), $sformatf("Sending (%0d) beats", nr_of_bursts), UVM_LOW)
+
     for (int i = 0; i < nr_of_bursts; i++) begin
 
       // Increasing the address by number of bytes that were written previously
@@ -181,6 +183,39 @@ class axi4s_single_transaction_seq #(
       finish_item(req);
 
     end
+
+    `uvm_info(get_name(), $sformatf("Sequence complete", nr_of_bursts), UVM_LOW)
+
+  endtask
+
+endclass
+
+
+// -----------------------------------------------------------------------------
+// Slave tready transactions
+// -----------------------------------------------------------------------------
+class axi4s_slave_sequential_tready_seq #(
+  vip_axi4s_cfg_t vip_cfg = '{default: '0})
+  extends vip_axi4s_base_seq #(vip_cfg);
+
+  `uvm_object_param_utils(axi4s_slave_sequential_tready_seq #(vip_cfg))
+
+  int nr_of_tready;
+
+  function new(string name = "axi4s_slave_sequential_tready_seq");
+    super.new(name);
+  endfunction
+
+
+  virtual task body();
+
+    vip_axi4s_item #(vip_cfg) axi4s_item;
+
+    axi4s_item = new();
+    axi4s_item.burst_size = nr_of_tready;
+    req = axi4s_item;
+    start_item(req);
+    finish_item(req);
 
   endtask
 

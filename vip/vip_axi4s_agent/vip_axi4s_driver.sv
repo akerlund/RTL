@@ -35,7 +35,7 @@ class vip_axi4s_driver #(
 
 
 
-  function new (string name, uvm_component parent);
+  function new(string name, uvm_component parent);
     super.new(name, parent);
   endfunction
 
@@ -56,16 +56,33 @@ class vip_axi4s_driver #(
   virtual task run_phase(uvm_phase phase);
 
     fork
+
       reset_signals();
+
       if (cfg.vip_axi4s_agent_type == VIP_AXI4S_MASTER_AGENT_E) begin
+
         master_drive();
+
       end
       else begin
-        if (!cfg.tready_back_pressure_enabled) begin
+
+        if (cfg.tready_back_pressure_enabled) begin
+
+          slave_drive_tready_randomly();
+
+        end
+        else if (cfg.drive_sequence_items) begin
+
           slave_drive();
+
         end
         else begin
-          slave_drive_tready_randomly();
+
+          forever begin
+            @(posedge vif.clk);
+            vif.tready <= '1;
+          end
+
         end
       end
     join
@@ -123,25 +140,29 @@ class vip_axi4s_driver #(
 
   virtual protected task slave_drive();
 
-    @(negedge vif.rst_n);
-    @(posedge vif.rst_n);
-
-    `uvm_info(get_type_name(), $sformatf("Reset asserted"), UVM_HIGH)
+    int transfer_counter = 0;
 
     forever begin
 
+      vif.tready = '1;
+
       @(posedge vif.clk);
+
+      seq_item_port.get_next_item(req);
 
       vif.tready <= '1;
 
-      @(posedge vif.clk);
+      while (transfer_counter != req.burst_size) begin
 
-      // Wait for handshake
-      while(!(vif.tvalid && vif.tlast)) begin
+        if (vif.tvalid) begin
+          transfer_counter++;
+        end
+
         @(posedge vif.clk);
+
       end
 
-      vif.tready <= '0;
+      transfer_counter = 0;
 
     end
 
