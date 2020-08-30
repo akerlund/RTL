@@ -17,3 +17,6 @@
 **.old
 **/logs
 **/obj_dir
+**.zip
+**.str
+
