@@ -26,31 +26,31 @@ module synchronous_fifo #(
     parameter int ADDR_WIDTH_P = -1
   )(
     // Clock and reset
-    input  wire                        clk,
-    input  wire                        rst_n,
+    input  wire                       clk,
+    input  wire                       rst_n,
 
     // Ingress
-    input  wire                        ing_enable,
-    input  wire   [DATA_WIDTH_P-1 : 0] ing_data,
-    output logic                       ing_full,
-    output logic                       ing_almost_full,
+    input  wire                       ing_enable,
+    input  wire  [DATA_WIDTH_P-1 : 0] ing_data,
+    output logic                      ing_full,
+    output logic                      ing_almost_full,
 
     // Egress
-    input  wire                        egr_enable,
-    output logic  [DATA_WIDTH_P-1 : 0] egr_data,
-    output logic                       egr_empty,
+    input  wire                       egr_enable,
+    output logic [DATA_WIDTH_P-1 : 0] egr_data,
+    output logic                      egr_empty,
 
     // Configuration and status registers
-    output logic    [ADDR_WIDTH_P : 0] sr_fill_level,
-    output logic    [ADDR_WIDTH_P : 0] sr_max_fill_level,
-    input  wire     [ADDR_WIDTH_P : 0] cr_almost_full_level
+    output logic   [ADDR_WIDTH_P : 0] sr_fill_level,
+    output logic   [ADDR_WIDTH_P : 0] sr_max_fill_level,
+    input  wire    [ADDR_WIDTH_P : 0] cr_almost_full_level
   );
 
   // FPGA will use RAM if the memory is larger than 2048 bits (256 bytes)
   localparam bit GENERATE_FIFO_REG_C = DATA_WIDTH_P * 2**ADDR_WIDTH_P <= 2048 ? 1'b1 : 1'b0;
 
   // Maximum fill level
-  localparam logic [ADDR_WIDTH_P : 0] FIFO_MAX_LEVEL_C = 2**ADDR_WIDTH_P - 1;
+  localparam logic [ADDR_WIDTH_P : 0] FIFO_MAX_LEVEL_C = 2**ADDR_WIDTH_P;
 
   logic write_enable;
   logic read_enable;
@@ -64,61 +64,75 @@ module synchronous_fifo #(
 
       // Generate with registers
       synchronous_fifo_register #(
-        .DATA_WIDTH_P  ( DATA_WIDTH_P ),
-        .ADDR_WIDTH_P  ( ADDR_WIDTH_P )
+        .DATA_WIDTH_P  ( DATA_WIDTH_P  ),
+        .ADDR_WIDTH_P  ( ADDR_WIDTH_P  )
       ) synchronous_fifo_register_i0 (
 
         // Clock and reset
-        .clk           ( clk          ), // input
-        .rst_n         ( rst_n        ), // input
+        .clk           ( clk           ), // input
+        .rst_n         ( rst_n         ), // input
 
         // Ingress
-        .ing_enable    ( write_enable ), // input
-        .ing_data      ( ing_data     ), // input
-        .ing_full      ( ing_full     ), // output
+        .ing_enable    ( write_enable  ), // input
+        .ing_data      ( ing_data      ), // input
+        .ing_full      ( ing_full      ), // output
 
         // Egress
-        .egr_enable    ( read_enable  ), // input
-        .egr_data      ( egr_data     ), // output
-        .egr_empty     ( egr_empty    ), // output
+        .egr_enable    ( read_enable   ), // input
+        .egr_data      ( egr_data      ), // output
+        .egr_empty     ( egr_empty     ), // output
 
         // Status registers
-        .sr_fill_level (              )  // output
+        .sr_fill_level ( sr_fill_level )  // output
       );
 
     end
     else begin : generate_synchronous_ram_fifo
 
+      localparam int REG_ADDR_WIDTH_C = 1;
+
       // Generate with RAM
-      logic [ADDR_WIDTH_P-1 : 0] ram_write_address;
-      logic [ADDR_WIDTH_P-1 : 0] ram_read_address;
-      logic [DATA_WIDTH_P-1 : 0] ram_read_data;
-      logic [ADDR_WIDTH_P-1 : 0] ram_fill_level;
+      logic   [ADDR_WIDTH_P-1 : 0] ram_write_address;
+      logic   [ADDR_WIDTH_P-1 : 0] ram_read_address;
+      logic   [DATA_WIDTH_P-1 : 0] ram_read_data;
+      logic   [ADDR_WIDTH_P   : 0] ram_fill_level;
 
-      logic                      reg_write_enable;
-      logic              [2 : 0] reg_fill_level;
+      logic                        reg_write_enable;
+      logic                        reg_full;
 
-      assign ram_fill_level = ram_write_address >= ram_read_address ?
-                              {1'b0, ram_write_address} - {1'b0, ram_read_address} :
-                              FIFO_MAX_LEVEL_C - ({1'b0, ram_read_address} - {1'b0, ram_write_address});
+      assign ram_fill_level  = (ram_write_address >= ram_read_address) ?
+                               {1'b0, ram_write_address} - {1'b0, ram_read_address} :
+                               FIFO_MAX_LEVEL_C - ({1'b0, ram_read_address} - {1'b0, ram_write_address});
+
+      assign ing_full        = sr_fill_level[ADDR_WIDTH_P] && !read_enable;
+      assign ing_almost_full = (sr_fill_level >= cr_almost_full_level);
 
       // RAM read and write process
-      always_ff @ (posedge clk or negedge rst_n) begin
+      always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
+
           ram_write_address <='0;
           ram_read_address  <='0;
           reg_write_enable  <='0;
+
         end
         else begin
+
           if (write_enable) begin
             ram_write_address <= ram_write_address + 1;
           end
-          if (ram_fill_level > 0 && (reg_fill_level < 3 || read_enable)) begin
+
+          // Reading from the RAM to the register FIFO
+          if (ram_fill_level > 0 && (!reg_full || read_enable)) begin
+
             ram_read_address <= ram_read_address + 1;
             reg_write_enable <= '1;
+
           end
           else begin
+
             reg_write_enable <= '0;
+
           end
         end
       end
@@ -148,7 +162,7 @@ module synchronous_fifo #(
       // it takes for RAM memories to output data
       synchronous_fifo_register #(
         .DATA_WIDTH_P    ( DATA_WIDTH_P     ),
-        .ADDR_WIDTH_P    ( 2                )
+        .ADDR_WIDTH_P    ( REG_ADDR_WIDTH_C )
       ) synchronous_fifo_register_i0 (
 
         // Clock and reset
@@ -158,7 +172,7 @@ module synchronous_fifo #(
         // Ingress
         .ing_enable      ( reg_write_enable ), // input
         .ing_data        ( ram_read_data    ), // input
-        .ing_full        (                  ), // output
+        .ing_full        ( reg_full         ), // output
 
         // Egress
         .egr_enable      ( read_enable      ), // input
@@ -166,55 +180,41 @@ module synchronous_fifo #(
         .egr_empty       ( egr_empty        ), // output
 
         // Status registers
-        .sr_fill_level   ( reg_fill_level   )  // output
+        .sr_fill_level   (                  )  // output
       );
+
+
+      // Status process
+      always_ff @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+
+          ing_full          <= '0;
+          ing_almost_full   <= '0;
+          sr_fill_level     <= '0;
+          sr_max_fill_level <= '0;
+
+        end
+        else begin
+
+          // Update the FIFO's fill level
+          if (read_enable && !write_enable) begin
+            sr_fill_level <= sr_fill_level - 1;
+          end
+          else if (write_enable && !read_enable) begin
+            sr_fill_level <= sr_fill_level + 1;
+          end
+
+          // Update the maximum fill level the FIFO has reached
+          if (sr_fill_level >= sr_max_fill_level) begin
+            sr_max_fill_level <= sr_fill_level;
+          end
+
+        end
+      end
 
     end
   endgenerate
 
-  // Status process
-  always_ff @ (posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
-
-      ing_full          <= '0;
-      ing_almost_full   <= '0;
-      sr_fill_level     <= '0;
-      sr_max_fill_level <= '0;
-
-    end
-    else begin
-
-      // Determine if the FIFO is full
-      if (sr_fill_level >= FIFO_MAX_LEVEL_C) begin
-        ing_full <= '1;
-      end
-      else begin
-        ing_full <= '0;
-      end
-
-      // Determine if the FIFO is almost full
-      if (sr_fill_level >= cr_almost_full_level) begin
-        ing_almost_full <= '1;
-      end
-      else begin
-        ing_almost_full <= '0;
-      end
-
-      // Update the FIFO's fill level
-      if (read_enable && !write_enable) begin
-        sr_fill_level <= sr_fill_level - 1;
-      end
-      else if (write_enable && !read_enable) begin
-        sr_fill_level <= sr_fill_level + 1;
-      end
-
-      // Update the maximum fill level the FIFO has reached
-      if (sr_fill_level >= sr_max_fill_level) begin
-        sr_max_fill_level <= sr_fill_level;
-      end
-
-    end
-  end
 
 endmodule
 

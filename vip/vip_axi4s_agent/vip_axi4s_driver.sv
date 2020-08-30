@@ -162,6 +162,7 @@ class vip_axi4s_driver #(
 
       end
 
+      seq_item_port.item_done();
       transfer_counter = 0;
 
     end

@@ -47,7 +47,7 @@ module synchronous_fifo_register #(
   assign write_enable = ing_enable && !ing_full;
   assign read_enable  = egr_enable && !egr_empty;
 
-  assign ing_full = sr_fill_level[ADDR_WIDTH_P];
+  assign ing_full = sr_fill_level[ADDR_WIDTH_P] && !egr_enable;
 
   always_ff @ (posedge clk or negedge rst_n) begin
     if (!rst_n) begin

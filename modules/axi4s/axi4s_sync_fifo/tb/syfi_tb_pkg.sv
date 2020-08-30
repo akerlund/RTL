@@ -43,7 +43,7 @@ package syfi_tb_pkg;
     AXI_USER_WIDTH_P : 0
   };
 
-  localparam int FIFO_ADDR_WIDTH_C = 4; // Minimum width is (1)
+  localparam int FIFO_ADDR_WIDTH_C = 6; // Minimum width is (1)
   localparam int FIFO_USER_WIDTH_C = vip_axi4s_cfg.AXI_DATA_WIDTH_P + 1;
 
   `include "syfi_config.sv"
