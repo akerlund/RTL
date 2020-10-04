@@ -19,13 +19,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-  import uvm_pkg::*;
-  import clk_rst_pkg::*;
-  import vec_tb_pkg::*;
-  import vec_tc_pkg::*;
+import uvm_pkg::*;
+import clk_rst_pkg::*;
+import vec_tb_pkg::*;
+import vec_tc_pkg::*;
 
 module vec_tb_top;
-
 
   // IF
   clk_rst_if                clk_rst_vif0();

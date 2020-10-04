@@ -9,7 +9,7 @@
 git_root="$(git rev-parse --show-toplevel)"
 
 # Specify the top files
-rtl_top=cdc_vector_sync.sv
+rtl_top=cdc_vector_sync
 uvm_top=""
 
 # Specify other file lists
@@ -20,7 +20,7 @@ source ./rtl/rtl_files.lst
 #source ./tb/uvm_files.lst
 
 # Verilator parameter override
-v_params+="-pvalue+DATA_WIDTH_P=32 "
+parameters+="DATA_WIDTH_P=32 "
 
 # Source the tool script which executes the selected tool
 source $git_root/scripts/make_env/run_tools.sh

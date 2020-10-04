@@ -141,7 +141,6 @@ module cdc_vector_sync #(
       egr_valid      <= '0;
       dst_valid_d0   <= '0;
       dst_valid_ack  <= '0;
-      dst_valid      <= '0;
 
     end
     else begin
@@ -152,7 +151,6 @@ module cdc_vector_sync #(
         egr_vector     <= '0;
         dst_valid_d0   <= '0;
         dst_valid_ack  <= '0;
-        dst_valid      <= '0;
 
       end
       else begin
@@ -189,42 +187,42 @@ module cdc_vector_sync #(
 
   cdc_bit_sync cdc_bit_sync_i0 (
 
-    .clk_src   ( clk_src       ),
-    .rst_src_n ( rst_src_n     ),
-    .clk_dst   ( clk_dst       ),
-    .rst_dst_n ( rst_dst_n     ),
-    .src_bit   ( '1            ),
-    .dst_bit   ( dst_src_rst_n )
+    .clk_src   ( clk_src       ), // input
+    .rst_src_n ( rst_src_n     ), // input
+    .clk_dst   ( clk_dst       ), // input
+    .rst_dst_n ( rst_dst_n     ), // input
+    .src_bit   ( '1            ), // input
+    .dst_bit   ( dst_src_rst_n )  // output
   );
 
   cdc_bit_sync cdc_bit_sync_i1 (
 
-    .clk_src   ( clk_dst       ),
-    .rst_src_n ( rst_dst_n     ),
-    .clk_dst   ( clk_src       ),
-    .rst_dst_n ( rst_src_n     ),
-    .src_bit   ( '1            ),
-    .dst_bit   ( src_dst_rst_n )
+    .clk_src   ( clk_dst       ), // input
+    .rst_src_n ( rst_dst_n     ), // input
+    .clk_dst   ( clk_src       ), // input
+    .rst_dst_n ( rst_src_n     ), // input
+    .src_bit   ( '1            ), // input
+    .dst_bit   ( src_dst_rst_n )  // output
   );
 
   cdc_bit_sync cdc_bit_sync_i2 (
 
-    .clk_src   ( clk_src       ),
-    .rst_src_n ( rst_src_n     ),
-    .clk_dst   ( clk_dst       ),
-    .rst_dst_n ( rst_dst_n     ),
-    .src_bit   ( src_valid     ),
-    .dst_bit   ( dst_valid     )
+    .clk_src   ( clk_src       ), // input
+    .rst_src_n ( rst_src_n     ), // input
+    .clk_dst   ( clk_dst       ), // input
+    .rst_dst_n ( rst_dst_n     ), // input
+    .src_bit   ( src_valid     ), // input
+    .dst_bit   ( dst_valid     )  // output
   );
 
   cdc_bit_sync cdc_bit_sync_i3 (
 
-    .clk_src   ( clk_dst       ),
-    .rst_src_n ( rst_dst_n     ),
-    .clk_dst   ( clk_src       ),
-    .rst_dst_n ( rst_src_n     ),
-    .src_bit   ( dst_valid_ack ),
-    .dst_bit   ( src_valid_ack )
+    .clk_src   ( clk_dst       ), // input
+    .rst_src_n ( rst_dst_n     ), // input
+    .clk_dst   ( clk_src       ), // input
+    .rst_dst_n ( rst_src_n     ), // input
+    .src_bit   ( dst_valid_ack ), // input
+    .dst_bit   ( src_valid_ack )  // output
   );
 
 endmodule

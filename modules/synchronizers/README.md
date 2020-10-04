@@ -29,9 +29,17 @@ set_property -quiet ASYNC_REG TRUE [get_cells -hier -regexp .*io_synchronizer_co
 
 
 ## CDC
+
 ### cdc_bit_sync
 
-![Synth Status](https://img.shields.io/badge/synthesis-N/A-orange)
-![FPGA  Status](https://img.shields.io/badge/fpga-N/A-orange)
+![Synth Status](https://img.shields.io/badge/synthesis-passing-green)
+![FPGA  Status](https://img.shields.io/badge/fpga-verified-green)
 
-Synchronizes an signal from another clock domain to the system clock, i.e., meta-stabilizing the signal.
+Synchronizes a single bit between two clock domains, i.e., meta-stabilizing the signal.
+
+### cdc_vector_sync
+
+![Synth Status](https://img.shields.io/badge/synthesis-passing-green)
+![FPGA  Status](https://img.shields.io/badge/fpga-verified-green)
+
+Synchronizes a vector between two clock domains, i.e., meta-stabilizing the vector. Two 'cdc_bit_sync' are used to pass a valid signal from the Source to Destination clock domain and an acknowledge signal from the Destination to Source clock domain. Another pair of 'cdc_bit_sync' are used to synchronize the clock domains reset signals between.
