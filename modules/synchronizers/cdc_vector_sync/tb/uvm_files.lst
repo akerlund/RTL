@@ -1,0 +1,12 @@
+module_path=$git_root/modules/synchronizers/cdc_vector_synch
+
+uvm_dirs+="
+  +incdir+$module_path/tb/
+  +incdir+$module_path/tc/
+"
+
+uvm_files+="
+  $module_path/tb/vec_tb_pkg.sv
+  $module_path/tc/vec_tc_pkg.sv
+  $module_path/tb/vec_tb_top.sv
+"

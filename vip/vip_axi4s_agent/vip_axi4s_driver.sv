@@ -144,7 +144,7 @@ class vip_axi4s_driver #(
 
     forever begin
 
-      vif.tready = '1;
+      vif.tready = '0;
 
       @(posedge vif.clk);
 

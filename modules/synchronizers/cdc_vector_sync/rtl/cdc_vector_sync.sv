@@ -35,14 +35,14 @@ module cdc_vector_sync #(
     input  wire                       rst_dst_n,
 
     // Data (Source)
-    input  wire  [DATA_WIDTH_P-1 : 0] src_vector,
-    input  wire  [DATA_WIDTH_P-1 : 0] src_valid,
-    output logic [DATA_WIDTH_P-1 : 0] src_ready,
+    input  wire  [DATA_WIDTH_P-1 : 0] ing_vector,
+    input  wire                       ing_valid,
+    output logic                      ing_ready,
 
     // Data (Destination)
-    output logic [DATA_WIDTH_P-1 : 0] dst_vector,
-    output logic [DATA_WIDTH_P-1 : 0] dst_valid
-
+    output logic [DATA_WIDTH_P-1 : 0] egr_vector,
+    output logic                      egr_valid,
+    input  wire                       egr_ready
   );
 
   // Source process states
@@ -51,33 +51,40 @@ module cdc_vector_sync #(
     SRC_WAIT_DST_ACK_E
   } src_sync_state_t;
 
+  // Destination process states
+  typedef enum {
+    DST_WAIT_VALID_E,
+    DST_WAIT_READY_E
+  } dst_sync_state_t;
+
   src_sync_state_t src_sync_state;
+  dst_sync_state_t dst_sync_state;
 
   // Buffered input
   logic [DATA_WIDTH_P-1 : 0] src_vector_d0;
 
-  // To signal far end that reset is active
+  // To signal the other clock comain that the reset is active
   logic                      src_dst_rst_n;
   logic                      dst_src_rst_n;
 
   // Toggles when there is a new input
-  logic                      src_new_input;
-  logic                      dst_new_input;
-  logic                      dst_new_input_d0;
+  logic                      src_valid;
+  logic                      dst_valid;
+  logic                      dst_valid_d0;
 
   // For the destination to ack data
-  logic                      dst_input_ack;
-  logic                      src_input_ack;
-  logic                      src_input_ack_d0;
+  logic                      dst_valid_ack;
+  logic                      src_valid_ack;
+  logic                      src_valid_ack_d0;
 
   // Source
   always_ff @ (posedge clk_src or negedge rst_src_n) begin
     if (!rst_src_n) begin
 
       src_sync_state   <= SRC_WAIT_VALID_E;
-      src_input_ack_d0 <= '0;
-      src_ready        <= '0;
-      src_new_input    <= '0;
+      src_valid_ack_d0 <= '0;
+      ing_ready        <= '0;
+      src_valid        <= '0;
       src_vector_d0    <= '0;
 
     end
@@ -86,36 +93,36 @@ module cdc_vector_sync #(
       if (!src_dst_rst_n) begin
 
         src_sync_state   <= SRC_WAIT_VALID_E;
-        src_input_ack_d0 <= '0;
-        src_ready        <= '0;
-        src_new_input    <= '0;
+        src_valid_ack_d0 <= '0;
+        ing_ready        <= '0;
+        src_valid        <= '0;
         src_vector_d0    <= '0;
 
       end
       else begin
 
-        src_input_ack_d0 <= src_input_ack;
+        src_valid_ack_d0 <= src_valid_ack;
 
         case (src_sync_state)
 
           SRC_WAIT_VALID_E: begin
 
-            src_ready <= '1;
+            ing_ready <= '1;
 
-            if (src_valid) begin
+            if (ing_valid && ing_ready) begin
               src_sync_state <= SRC_WAIT_DST_ACK_E;
-              src_new_input  <= ~src_new_input;
-              src_vector_d0  <= src_vector;
-              src_ready      <= '0;
+              src_valid      <= ~src_valid;
+              src_vector_d0  <= ing_vector;
+              ing_ready      <= '0;
             end
           end
 
 
           SRC_WAIT_DST_ACK_E: begin
 
-            if (src_input_ack_d0 != src_input_ack) begin
+            if (src_valid_ack_d0 != src_valid_ack) begin
               src_sync_state <= SRC_WAIT_VALID_E;
-              src_ready      <= '1;
+              ing_ready      <= '1;
             end
           end
 
@@ -125,37 +132,55 @@ module cdc_vector_sync #(
     end
   end
 
-
   // Destination
   always_ff @ (posedge clk_dst or negedge rst_dst_n) begin
     if (!rst_dst_n) begin
 
-      dst_vector       <= '0;
-      dst_new_input_d0 <= '0;
-      dst_input_ack    <= '0;
-      dst_valid        <= '0;
+      dst_sync_state <= DST_WAIT_VALID_E;
+      egr_vector     <= '0;
+      egr_valid      <= '0;
+      dst_valid_d0   <= '0;
+      dst_valid_ack  <= '0;
+      dst_valid      <= '0;
 
     end
     else begin
 
       if (!dst_src_rst_n) begin
 
-        dst_vector       <= '0;
-        dst_new_input_d0 <= '0;
-        dst_input_ack    <= '0;
-        dst_valid        <= '0;
+        dst_sync_state <= DST_WAIT_VALID_E;
+        egr_vector     <= '0;
+        dst_valid_d0   <= '0;
+        dst_valid_ack  <= '0;
+        dst_valid      <= '0;
 
       end
       else begin
 
-        dst_new_input_d0 <= dst_new_input;
-        dst_valid        <= '0;
+        dst_valid_d0 <= dst_valid;
 
-        if (dst_new_input_d0 != dst_new_input) begin
-          dst_vector    <= src_vector_d0;
-          dst_input_ack <= ~dst_input_ack;
-          dst_valid     <= '1;
-        end
+        case (dst_sync_state)
+
+          DST_WAIT_VALID_E: begin
+
+            if (dst_valid_d0 != dst_valid) begin
+              dst_sync_state <= DST_WAIT_READY_E;
+              egr_vector     <= src_vector_d0;
+              egr_valid      <= '1;
+            end
+          end
+
+
+          DST_WAIT_READY_E: begin
+
+            if (egr_ready) begin
+              dst_sync_state <= DST_WAIT_VALID_E;
+              egr_valid     <= '0;
+              dst_valid_ack <= ~dst_valid_ack;
+            end
+          end
+
+        endcase
 
       end
 
@@ -188,8 +213,8 @@ module cdc_vector_sync #(
     .rst_src_n ( rst_src_n     ),
     .clk_dst   ( clk_dst       ),
     .rst_dst_n ( rst_dst_n     ),
-    .src_bit   ( src_new_input ),
-    .dst_bit   ( dst_new_input )
+    .src_bit   ( src_valid     ),
+    .dst_bit   ( dst_valid     )
   );
 
   cdc_bit_sync cdc_bit_sync_i3 (
@@ -198,8 +223,8 @@ module cdc_vector_sync #(
     .rst_src_n ( rst_dst_n     ),
     .clk_dst   ( clk_src       ),
     .rst_dst_n ( rst_src_n     ),
-    .src_bit   ( dst_input_ack ),
-    .dst_bit   ( src_input_ack )
+    .src_bit   ( dst_valid_ack ),
+    .dst_bit   ( src_valid_ack )
   );
 
 endmodule
