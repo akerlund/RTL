@@ -192,6 +192,19 @@ module axi4_write_arbiter #(
   // MUX
   always_comb begin
 
+    // Write Address Channel
+    slv_awid    = '0;
+    slv_awaddr  = '0;
+    slv_awlen   = '0;
+    slv_awvalid = '0;
+
+    // Write Data Channel
+    slv_wdata   = '0;
+    slv_wstrb   = '0;
+    slv_wlast   = '0;
+    slv_wvalid  = '0;
+    mst_wready  = '0;
+
     if (wr_mst_is_chosen) begin
 
       // Write Address Channel

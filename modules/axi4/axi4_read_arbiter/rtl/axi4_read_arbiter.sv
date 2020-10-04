@@ -224,6 +224,11 @@ module axi4_read_arbiter #(
   // MUX - Read Address Channel
   always_comb begin
 
+    slv_arid    = '0;
+    slv_araddr  = '0;
+    slv_arlen   = '0;
+    slv_arvalid = '0;
+
     if (!rac_mst_is_chosen) begin
 
       slv_arid    = '0;
@@ -245,6 +250,9 @@ module axi4_read_arbiter #(
 
   // MUX - Read Data Channel
   always_comb begin
+
+    mst_rvalid = '0;
+    slv_rready = '0;
 
     if (!rdc_mst_is_chosen) begin
 
