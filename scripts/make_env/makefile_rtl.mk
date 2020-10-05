@@ -14,35 +14,19 @@ VIV_OOC?=1
 UVM_TR_RECORD?=UVM_HIGH
 UVM_VERBOSITY?=LOW
 
+# Module file list script
+MODULE_FILE_LIST=./scripts/compile.sh
+
 # Create list of available testcases for module
 TC_LIST=$(patsubst %.sv,%,$(shell find ./tc -name tc_*.sv -printf "%f " 2> /dev/null))
 
-# ------------------------------------------------------------------------------
-# Verilator variables
-# ------------------------------------------------------------------------------
+# Set default UVM parameter defaults
+UVM_VERBOSITY ?= LOW
+SIMV_FLAGS    += +UVM_TESTNAME=$@ +UVM_TR_RECORD +UVM_VERBOSITY=$(UVM_VERBOSITY)
 
-# If $VERILATOR_ROOT isn't in the environment, we assume it is part of a package
-# install, and verilator is in your path. Otherwise find the binary relative to
-# $VERILATOR_ROOT (such as when inside the git sources).
-ifeq ($(VERILATOR_ROOT),)
-  VERILATOR          = verilator
-  VERILATOR_COVERAGE = verilator_coverage
-else
-  export VERILATOR_ROOT
-  VERILATOR          = $(VERILATOR_ROOT)/bin/verilator
-  VERILATOR_COVERAGE = $(VERILATOR_ROOT)/bin/verilator_coverage
-endif
-
-# Common flags
-VERILATOR_FLAGS =
-VERILATOR_FLAGS += -cc --exe       # Generate C++ in executable form
-VERILATOR_FLAGS += -Os -x-assign 0 # Optimize
-VERILATOR_FLAGS += -Wall           # Warn abount lint issues; may not want this on less solid designs
-VERILATOR_FLAGS += -sv             # Enable SystemVerilog parsing
-VERILATOR_FLAGS += --assert        # Check SystemVerilog assertions
-VERILATOR_FLAGS += --lint-only     # Lint, but do not make output
-VERILATOR_FLAGS += --stats
-VERILATOR_FLAGS += -Wno-fatal      # Disable fatal exit on warnings
+# Tool scripts
+RUN_VIVADO=$(GIT_ROOT)/scripts/vivado/run.sh
+RUN_VERILATOR=$(GIT_ROOT)/scripts/verilator/run.sh
 
 export
 
@@ -75,23 +59,17 @@ help:
 	@echo "  VIV_OOC  : Set Vivado to run out-of-context (OOC) (default enabled)"
 	@echo ""
 
-build:
-	@./scripts/compile.sh $(RUN_DIR) no_tool
-
 synth:
-	@./scripts/compile.sh $(RUN_DIR) vivado 0 $(VIV_OOC)
+	$(RUN_VIVADO) $(MODULE_FILE_LIST) $(RUN_DIR) 0 $(VIV_OOC)
 
 place:
-	@./scripts/compile.sh $(RUN_DIR) vivado 1 $(VIV_OOC)
+	@$(RUN_VIVADO) $(MODULE_FILE_LIST) $(RUN_DIR) 1 $(VIV_OOC)
 
 route:
-	@./scripts/compile.sh $(RUN_DIR) vivado 2 $(VIV_OOC)
+	@$(RUN_VIVADO) $(MODULE_FILE_LIST) $(RUN_DIR) 2 $(VIV_OOC)
 
 verilate:
-ifneq ($(words $(CURDIR)),1)
-  $(error Unsupported: GNU Make cannot build in directories containing spaces, build elsewhere: '$(CURDIR)')
-endif
-	@./scripts/compile.sh $(RUN_DIR) verilator
+	@$(RUN_VERILATOR) $(MODULE_FILE_LIST) $(RUN_DIR)
 
 list:
 	@echo "List of testcases:"
@@ -103,4 +81,3 @@ $(TC_LIST): tc_%: ${BUILD_DIR}
 clean:
 	@echo "Removing ${RUN_DIR}"
 	@rm -rf ${RUN_DIR}
-

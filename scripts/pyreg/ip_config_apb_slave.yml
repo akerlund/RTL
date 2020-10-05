@@ -1,0 +1,174 @@
+ip_config_apb_slave:
+
+  # Meta data addresses
+  - name:  meta_data_start_address
+    type:  CR
+    mode:  R/W
+    desc:  Start address (in RAM) of the meta data section
+    width: 64
+
+  - name:  meta_data_end_address
+    type:  CR
+    mode:  R/W
+    desc:  End address (in RAM) of the meta data section
+    width: 64
+
+  # Uncompressed data addresses for section 0
+  - name:  fix_me_0
+    type:  IRQ
+    mode:  WC
+    desc:  Start address (in RAM) of the uncompressed section 0
+    width: 32
+
+  - name:  help_me
+    type:  IRQ
+    mode:  R
+    desc:  End address (in RAM) of the uncompressed section 0
+    width: 32
+
+  # Uncompressed data addresses for section 1
+  - name:  uncomp_start_address_sec_1
+    type:  CR
+    mode:  R/W
+    desc:  Start address (in RAM) of the uncompressed section 1
+    width: 64
+
+  - name:  uncomp_end_address_sec_1
+    type:  CR
+    mode:  RW
+    desc:  End address (in RAM) of the uncompressed section 1
+    width: 64
+
+  # Remap page address
+  - name:  atu_remap_page_address
+    type:  CR
+    mode:  RW
+    desc:  Remap page addr. All read requests to this page will be directed to the "remap req addr"
+    width: 64
+
+  # Remap request address
+  - name:  atu_remap_request_address
+    type:  CR
+    mode:  RW
+    desc:  Remap request address
+    width: 64
+
+  # Remap request address
+  - name:  atu_remap_enabled
+    type:  CR
+    mode:  RW
+    desc:  Enables the remap functionality
+    width: 32
+
+  # Initialization done
+  - name:  init_done
+    desc:  This should be split up
+    width: 32
+    bit_fields:
+
+      - {
+        name:        startup_config_done,
+        mode:        RW,
+        description: Must be set to to '1' after the configuration of Ziptilion
+                     is completed at startup,
+        size:        1,
+        resetValue:  0x0,
+        summary:     'APB startup configuration is completed'
+      }
+
+      - {
+        name:        bypass_mode,
+        mode:        RW,
+        description: Ziptilion is bypassed when this bit is asserted,
+        resetValue:  0x1,
+        size:        1,
+        summary:     'Bypass Ziptilion'
+      }
+
+      - {
+        name:        axi4_region,
+        mode:        RW,
+        description: Compared with the CPU's region signals to determine if
+                     reads and writed should be from/to uncompressed address
+                     space, i.e., raw data writes and reads,
+        resetValue:  0x0,
+        size:        4,
+        summary:     'Used in Write Buffer and ATU'
+      }
+      - {
+        name:        atu_reset_cache,
+        mode:        RW,
+        type:        CMD,
+        description: "Resets the cache, i.e., cache_inp_buffer, cache_array, and
+                     cache_out_buffer.
+                     - In \"cache_inp_buffer\" the write and read pointer is set
+                     to zero.
+                     - In \"cache_array\" the FSM will go from its IDLE state to
+                     its RESET_TABLES state. In the RESET_TABLES state a counter
+                     is incremented every clock period until it overflows which
+                     brings the FSM back to the IDLE state. The width of the
+                     reset counter is set to the constant CACHE_ADDR_WIDTH_C.
+                     A complete reset of the tables when the cache address width
+                     is (7) is therefore (128) clock periods.
+                     - In \"cache_out_buffer\" the write pointer is set to the
+                     last used. The last used value is is changed to the current
+                     write pointer every time the buffer is read from Request
+                     Control",
+        resetValue:  0x1,
+        size:        1,
+        summary:     "Resets the cache's input and output buffer and the tables"
+      }
+
+  # Compressor programming and encoding versiob
+  - name: compressor_programming
+    desc: Enables the (re)programming of the two groups of compressor cores in
+          the Compressor module
+
+    bit_fields:
+
+      - {
+        name:        comp_enable_programming_group_0,
+        mode:        RW,
+        description: ,
+        size:        1,
+        resetValue:  0x0,
+        summary:     ''
+      }
+
+      - {
+        name:        comp_enable_programming_group_1,
+        mode:        RW,
+        description: ,
+        size:        1,
+        resetValue:  0x0,
+        summary:     ''
+      }
+
+      - {
+        name:        encoding_version,
+        mode:        RW,
+        description: ,
+        size:        1,
+        resetValue:  0x0,
+        summary:     ''
+      }
+
+      - {
+        name:        comp_enabled_programming_group_0,
+        mode:        RW,
+        type:        SR,
+        description: ,
+        size:        1,
+        resetValue:  0x0,
+        summary:     ''
+      }
+
+      - {
+        name:        comp_enabled_programming_group_1,
+        mode:        RW,
+        type:        SR,
+        description: ,
+        size:        1,
+        resetValue:  0x0,
+        summary:     ''
+      }
