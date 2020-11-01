@@ -1,0 +1,30 @@
+---
+# Configuration for https://pre-commit.com
+
+repos:
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.5.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-yaml
+      - id: detect-private-key
+      - id: trailing-whitespace
+
+  - repo: https://github.com/jumanjihouse/pre-commit-hooks
+    rev: 2.0.0
+    hooks:
+      - id: forbid-binary
+#      - id: git-check
+#      - id: git-dirty
+#      - id: shellcheck
+#      - id: shfmt
+
+  - repo: https://github.com/Lucas-C/pre-commit-hooks
+    rev: v1.1.9
+    hooks:
+      - id: remove-tabs
+        args: [ '--whitespaces-count', '2']
+        files: '(\.sv|\.svh|\.tcl|\.py)$'
