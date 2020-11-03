@@ -31,7 +31,7 @@ if __name__ == '__main__':
   this_path = os.path.dirname(os.path.abspath(sys.argv[0]))
 
   yml_files = [
-    (this_path + "register_example.yml")
+    (this_path + "/register_example.yml")
   ]
 
   for yml in yml_files:
