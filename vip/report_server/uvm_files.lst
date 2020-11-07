@@ -1,0 +1,8 @@
+module_path=$git_root/vip/report_server
+
+uvm_dirs+="
+  +incdir+$module_path
+"
+
+uvm_files+="
+"
