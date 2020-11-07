@@ -1,12 +1,6 @@
 puts "INFO \[flow\] Vivado running in:"
 puts "[pwd]"
 
-puts "\nINFO \[flow\] Parameters:\n"
-foreach p $parameters {
-  puts "  $p"
-}
-puts ""
-
 file mkdir "reports"
 
 # ------------------------------------------------------------------------------
