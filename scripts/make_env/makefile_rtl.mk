@@ -4,15 +4,16 @@
 
 GIT_ROOT = $(shell git rev-parse --show-toplevel)
 
-# Set build directory to default value if not defined
+# Defaults
 RUN_DIR?=$(shell pwd)/rundir
-
-# Set Vivado to run out-of-context (OOC)
-VIV_OOC?=1
-
-# Default UVM parameters
 UVM_TR_RECORD?=UVM_HIGH
 UVM_VERBOSITY?=LOW
+VIV_OOC?=1
+
+# Define Vivado options
+VIV_BUILD=0
+VIV_SYNTH=1
+VIV_ROUTE=2
 
 # Module file list script
 MODULE_FILE_LIST=./scripts/compile.sh
@@ -20,12 +21,10 @@ MODULE_FILE_LIST=./scripts/compile.sh
 # Create list of available testcases for module
 TC_LIST=$(patsubst %.sv,%,$(shell find ./tc -name tc_*.sv -printf "%f " 2> /dev/null))
 
-# Set default UVM parameter defaults
-UVM_VERBOSITY ?= LOW
-SIMV_FLAGS    += +UVM_TESTNAME=$@ +UVM_TR_RECORD +UVM_VERBOSITY=$(UVM_VERBOSITY)
 
 # Tool scripts
 RUN_VIVADO=$(GIT_ROOT)/scripts/vivado/run.sh
+RUN_XSIM=$(GIT_ROOT)/scripts/vivado/xsim.sh
 RUN_VERILATOR=$(GIT_ROOT)/scripts/verilator/run.sh
 
 export
@@ -45,6 +44,7 @@ help:
 	@echo ""
 	@echo "  Targets:"
 	@echo "  ------------------------------------------------------------------------------"
+	@echo "  build    : Compile testbench with Vivado"
 	@echo "  synth    : Vivado synthesis"
 	@echo "  place    : Vivado synthesis and design place"
 	@echo "  route    : Vivado synthesis, design place, routing and bitstream"
@@ -55,18 +55,19 @@ help:
 	@echo ""
 	@echo "  Make variables:"
 	@echo "  ------------------------------------------------------------------------------"
-	@echo "  RUN_DIR  : Directory of builds and other runs"
-	@echo "  VIV_OOC  : Set Vivado to run out-of-context (OOC) (default enabled)"
+	@echo "  RUN_DIR       : Directory of builds and other runs, default is /run"
+	@echo "  UVM_VERBOSITY : Verbosity in UVM simulations"
+	@echo "  VIV_OOC       : Set Vivado to run out-of-context (OOC) (default enabled)"
 	@echo ""
 
-synth:
-	$(RUN_VIVADO) $(MODULE_FILE_LIST) $(RUN_DIR) 0 $(VIV_OOC)
+build:
+	$(RUN_VIVADO) $(MODULE_FILE_LIST) $(RUN_DIR) $(VIV_BUILD) $(VIV_OOC)
 
-place:
-	@$(RUN_VIVADO) $(MODULE_FILE_LIST) $(RUN_DIR) 1 $(VIV_OOC)
+synth:
+	$(RUN_VIVADO) $(MODULE_FILE_LIST) $(RUN_DIR) $(VIV_SYNTH) $(VIV_OOC)
 
 route:
-	@$(RUN_VIVADO) $(MODULE_FILE_LIST) $(RUN_DIR) 2 $(VIV_OOC)
+	@$(RUN_VIVADO) $(MODULE_FILE_LIST) $(RUN_DIR) $(VIV_ROUTE) $(VIV_OOC)
 
 verilate:
 	@$(RUN_VERILATOR) $(MODULE_FILE_LIST) $(RUN_DIR)
@@ -75,8 +76,8 @@ list:
 	@echo "List of testcases:"
 	@for tc in $(TC_LIST); do echo " $$tc"; done
 
-$(TC_LIST): tc_%: ${BUILD_DIR}
-	@echo "Will add the TC's later"
+$(TC_LIST): tc_%: ${RUN_DIR}
+	@$(RUN_XSIM) $(RUN_DIR) $(@) $(UVM_VERBOSITY)
 
 clean:
 	@echo "Removing ${RUN_DIR}"

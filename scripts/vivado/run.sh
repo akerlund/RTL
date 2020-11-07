@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# Check input paramters
+# Check input parameters
 if [ "$#" -lt 2 ]; then
   echo "ERROR: Vivado run script missing input parameters"
 else
@@ -27,14 +27,19 @@ source $file_list
 
 echo "INFO [run_tools] Creating run directory"
 the_time=$(date +'%d_%m_%Y_%H_%M_%S')
-viv_dir=$rundir/vivado/$the_time
-mkdir -p $viv_dir
+viv_dir=$rundir/vivado
+
+if [[ ! -d "$viv_dir" ]]; then
+  mkdir -p $viv_dir
+fi
+
 cd $viv_dir
 
-
 echo "INFO [run_tools] Copying the script to the run directory"
-#echo $rtl_dirs  > rtl_files.lst
+echo $rtl_dirs  > rtl_dirs.lst
 echo $rtl_files > rtl_files.lst
+echo $uvm_files > uvm_files.lst
+echo $uvm_dirs  > uvm_dirs.lst
 cp   $git_root/scripts/vivado/vivado_implementation_flow.tcl ./
 cp   $git_root/scripts/vivado/start_vivado_notrace.tcl ./
 
@@ -54,6 +59,7 @@ for p in ${parameters[@]}; do
 done
 sed -i "1s;^;set parameters {$vivado_params}\n;" vivado_implementation_flow.tcl
 
+# Out of Context?
 if [ $viv_ooc -ge 1 ]; then
   sed -i '1s;^;set mode out_of_context\n;' vivado_implementation_flow.tcl
 else
@@ -61,24 +67,17 @@ else
 fi
 
 
-# Passed argument decides if we set the "run_implementation" variable
+# Route and make bitstream?
 if [ "$viv_run" -ge 1 ]; then
-  sed -i "1s;^;set run_implementation 1\n;" vivado_implementation_flow.tcl
+  sed -i "1s;^;set run_mode 1\n;" vivado_implementation_flow.tcl
 else
-  sed -i "1s;^;set run_implementation 0\n;" vivado_implementation_flow.tcl
-fi
-
-
-# Passed argument decides if we set the "run_bitstream" variable
-if [ "$viv_run" -ge 2 ]; then
-  sed -i "1s;^;set run_bitstream 1\n;" vivado_implementation_flow.tcl
-else
-  sed -i "1s;^;set run_bitstream 0\n;" vivado_implementation_flow.tcl
+  sed -i "1s;^;set run_mode 0\n;" vivado_implementation_flow.tcl
 fi
 
 
 # Save the start time
 start=`date +%s`
+
 
 
 echo -e "\n--------------------------------------------------------------------------------"
@@ -93,31 +92,24 @@ if [ $status -ne 0 ]; then
   echo "ERROR [run_tools] Vivado failed"
 else
 
-  echo -e "\n--------------------------------------------------------------------------------"
-  echo -e "INFO [run_tools] post_synth_util.rpt"
-  echo -e "--------------------------------------------------------------------------------\n"
-  echo -e ""
-  sed -n '/^+-/,/^* Warning/p;/^* Warning/q' $rundir/vivado/$the_time/reports/post_synth_util.rpt
+  if [ "$viv_run" -ge 1 ]; then
+    echo -e "\n--------------------------------------------------------------------------------"
+    echo -e "INFO [run_tools] post_synth_util.rpt"
+    echo -e "--------------------------------------------------------------------------------\n"
+    echo -e ""
+    sed -n '/^+-/,/^* Warning/p;/^* Warning/q' $viv_dir/reports/post_synth_util.rpt
 
-  #if [ $viv_run -ge 1 ]; then
-  #  echo -e "\n--------------------------------------------------------------------------------"
-  #  echo -e "INFO [run_tools] post_place_util.rpt"
-  #  echo -e "--------------------------------------------------------------------------------\n"
-  #  echo -e ""
-  #  sed -n '/^+-/,/^* calculated/p;/^* calculated/q' $rundir/vivado/$the_time/reports/post_place_util.rpt
-  #fi
+    echo -e "\n--------------------------------------------------------------------------------"
+    echo -e "INFO [run_tools] Vivado Log"
+    echo -e "--------------------------------------------------------------------------------\n"
 
+    grep ^"WARNING:"           $viv_dir/vivado.log
+    grep ^"CRITICAL WARNING:"  $viv_dir/vivado.log
+    grep ^"ERROR:"             $viv_dir/vivado.log
+    echo ""
+    grep ^"Synthesis finished" $viv_dir/vivado.log
+ fi
 fi
-
-echo -e "\n--------------------------------------------------------------------------------"
-echo -e "INFO [run_tools] Vivado Log"
-echo -e "--------------------------------------------------------------------------------\n"
-
-grep ^"WARNING:"           $rundir/vivado/$the_time/vivado.log
-grep ^"CRITICAL WARNING:"  $rundir/vivado/$the_time/vivado.log
-grep ^"ERROR:"             $rundir/vivado/$the_time/vivado.log
-echo ""
-grep ^"Synthesis finished" $rundir/vivado/$the_time/vivado.log
 
 # Print the runtime
 end=`date +%s`
