@@ -54,7 +54,7 @@ class arb_vseq #(
     random_seq1.max_idle_between_bursts = max_idle_between_bursts;
     random_seq2.max_idle_between_bursts = max_idle_between_bursts;
 
-    `uvm_info(get_name(), $sformatf("Starting two sequences"), UVM_LOW);
+    `uvm_info(get_name(), $sformatf("Starting three sequences"), UVM_LOW);
 
     fork
       random_seq0.start(p_sequencer.mst0_sequencer);

@@ -20,7 +20,7 @@ set rtl_dir_ref  [open $rtl_dir_list r]
 set rtl_dir [read $rtl_dir_ref]
 close $rtl_dir_ref
 
-puts "INFO \[flow\] Reading the uvm files list"
+puts "INFO \[flow\] Reading the UVM files list"
 set uvm_file_list ./uvm_files.lst
 set uvm_file_ref  [open $uvm_file_list r]
 set uvm_file_data [read $uvm_file_ref]
