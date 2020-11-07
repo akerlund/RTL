@@ -39,7 +39,8 @@ class vip_axi4s_base_seq #(
   }
 
   // Settings
-  int max_tid = -1;
+  int max_tid   = -1;
+  int max_tdest = -1;
 
   function new(string name = "vip_axi4s_base_seq");
 
@@ -79,6 +80,12 @@ class axi4s_random_seq #(
       if (max_tid != -1) begin
         if (axi4s_item.tid > max_tid) begin
           axi4s_item.tid = max_tid;
+        end
+      end
+
+      if (max_tdest != -1) begin
+        if (axi4s_item.tdest > max_tdest) begin
+          axi4s_item.tdest = max_tdest;
         end
       end
 
@@ -175,6 +182,12 @@ class axi4s_single_transaction_seq #(
       if (max_tid != -1) begin
         if (axi4s_item.tid > max_tid) begin
           axi4s_item.tid = max_tid;
+        end
+      end
+
+      if (max_tdest != -1) begin
+        if (axi4s_item.tdest > max_tdest) begin
+          axi4s_item.tdest = max_tdest;
         end
       end
 

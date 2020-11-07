@@ -68,7 +68,7 @@ if { [expr $run_mode == 0] } {
   exec xvlog -sv -f compile_list.txt -L uvm
 
   puts "INFO \[xelab\] Elaborating the design"
-  exec xelab arb_tb_top -debug all -relax -s top -timescale 1ns/1ps
+  exec xelab arb_tb_top --verbose 1 -debug all -s top -timescale 1ns/1ps
 
   puts "INFO \[flow\] Done!"
   quit
