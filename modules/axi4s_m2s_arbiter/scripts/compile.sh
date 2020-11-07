@@ -7,7 +7,6 @@ rtl_top=axi4s_m2s_arbiter
 uvm_top=arb_tb_top
 
 source $git_root/vip/vip_axi4s_agent/uvm_files.lst
-source $git_root/vip/report_server/uvm_files.lst
 
 # Source the module's file lists
 source ./rtl/rtl_files.lst

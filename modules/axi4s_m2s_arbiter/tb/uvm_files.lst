@@ -1,4 +1,4 @@
-module_path=$git_root/modules/axi4s/axi4s_m2s_arbiter
+module_path=$git_root/modules/axi4s_m2s_arbiter
 
 uvm_dirs+="
   +incdir+$module_path/tb/

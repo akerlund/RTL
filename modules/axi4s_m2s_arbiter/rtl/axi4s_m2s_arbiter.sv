@@ -42,55 +42,46 @@ module axi4s_m2s_arbiter #(
     output logic                         [AXI_USER_WIDTH_P-1 : 0] slv_tuser
   );
 
-
   localparam logic [$clog2(NR_OF_MASTERS_P)-1 : 0] NR_OF_MASTERS_C = NR_OF_MASTERS_P;
-
-  // ---------------------------------------------------------------------------
-  // Write Channel signals
-  // ---------------------------------------------------------------------------
 
   typedef enum {
     FIND_MST_TVALID_E,
     WAIT_MST_TLAST_E
-  } write_state_t;
+  } arbiter_state_t;
 
-  write_state_t write_state;
+  arbiter_state_t arbiter_state;
 
-  logic [$clog2(NR_OF_MASTERS_P)-1 : 0] wr_rotating_mst;
-  logic [$clog2(NR_OF_MASTERS_P)-1 : 0] wr_selected_mst;
-  logic                                 wr_mst_is_chosen;
-
-  // ---------------------------------------------------------------------------
-  // Write processes
-  // ---------------------------------------------------------------------------
+  logic [$clog2(NR_OF_MASTERS_P)-1 : 0] rotating_mst;
+  logic [$clog2(NR_OF_MASTERS_P)-1 : 0] mux_address;
+  logic                                 output_enable;
 
   // FSM
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-      write_state      <= FIND_MST_TVALID_E;
-      wr_rotating_mst  <= '0;                 // Round Robin counter
-      wr_selected_mst  <= '0;                 // MUX select
-      wr_mst_is_chosen <= '0;                 // Output enable
+      arbiter_state <= FIND_MST_TVALID_E;
+      rotating_mst  <= '0;
+      mux_address   <= '0;
+      output_enable <= '0;
     end
     else begin
 
-      case (write_state)
+      case (arbiter_state)
 
         FIND_MST_TVALID_E: begin
 
           if (slv_tready) begin
 
-            if (wr_rotating_mst == NR_OF_MASTERS_C-1) begin
-              wr_rotating_mst <= '0;
+            if (rotating_mst == NR_OF_MASTERS_C-1) begin
+              rotating_mst <= '0;
             end
             else begin
-              wr_rotating_mst <= wr_rotating_mst + 1;
+              rotating_mst <= rotating_mst + 1;
             end
 
-            if (mst_tvalid[wr_rotating_mst]) begin
-              write_state                  <= WAIT_MST_TLAST_E;
-              wr_selected_mst              <= wr_rotating_mst;
-              wr_mst_is_chosen             <= '1;
+            if (mst_tvalid[rotating_mst]) begin
+              arbiter_state <= WAIT_MST_TLAST_E;
+              mux_address  <= rotating_mst;
+              output_enable <= '1;
             end
 
           end
@@ -100,8 +91,8 @@ module axi4s_m2s_arbiter #(
         WAIT_MST_TLAST_E: begin
 
           if (slv_tlast && slv_tvalid && slv_tready) begin
-            write_state      <= FIND_MST_TVALID_E;
-            wr_mst_is_chosen <= '0;
+            arbiter_state <= FIND_MST_TVALID_E;
+            output_enable <= '0;
           end
 
         end
@@ -125,7 +116,7 @@ module axi4s_m2s_arbiter #(
     mst_tready = '0;
 
 
-    if (!wr_mst_is_chosen) begin
+    if (!output_enable) begin
 
       slv_tvalid = '0;
       slv_tdata  = slv_tdata;
@@ -140,16 +131,16 @@ module axi4s_m2s_arbiter #(
     end
     else begin
 
-      slv_tvalid = mst_tvalid [wr_selected_mst];
-      slv_tdata  = mst_tdata  [wr_selected_mst];
-      slv_tstrb  = mst_tstrb  [wr_selected_mst];
-      slv_tkeep  = mst_tkeep  [wr_selected_mst];
-      slv_tlast  = mst_tlast  [wr_selected_mst];
-      slv_tid    = mst_tid    [wr_selected_mst];
-      slv_tdest  = mst_tdest  [wr_selected_mst];
-      slv_tuser  = mst_tuser  [wr_selected_mst];
+      slv_tvalid = mst_tvalid [mux_address];
+      slv_tdata  = mst_tdata  [mux_address];
+      slv_tstrb  = mst_tstrb  [mux_address];
+      slv_tkeep  = mst_tkeep  [mux_address];
+      slv_tlast  = mst_tlast  [mux_address];
+      slv_tid    = mst_tid    [mux_address];
+      slv_tdest  = mst_tdest  [mux_address];
+      slv_tuser  = mst_tuser  [mux_address];
 
-      mst_tready[wr_selected_mst] = slv_tready;
+      mst_tready[mux_address] = slv_tready;
 
     end
 
