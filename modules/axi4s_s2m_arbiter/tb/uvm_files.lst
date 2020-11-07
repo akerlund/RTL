@@ -1,0 +1,10 @@
+module_path=$git_root/modules/axi4s_s2m_arbiter
+
+uvm_dirs+="
+  +incdir+$module_path/tb/
+  +incdir+$module_path/tc/
+"
+
+uvm_files+="
+  $module_path/tb/tb.svh
+"
