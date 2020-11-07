@@ -1,0 +1,10 @@
+module_path=$git_root/vip/vip_axi4s_agent
+
+uvm_dirs+="
+  +incdir+$module_path
+"
+
+uvm_files+="
+  $module_path/vip_axi4s_types_pkg.sv
+  $module_path/vip_axi4s.svh
+"

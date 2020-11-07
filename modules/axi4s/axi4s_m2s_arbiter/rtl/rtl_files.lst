@@ -1,0 +1,9 @@
+module_path=$git_root/modules/axi4s/axi4s_m2s_arbiter
+
+rtl_dirs+="
+  +incdir+$module_path/rtl
+"
+
+rtl_files+="
+  $module_path/rtl/axi4s_m2s_arbiter.sv
+"
