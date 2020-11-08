@@ -37,7 +37,6 @@ module dsp48_nq_multiplier #(
 
   assign product_r0 = ing_multiplicand[N_BITS_P-2 : 0] * ing_multiplier[N_BITS_P-2 : 0]; // Removing the sign
 
-
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
       egr_product  <= '0;
@@ -47,10 +46,7 @@ module dsp48_nq_multiplier #(
 
       egr_product[N_BITS_P-1]     <= ing_multiplicand[N_BITS_P-1] ^ ing_multiplier[N_BITS_P-1];
       egr_product[N_BITS_P-2 : 0] <= product_r0[N_BITS_P-2+Q_BITS_P : Q_BITS_P];
-
-      if (product_r0[(2*N_BITS_P-2) : ( N_BITS_P-1+Q_BITS_P)] > 0) begin
-        egr_overflow <= 1'b1;
-      end
+      egr_overflow                <= product_r0[(2*N_BITS_P-2) : ( N_BITS_P-1+Q_BITS_P)] > 0;
 
     end
   end
