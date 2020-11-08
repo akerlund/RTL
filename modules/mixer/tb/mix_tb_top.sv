@@ -36,7 +36,7 @@ module mix_tb_top;
 
 
   logic [NR_OF_CHANNELS_C-1 : 0] [AUDIO_WIDTH_C-1 : 0] channel_data;
-  logic                       [NR_OF_CHANNELS_C-1 : 0] channel_valid;
+  logic                                                channel_valid;
   logic                          [AUDIO_WIDTH_C-1 : 0] out_left;
   logic                          [AUDIO_WIDTH_C-1 : 0] out_right;
   logic                                                out_clip;
@@ -51,7 +51,7 @@ module mix_tb_top;
     for (i = 0; i < NR_OF_CHANNELS_C; i++) begin
 
       assign channel_data[i]  = mst0_vif.tdata;
-      assign channel_valid[i] = mst0_vif.tvalid;
+      assign channel_valid    = mst0_vif.tvalid;
 
       assign cr_channel_gain[i] = (2 << Q_BITS_C);
       assign cr_channel_pan[i]  = i % 2;

@@ -22,8 +22,8 @@
 `default_nettype none
 
 module dsp48_nq_multiplier #(
-    parameter N_BITS_P = 32,
-    parameter Q_BITS_P = 15
+    parameter N_BITS_P = -1,
+    parameter Q_BITS_P = -1
   )(
     input  wire                    clk,
     input  wire                    rst_n,
