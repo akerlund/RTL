@@ -21,7 +21,6 @@ fi
 
 # Source module file list
 git_root=$(git rev-parse --show-toplevel)
-echo $git_root
 source $file_list
 
 
@@ -44,8 +43,11 @@ cp   $git_root/scripts/vivado/vivado_implementation_flow.tcl ./
 cp   $git_root/scripts/vivado/start_vivado_notrace.tcl ./
 
 
-echo "INFO [run_tools] Prepending the name of the top module"
-sed -i '1s;^;set top '$rtl_top'\n;' vivado_implementation_flow.tcl
+echo "INFO [run_tools] Prepending the name of the top RTL module"
+sed -i '1s;^;set rtl_top '$rtl_top'\n;' vivado_implementation_flow.tcl
+
+echo "INFO [run_tools] Prepending the name of the top UVM module"
+sed -i '1s;^;set uvm_top '$uvm_top'\n;' vivado_implementation_flow.tcl
 
 
 echo "INFO [run_tools] Setting the report directory"

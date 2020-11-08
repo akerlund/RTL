@@ -46,7 +46,7 @@ if { [expr $run_mode == 0] } {
     if { ![regexp {^$} $row] && ![regexp {^\s*#.*} $row] } {
       set inc [lindex [split $row "+"] 2]
       puts $outfile "-i $inc"
-      puts "$inc"
+      puts "  $inc"
     }
   }
 
@@ -56,7 +56,7 @@ if { [expr $run_mode == 0] } {
     if { ![regexp {^$} $row] && ![regexp {^\s*#.*} $row] } {
       set inc [lindex [split $row "+"] 2]
       puts $outfile "-i $inc"
-      puts "$inc"
+      puts "  $inc"
     }
   }
 
@@ -68,7 +68,7 @@ if { [expr $run_mode == 0] } {
   exec xvlog -sv -f compile_list.txt -L uvm
 
   puts "INFO \[xelab\] Elaborating the design"
-  exec xelab arb_tb_top --verbose 1 -debug all -s top -timescale 1ns/1ps
+  exec xelab $uvm_top --verbose 1 -debug all -s top -timescale 1ns/1ps
 
   puts "INFO \[flow\] Done!"
   quit
@@ -93,7 +93,7 @@ puts "\n------------------------------------------------------------------------
 puts "INFO \[flow\] synth_design"
 puts "--------------------------------------------------------------------------------\n"
 
-synth_design -top $top -part 7z020clg484-1 -mode $mode
+synth_design -top $rtl_top -part 7z020clg484-1 -mode $mode
 
 write_checkpoint      -force $rpt_dir/post_synth.dcp
 report_timing_summary -file  $rpt_dir/post_synth_timing_summary.rpt
