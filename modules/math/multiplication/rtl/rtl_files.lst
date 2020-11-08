@@ -5,6 +5,7 @@ rtl_dirs+="
 "
 
 rtl_files+="
+  $module_path/rtl/dsp48_nq_multiplier.sv
   $module_path/rtl/nq_multiplier.sv
   $module_path/rtl/nq_multiplier_axi4s_if.sv
 "

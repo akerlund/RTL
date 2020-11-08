@@ -6,6 +6,7 @@ git_root="$(git rev-parse --show-toplevel)"
 rtl_top=axi4s_s2m_arbiter
 uvm_top=arb_tb_top
 
+# Source other modules file lists
 source $git_root/vip/vip_axi4s_agent/uvm_files.lst
 
 # Source the module's file lists
