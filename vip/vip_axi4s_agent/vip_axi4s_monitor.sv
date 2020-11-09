@@ -104,8 +104,8 @@ class vip_axi4s_monitor #(
       if (vif.tvalid && vif.tready) begin
         tdata_transactions.push_back(vif.tdata);
         tstrb_transactions.push_back(vif.tstrb);
-        tkeep_transactions.push_back(vif.tstrb);
-        tuser_transactions.push_back(vif.tkeep);
+        tkeep_transactions.push_back(vif.tkeep);
+        tuser_transactions.push_back(vif.tuser);
       end
 
       // Upon 'tlast'
