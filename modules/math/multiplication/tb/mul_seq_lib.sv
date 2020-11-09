@@ -99,8 +99,8 @@ class mul_random_multiplications_seq #(
       void'(axi4s_item.randomize());
 
       axi4s_item.tid      = i;
-      axi4s_item.tdata[0] = axi4s_item.tdata[0] >>> ((N_BITS_C-Q_BITS_C)/2+2);
-      axi4s_item.tdata[1] = axi4s_item.tdata[1] >>> ((N_BITS_C-Q_BITS_C)/2+2);
+      axi4s_item.tdata[0] = $signed(axi4s_item.tdata[0]) >>> ((N_BITS_C-Q_BITS_C)/2+2);
+      axi4s_item.tdata[1] = $signed(axi4s_item.tdata[1]) >>> ((N_BITS_C-Q_BITS_C)/2+2);
 
       req = axi4s_item;
       start_item(req);

@@ -22,5 +22,10 @@
 `include "uvm_macros.svh"
 import uvm_pkg::*;
 
+`include "mul_tb_pkg.sv"
+`include "mul_tc_pkg.sv"
+`include "mul_tb_top.sv"
 `include "nq_multiplier.sv"
 `include "nq_multiplier_axi4s_if.sv"
+`include "dsp48_nq_multiplier.sv"
+`include "dsp48_nq_multiplier_axi4s_if.sv"

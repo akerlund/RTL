@@ -137,7 +137,6 @@ class mul_scoreboard extends uvm_scoreboard;
     number_of_master_items++;
     master_items.push_back(trans);
     all_master_items.push_back(trans);
-
     current_phase.raise_objection(this);
 
   endfunction

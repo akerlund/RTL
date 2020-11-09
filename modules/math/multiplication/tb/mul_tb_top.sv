@@ -34,7 +34,7 @@ module mul_tb_top;
   vip_axi4s_if #(vip_axi4s_cfg) mst0_vif(clk, rst_n);
   vip_axi4s_if #(vip_axi4s_cfg) slv0_vif(clk, rst_n);
 
-
+  `ifdef LONG_MULTIPLIER
   nq_multiplier_axi4s_if #(
     .AXI_DATA_WIDTH_P ( vip_axi4s_cfg.AXI_DATA_WIDTH_P ),
     .AXI_ID_WIDTH_P   ( vip_axi4s_cfg.AXI_ID_WIDTH_P   ),
@@ -57,6 +57,30 @@ module mul_tb_top;
     .egr_tuser        ( slv0_vif.tuser                 )
   );
 
+  `else
+
+  dsp48_multiplier_axi4s_if #(
+    .AXI_DATA_WIDTH_P ( vip_axi4s_cfg.AXI_DATA_WIDTH_P ),
+    .AXI_ID_WIDTH_P   ( vip_axi4s_cfg.AXI_ID_WIDTH_P   ),
+    .N_BITS_P         ( N_BITS_C                       ),
+    .Q_BITS_P         ( Q_BITS_C                       )
+  ) dsp48_multiplier_axi4s_if_i0 (
+    .clk              ( clk                            ),
+    .rst_n            ( rst_n                          ),
+
+    .ing_tvalid       ( mst0_vif.tvalid                ),
+    .ing_tready       ( mst0_vif.tready                ),
+    .ing_tdata        ( mst0_vif.tdata                 ),
+    .ing_tlast        ( mst0_vif.tlast                 ),
+    .ing_tid          ( mst0_vif.tid                   ),
+
+    .egr_tvalid       ( slv0_vif.tvalid                ),
+    .egr_tdata        ( slv0_vif.tdata                 ),
+    .egr_tlast        ( slv0_vif.tlast                 ),
+    .egr_tid          ( slv0_vif.tid                   ),
+    .egr_tuser        ( slv0_vif.tuser                 )
+  );
+  `endif
 
   initial begin
 
