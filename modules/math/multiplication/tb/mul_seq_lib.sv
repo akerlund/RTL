@@ -76,10 +76,6 @@ class mul_random_multiplications_seq #(
 
   int nr_of_random_multiplications = 1;
 
-  logic signed [vip_cfg.AXI_DATA_WIDTH_P-1 : 0] ing_multiplicand;
-  logic signed [vip_cfg.AXI_DATA_WIDTH_P-1 : 0] ing_multiplier;
-
-
   function new(string name = "mul_random_multiplications_seq");
 
     super.new(name);
@@ -96,11 +92,10 @@ class mul_random_multiplications_seq #(
 
       axi4s_item = new();
       axi4s_item.burst_size = 2;
-      void'(axi4s_item.randomize());
-
+      axi4s_item.randomize();
+      axi4s_item.tdata[0] = $signed(axi4s_item.tdata[0]) >>> ((N_BITS_C-Q_BITS_C)+2);
+      axi4s_item.tdata[1] = $signed(axi4s_item.tdata[1]) >>> ((N_BITS_C-Q_BITS_C)+2);
       axi4s_item.tid      = i;
-      axi4s_item.tdata[0] = $signed(axi4s_item.tdata[0]) >>> ((N_BITS_C-Q_BITS_C)/2+2);
-      axi4s_item.tdata[1] = $signed(axi4s_item.tdata[1]) >>> ((N_BITS_C-Q_BITS_C)/2+2);
 
       req = axi4s_item;
       start_item(req);
@@ -109,6 +104,108 @@ class mul_random_multiplications_seq #(
     end
 
     `uvm_info(get_type_name(), $sformatf("All (%0d) items sent", nr_of_random_multiplications), UVM_LOW)
+
+  endtask
+
+endclass
+
+
+class mul_corner_multiplications_seq #(
+  vip_axi4s_cfg_t vip_cfg = '{default: '0}
+  ) extends uvm_sequence #(vip_axi4s_item #(vip_cfg));
+
+  `uvm_object_param_utils(mul_corner_multiplications_seq #(vip_cfg))
+
+  function new(string name = "mul_corner_multiplications_seq");
+    super.new(name);
+  endfunction
+
+
+  virtual task body();
+
+    req = new();
+    req.burst_size = 2;
+    req.randomize();
+
+    // Multiplicand is zero
+    req.tdata[0] = 0;
+    req.tdata[1] = $signed(req.tdata[1]) >>> ((N_BITS_C-Q_BITS_C)+2);
+    req.tid      = 0;
+
+    start_item(req);
+    finish_item(req);
+
+    // Multiplier is zero
+    req.tdata[0] = $signed(req.tdata[0]) >>> ((N_BITS_C-Q_BITS_C)+2);
+    req.tdata[1] = 0;
+    req.tid      = 1;
+
+    start_item(req);
+    finish_item(req);
+
+    // Largest possible value
+    req.tdata[0] = 2**(N_BITS_C-Q_BITS_C)-1;
+    req.tdata[1] = 2**(N_BITS_C-Q_BITS_C)-1;
+    req.tid      = 2;
+
+    start_item(req);
+    finish_item(req);
+
+    // Lowest possible value
+    req.tdata[0] = -2**(N_BITS_C-Q_BITS_C);
+    req.tdata[1] = -2**(N_BITS_C-Q_BITS_C);
+    req.tid      = 2;
+
+    start_item(req);
+    finish_item(req);
+
+    // Largest fractional part
+    req.tdata[0] = {'0, {Q_BITS_C{1'b1}}};
+    req.tdata[1] = {'0, {Q_BITS_C{1'b1}}};
+    req.tid      = 2;
+
+    start_item(req);
+    finish_item(req);
+
+    // Largest fractional part * largest possible value
+    req.tdata[0] = {'0, {Q_BITS_C{1'b1}}};
+    req.tdata[1] = 2**(N_BITS_C-Q_BITS_C)-1;
+    req.tid      = 2;
+
+    start_item(req);
+    finish_item(req);
+
+    // Largest fractional part * lowest possible value
+    req.tdata[0] = {'0, {Q_BITS_C{1'b1}}};
+    req.tdata[1] = -2**(N_BITS_C-Q_BITS_C);
+    req.tid      = 2;
+
+    start_item(req);
+    finish_item(req);
+
+    // Lowest fractional part
+    req.tdata[0] = {'0, 1'b1};
+    req.tdata[1] = {'0, 1'b1};
+    req.tid      = 2;
+
+    start_item(req);
+    finish_item(req);
+
+    // Lowest fractional part * largest possible value
+    req.tdata[0] = {'0, 1'b1};
+    req.tdata[1] = 2**(N_BITS_C-Q_BITS_C)-1;
+    req.tid      = 2;
+
+    start_item(req);
+    finish_item(req);
+
+    // Lowest fractional part * lowest possible value
+    req.tdata[0] = {'0, 1'b1};
+    req.tdata[1] = -2**(N_BITS_C-Q_BITS_C);
+    req.tid      = 2;
+
+    start_item(req);
+    finish_item(req);
 
   endtask
 

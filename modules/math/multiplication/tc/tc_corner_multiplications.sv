@@ -19,26 +19,41 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-`ifndef MUL_TC_PKG
-`define MUL_TC_PKG
+class tc_corner_multiplications extends mul_base_test;
 
-package mul_tc_pkg;
+  mul_corner_multiplications_seq #(vip_axi4s_cfg) mul_corner_multiplications_seq0;
 
-  `include "uvm_macros.svh"
-  import uvm_pkg::*;
+  `uvm_component_utils(tc_corner_multiplications)
 
-  import vip_axi4s_types_pkg::*;
-  import vip_axi4s_pkg::*;
+  int nr_of_random_multiplications = 1000;
 
-  // Import testbench and agent packages here
-  import mul_tb_pkg::*;
 
-  // Include testcase files here
-  `include "mul_base_test.sv"
-  `include "tc_positive_multiplications.sv"
-  `include "tc_random_multiplications.sv"
-  `include "tc_corner_multiplications.sv"
+  function new(string name = "tc_corner_multiplications", uvm_component parent = null);
 
-endpackage
+    super.new(name, parent);
 
-`endif
+  endfunction
+
+
+
+  function void build_phase(uvm_phase phase);
+
+    super.build_phase(phase);
+
+  endfunction
+
+
+
+  task run_phase(uvm_phase phase);
+
+    super.run_phase(phase);
+    phase.raise_objection(this);
+
+    mul_corner_multiplications_seq0 = new();
+    mul_corner_multiplications_seq0.start(v_sqr.mst0_sequencer);
+
+    phase.drop_objection(this);
+
+  endtask
+
+endclass

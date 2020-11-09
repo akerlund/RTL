@@ -49,7 +49,6 @@ module dsp48_multiplier_axi4s_if #(
   // Signals
   logic [N_BITS_P-1 : 0] ing_multiplicand;
   logic [N_BITS_P-1 : 0] ing_multiplier;
-  logic                  egr_valid_d;
   logic [N_BITS_P-1 : 0] egr_product;
   logic                  egr_overflow;
 

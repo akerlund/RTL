@@ -82,6 +82,11 @@ module mul_tb_top;
   );
   `endif
 
+  assign slv0_vif.tstrb = '0;
+  assign slv0_vif.tkeep = '0;
+  assign slv0_vif.tdest = '0;
+
+
   initial begin
 
     uvm_config_db #(virtual vip_axi4s_if #(vip_axi4s_cfg))::set(uvm_root::get(), "uvm_test_top.tb_env.vip_axi4s_agent_mst0*", "vif", mst0_vif);
