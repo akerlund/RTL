@@ -74,7 +74,12 @@ class mul_random_multiplications_seq #(
 
   `uvm_object_param_utils(mul_random_multiplications_seq #(vip_cfg))
 
-  int nr_of_random_multiplications = 1;
+  int nr_of_random_multiplications;
+  int nr_of_random_multiplications_over_100;
+  int pp_multiplications;
+  int pn_multiplications;
+  int np_multiplications;
+  int nn_multiplications;
 
   function new(string name = "mul_random_multiplications_seq");
 
@@ -87,8 +92,16 @@ class mul_random_multiplications_seq #(
 
     vip_axi4s_item #(vip_cfg) axi4s_item;
 
-
+    nr_of_random_multiplications_over_100 = nr_of_random_multiplications / 100;
+    pp_multiplications = 0;
+    pn_multiplications = 0;
+    np_multiplications = 0;
+    nn_multiplications = 0;
     for (int i = 0; i < nr_of_random_multiplications; i++) begin
+
+      if (i % nr_of_random_multiplications_over_100 == 0) begin
+        `uvm_info(get_type_name(), $sformatf("Random burst number (%0d)", i), UVM_LOW)
+      end
 
       axi4s_item = new();
       axi4s_item.burst_size = 2;
@@ -97,13 +110,31 @@ class mul_random_multiplications_seq #(
       axi4s_item.tdata[1] = $signed(axi4s_item.tdata[1]) >>> ((N_BITS_C-Q_BITS_C)+2);
       axi4s_item.tid      = i;
 
+      if ($signed(axi4s_item.tdata[0]) >= 0 && $signed(axi4s_item.tdata[1]) >= 0) begin
+        pp_multiplications++;
+      end
+      else if ($signed(axi4s_item.tdata[0]) >= 0 && $signed(axi4s_item.tdata[1]) < 0) begin
+        pn_multiplications++;
+      end
+      if ($signed(axi4s_item.tdata[0]) < 0 && $signed(axi4s_item.tdata[1]) >= 0) begin
+        np_multiplications++;
+      end
+      else begin
+        nn_multiplications++;
+      end
+
+
       req = axi4s_item;
       start_item(req);
       finish_item(req);
 
     end
 
-    `uvm_info(get_type_name(), $sformatf("All (%0d) items sent", nr_of_random_multiplications), UVM_LOW)
+    `uvm_info(get_type_name(), $sformatf("Multiplication signs"), UVM_LOW)
+    `uvm_info(get_type_name(), $sformatf("++ = (%0d)", pp_multiplications), UVM_LOW)
+    `uvm_info(get_type_name(), $sformatf("+- = (%0d)", pn_multiplications), UVM_LOW)
+    `uvm_info(get_type_name(), $sformatf("-+ = (%0d)", np_multiplications), UVM_LOW)
+    `uvm_info(get_type_name(), $sformatf("-- = (%0d)", nn_multiplications), UVM_LOW)
 
   endtask
 
@@ -127,85 +158,93 @@ class mul_corner_multiplications_seq #(
     req.burst_size = 2;
     req.randomize();
 
-    // Multiplicand is zero
-    req.tdata[0] = 0;
-    req.tdata[1] = $signed(req.tdata[1]) >>> ((N_BITS_C-Q_BITS_C)+2);
+    `uvm_info(get_name(), $sformatf("Multiplicand is zero"), UVM_LOW)
+    req.tdata[0] = '1;
+    req.tdata[1] = '0;
     req.tid      = 0;
-
     start_item(req);
     finish_item(req);
+    #100;
 
-    // Multiplier is zero
-    req.tdata[0] = $signed(req.tdata[0]) >>> ((N_BITS_C-Q_BITS_C)+2);
+    `uvm_info(get_name(), $sformatf("Multiplier is zero"), UVM_LOW)
+    req.tdata[0] = '1;
     req.tdata[1] = 0;
     req.tid      = 1;
-
     start_item(req);
     finish_item(req);
+    #100;
 
-    // Largest possible value
+    `uvm_info(get_name(), $sformatf("Largest possible values"), UVM_LOW)
     req.tdata[0] = 2**(N_BITS_C-Q_BITS_C)-1;
     req.tdata[1] = 2**(N_BITS_C-Q_BITS_C)-1;
     req.tid      = 2;
-
     start_item(req);
     finish_item(req);
+    #100;
 
-    // Lowest possible value
+    `uvm_info(get_name(), $sformatf("Lowest possible values"), UVM_LOW)
     req.tdata[0] = -2**(N_BITS_C-Q_BITS_C);
     req.tdata[1] = -2**(N_BITS_C-Q_BITS_C);
-    req.tid      = 2;
-
+    req.tid      = 3;
     start_item(req);
     finish_item(req);
+    #100;
 
-    // Largest fractional part
+    `uvm_info(get_name(), $sformatf("Largest fractional parts"), UVM_LOW)
     req.tdata[0] = {'0, {Q_BITS_C{1'b1}}};
     req.tdata[1] = {'0, {Q_BITS_C{1'b1}}};
-    req.tid      = 2;
-
+    req.tid      = 4;
     start_item(req);
     finish_item(req);
+    #100;
 
-    // Largest fractional part * largest possible value
+    `uvm_info(get_name(), $sformatf("Largest fractional part * largest possible value"), UVM_LOW)
     req.tdata[0] = {'0, {Q_BITS_C{1'b1}}};
     req.tdata[1] = 2**(N_BITS_C-Q_BITS_C)-1;
-    req.tid      = 2;
-
+    req.tid      = 5;
     start_item(req);
     finish_item(req);
+    #100;
 
-    // Largest fractional part * lowest possible value
+    `uvm_info(get_name(), $sformatf("Largest fractional part * lowest possible value"), UVM_LOW)
     req.tdata[0] = {'0, {Q_BITS_C{1'b1}}};
     req.tdata[1] = -2**(N_BITS_C-Q_BITS_C);
-    req.tid      = 2;
-
+    req.tid      = 6;
     start_item(req);
     finish_item(req);
+    #100;
 
-    // Lowest fractional part
+    `uvm_info(get_name(), $sformatf("Largest fractional part * lowest fractional part"), UVM_LOW)
+    req.tdata[0] = {'0, {Q_BITS_C{1'b1}}};
+    req.tdata[1] = -2**(N_BITS_C-Q_BITS_C);
+    req.tid      = 7;
+    start_item(req);
+    finish_item(req);
+    #100;
+
+    `uvm_info(get_name(), $sformatf("Lowest fractional parts"), UVM_LOW)
     req.tdata[0] = {'0, 1'b1};
     req.tdata[1] = {'0, 1'b1};
-    req.tid      = 2;
-
+    req.tid      = 8;
     start_item(req);
     finish_item(req);
+    #100;
 
-    // Lowest fractional part * largest possible value
+    `uvm_info(get_name(), $sformatf("Lowest fractional part * largest possible value"), UVM_LOW)
     req.tdata[0] = {'0, 1'b1};
     req.tdata[1] = 2**(N_BITS_C-Q_BITS_C)-1;
-    req.tid      = 2;
-
+    req.tid      = 9;
     start_item(req);
     finish_item(req);
+    #100;
 
-    // Lowest fractional part * lowest possible value
+    `uvm_info(get_name(), $sformatf("Lowest fractional part * lowest possible value"), UVM_LOW)
     req.tdata[0] = {'0, 1'b1};
     req.tdata[1] = -2**(N_BITS_C-Q_BITS_C);
-    req.tid      = 2;
-
+    req.tid      = 10;
     start_item(req);
     finish_item(req);
+    #100;
 
   endtask
 

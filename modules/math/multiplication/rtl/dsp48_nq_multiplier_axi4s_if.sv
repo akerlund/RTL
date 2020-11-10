@@ -54,8 +54,7 @@ module dsp48_multiplier_axi4s_if #(
 
   typedef enum {
     MUL_RECEIVE,
-    MUL_MULTIPLY,
-    MUL_RETURN
+    MUL_MULTIPLY
   } mul_state_t;
 
   mul_state_t mul_state;
@@ -98,16 +97,13 @@ module dsp48_multiplier_axi4s_if #(
         end
 
         MUL_MULTIPLY: begin
-          mul_state      <= MUL_RETURN;
+          mul_state   <= MUL_RECEIVE;
+          ing_tready  <= '1;
+          egr_tvalid  <= '1;
+          egr_tdata   <= egr_product;
+          egr_tuser   <= egr_overflow;
         end
 
-        MUL_RETURN: begin
-          mul_state  <= MUL_RECEIVE;
-          ing_tready <= '1;
-          egr_tvalid <= '1;
-          egr_tdata  <= egr_product;
-          egr_tuser  <= egr_overflow;
-        end
       endcase
 
     end

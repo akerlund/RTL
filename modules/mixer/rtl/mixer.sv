@@ -78,7 +78,7 @@ module mixer #(
     else begin
 
       // Delaying output valid
-      valid_d0 <= {|channel_valid, valid_d0[2 : 1]};
+      valid_d0 <= {channel_valid, valid_d0[2 : 1]};
 
       if (valid_d0[2]) begin
         left_channel_sum_r0  <= left_channel_sum_c0;

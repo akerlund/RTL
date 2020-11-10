@@ -25,7 +25,7 @@ class tc_random_multiplications extends mul_base_test;
 
   `uvm_component_utils(tc_random_multiplications)
 
-  int nr_of_random_multiplications = 1000;
+  int nr_of_random_multiplications = 1000000;
 
 
   function new(string name = "tc_random_multiplications", uvm_component parent = null);
