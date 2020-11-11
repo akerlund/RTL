@@ -2,7 +2,9 @@
 # Common variables
 # ------------------------------------------------------------------------------
 
-GIT_ROOT = $(shell git rev-parse --show-toplevel)
+MAKE_ROOT?=$(shell git rev-parse --show-toplevel)
+
+$(info MAKE_ROOT is $(MAKE_ROOT))
 
 # Defaults
 RUN_DIR?=$(shell pwd)/rundir
@@ -14,6 +16,7 @@ VIV_OOC?=1
 VIV_BUILD=0
 VIV_SYNTH=1
 VIV_ROUTE=2
+VIV_ZYNQ=3
 
 # Module file list script
 MODULE_FILE_LIST=./scripts/compile.sh
@@ -23,9 +26,10 @@ TC_LIST=$(patsubst %.sv,%,$(shell find ./tc -name tc_*.sv -printf "%f " 2> /dev/
 
 
 # Tool scripts
-RUN_VIVADO=$(GIT_ROOT)/scripts/vivado/run.sh
-RUN_XSIM=$(GIT_ROOT)/scripts/vivado/xsim.sh
-RUN_VERILATOR=$(GIT_ROOT)/scripts/verilator/run.sh
+RUN_VIVADO=$(MAKE_ROOT)/scripts/vivado/run.sh
+RUN_ZYNQ=$(MAKE_ROOT)/scripts/vivado/run_zynq.sh
+RUN_XSIM=$(MAKE_ROOT)/scripts/vivado/xsim.sh
+RUN_VERILATOR=$(MAKE_ROOT)/scripts/verilator/run.sh
 
 export
 
@@ -48,6 +52,7 @@ help:
 	@echo "  synth    : Vivado synthesis"
 	@echo "  place    : Vivado synthesis and design place"
 	@echo "  route    : Vivado synthesis, design place, routing and bitstream"
+	@echo "  zynq     : Export a generated IP inside a block design for ZynQ"
 	@echo "  verilate : Run Verilator"
 	@echo "  list     : List the module's testcases"
 	@echo "  tc_*     : Run testcase tc_*"
@@ -68,6 +73,9 @@ synth:
 
 route:
 	@$(RUN_VIVADO) $(MODULE_FILE_LIST) $(RUN_DIR) $(VIV_ROUTE) $(VIV_OOC)
+
+zynq:
+	@$(RUN_ZYNQ) $(MAKE_ROOT) $(MODULE_FILE_LIST) $(RUN_DIR) $(VIV_ZYNQ) $(VIV_OOC)
 
 verilate:
 	@$(RUN_VERILATOR) $(MODULE_FILE_LIST) $(RUN_DIR)

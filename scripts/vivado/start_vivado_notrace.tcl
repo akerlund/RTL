@@ -1,1 +1,1 @@
-source vivado_implementation_flow.tcl -notrace
+source build_normal.tcl -notrace
