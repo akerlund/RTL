@@ -1,4 +1,4 @@
-module_path=$git_root/modules/axi4/axi4_write_arbiter
+module_path=$git_root/modules/axi4_write_arbiter
 
 rtl_dirs+="
   +incdir+$module_path/rtl

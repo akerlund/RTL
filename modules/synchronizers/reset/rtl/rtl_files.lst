@@ -5,6 +5,6 @@ rtl_dirs+="
 "
 
 rtl_files+="
-  $module_path/rtl/reset_synchronizer.sv
   $module_path/rtl/reset_synchronizer_core.sv
+  $module_path/rtl/reset_synchronizer.sv
 "

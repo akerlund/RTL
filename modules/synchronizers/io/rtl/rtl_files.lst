@@ -5,5 +5,6 @@ rtl_dirs+="
 "
 
 rtl_files+="
+  $module_path/rtl/io_synchronizer_core.sv
   $module_path/rtl/io_synchronizer.sv
 "
