@@ -16,7 +16,6 @@ VIV_OOC?=1
 VIV_BUILD=0
 VIV_SYNTH=1
 VIV_ROUTE=2
-VIV_ZYNQ=3
 
 # Module file list script
 MODULE_FILE_LIST=./scripts/compile.sh
@@ -75,7 +74,7 @@ route:
 	@$(RUN_VIVADO) $(MODULE_FILE_LIST) $(RUN_DIR) $(VIV_ROUTE) $(VIV_OOC)
 
 zynq:
-	@$(RUN_ZYNQ) $(MAKE_ROOT) $(MODULE_FILE_LIST) $(RUN_DIR) $(VIV_ZYNQ) $(VIV_OOC)
+	@$(RUN_ZYNQ) $(MAKE_ROOT) $(MODULE_FILE_LIST) $(RUN_DIR)
 
 verilate:
 	@$(RUN_VERILATOR) $(MODULE_FILE_LIST) $(RUN_DIR)

@@ -150,6 +150,7 @@ proc synth_and_all {rtl_top} {
   write_verilog   -force $rpt_dir/cpu_impl_netlist.v -mode timesim -sdf_anno true
   write_bitstream -force $rpt_dir/cpu.bit
 }
+
 # ------------------------------------------------------------------------------
 # Description:
 #   Adds verilog files to a project which are read from a file list.
@@ -165,23 +166,6 @@ proc add_verilog_files {_file_list} {
   close $_file_ref
 
   read_verilog $_file_data
-
-  # puts "INFO \[add_verilog_files\] Parsing file list"
-  # # Parsing out the System Verilog file paths
-  # set _sv_files [split $_file_data "\n"]
-
-
-  # # puts "INFO \[add_verilog_files\] Found ([llength $_sv_files]) files"
-  # set _verilog_files ""
-
-  # foreach _row $_sv_files {
-  #   if { ![regexp {^$} $_row] && ![regexp {^\s*#.*} $_row]} {
-  #     append _verilog_files $_git_root/$_row " "
-  #     puts "INFO \[add_verilog_files\] $_git_root/$_row"
-  #   }
-  # }
-
-  # read_verilog $_verilog_files
 
   puts "INFO \[add_verilog_files\] Completed"
 }
@@ -293,7 +277,6 @@ proc set_ip_properties {_xip_properties} {
   } else {
     puts "INFO \[set_ip_properties\] Property DESCRIPTION not provided"
   }
-
 }
 
 
@@ -310,20 +293,18 @@ proc set_ip_interfaces {_ip_interfaces} {
 
   puts "INFO \[set_ip_interfaces\] Setting up the IP's reset interface(s)"
   foreach _rst [dict get $_ip_interfaces resets] {
-    ipx::infer_bus_interface $_rst xilinx.com:signal:reset_rtl:1.0 [ipx::current_core]
-
+    ipx::infer_bus_interface $_rst xilinx.com:signal:reset_rtl:1.0                 [ipx::current_core]
   }
 
   puts "INFO \[set_ip_interfaces\] Setting up the IP's interrupt interface(s)"
   foreach _irq [dict get $_ip_interfaces irq] {
-    ipx::infer_bus_interface $_irq xilinx.com:signal:interrupt_rtl:1.0 [ipx::current_core]
+    ipx::infer_bus_interface $_irq xilinx.com:signal:interrupt_rtl:1.0             [ipx::current_core]
   }
 
   puts "INFO \[set_ip_interfaces\] Setting up the IP's data I/O interface(s)"
   foreach _io [dict get $_ip_interfaces data_io] {
-    ipx::infer_bus_interface [dict get $_io name] xilinx.com:signal:data_rtl:1.0 [ipx::current_core]
+    ipx::infer_bus_interface [dict get $_io name] xilinx.com:signal:data_rtl:1.0   [ipx::current_core]
   }
-
 }
 
 
