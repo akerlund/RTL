@@ -56,9 +56,9 @@ module osc_tb_top;
   logic            [AXI_ID_WIDTH_C-1 : 0] cor_osc_tid;
 
   // APB signals
-  logic           [APB_DATA_WIDTH_P-1 : 0] cr_waveform_select;
-  logic           [APB_DATA_WIDTH_P-1 : 0] cr_frequency;
-  logic           [APB_DATA_WIDTH_P-1 : 0] cr_duty_cycle;
+  logic           [AXI_DATA_WIDTH_C-1 : 0] cr_waveform_select;
+  logic           [AXI_DATA_WIDTH_C-1 : 0] cr_frequency;
+  logic           [AXI_DATA_WIDTH_C-1 : 0] cr_duty_cycle;
 
 
   oscillator_top #(
@@ -103,8 +103,8 @@ module osc_tb_top;
 
     // Configuration registers
     .cr_waveform_select   ( cr_waveform_select[1 : 0]       ), // input
-    .cr_frequency         ( cr_frequency[N_BITS_P-1 : 0]    ), // input
-    .cr_duty_cycle        ( cr_duty_cycle[N_BITS_P-1 : 0]   )  // input
+    .cr_frequency         ( cr_frequency[N_BITS_C-1 : 0]    ), // input
+    .cr_duty_cycle        ( cr_duty_cycle[N_BITS_C-1 : 0]   )  // input
   );
 
 
@@ -152,23 +152,22 @@ module osc_tb_top;
   );
 
   oscillator_apb3_slave #(
-    .APB3_BASE_ADDR_P   ( APB3_BASE_ADDR_P                     ),
-    .APB3_ADDR_WIDTH_P  ( APB3_ADDR_WIDTH_P                    ),
-    .APB3_DATA_WIDTH_P  ( APB3_DATA_WIDTH_P                    )
+    .APB_BASE_ADDR_P    ( '0                              ),
+    .APB_ADDR_WIDTH_P   ( vip_apb3_cfg.APB_ADDR_WIDTH_P   ),
+    .APB_DATA_WIDTH_P   ( vip_apb3_cfg.APB_DATA_WIDTH_P   )
   ) oscillator_apb3_slave_i0 (
-    .clk                ( clk                                  ),
-    .rst_n              ( rst_n                                ),
-    .apb3_psel          ( apb3_vif.apb3_psel[OSC_PSEL_BIT_C]   ),
-    .apb3_paddr         ( apb3_vif.apb3_paddr                  ),
-    .apb3_pready        ( apb3_vif.apb3_pready                 ),
-    .apb3_prdata        ( apb3_vif.apb3_prdata[OSC_PSEL_BIT_C] ),
-    .apb3_pwrite        ( apb3_vif.apb3_pwrite                 ),
-    .apb3_penable       ( apb3_vif.apb3_penable                ),
-    .apb3_paddr         ( apb3_vif.apb3_paddr                  ),
-    .apb3_pwdata        ( apb3_vif.apb3_pwdata                 ),
-    .cr_waveform_select ( cr_waveform_select                   ),
-    .cr_frequency       ( cr_frequency                         ),
-    .cr_duty_cycle      ( cr_duty_cycle                        )
+    .clk                ( clk                             ),
+    .rst_n              ( rst_n                           ),
+    .apb3_psel          ( apb3_vif.psel[OSC_PSEL_BIT_C]   ),
+    .apb3_paddr         ( apb3_vif.paddr                  ),
+    .apb3_pready        ( apb3_vif.pready                 ),
+    .apb3_prdata        ( apb3_vif.prdata[OSC_PSEL_BIT_C] ),
+    .apb3_pwrite        ( apb3_vif.pwrite                 ),
+    .apb3_penable       ( apb3_vif.penable                ),
+    .apb3_pwdata        ( apb3_vif.pwdata                 ),
+    .cr_waveform_select ( cr_waveform_select              ),
+    .cr_frequency       ( cr_frequency                    ),
+    .cr_duty_cycle      ( cr_duty_cycle                   )
   );
 
 
