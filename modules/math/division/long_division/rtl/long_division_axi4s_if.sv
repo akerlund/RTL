@@ -92,18 +92,19 @@ module long_division_axi4s_if #(
 
 
   long_division_core #(
-    .N_BITS_P     ( N_BITS_P     ),
-    .Q_BITS_P     ( Q_BITS_P     )
+    .N_BITS_P      ( N_BITS_P     ),
+    .Q_BITS_P      ( Q_BITS_P     )
   ) long_division_core_i0 (
-    .clk          ( clk          ), // input
-    .rst_n        ( rst_n        ), // input
-    .ing_valid    ( ing_valid    ), // input
-    .ing_ready    ( ing_ready    ), // output
-    .ing_dividend ( ing_dividend ), // input
-    .ing_divisor  ( ing_divisor  ), // input
-    .egr_valid    ( egr_valid    ), // output
-    .egr_quotient ( egr_quotient ), // output
-    .egr_overflow ( egr_overflow )  // output
+    .clk           ( clk          ), // input
+    .rst_n         ( rst_n        ), // input
+    .ing_valid     ( ing_valid    ), // input
+    .ing_ready     ( ing_ready    ), // output
+    .ing_dividend  ( ing_dividend ), // input
+    .ing_divisor   ( ing_divisor  ), // input
+    .egr_valid     ( egr_valid    ), // output
+    .egr_quotient  ( egr_quotient ), // output
+    .egr_remainder (              ), // output
+    .egr_overflow  ( egr_overflow )  // output
   );
 
 endmodule

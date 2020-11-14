@@ -39,17 +39,19 @@ module dsp48_nq_multiplier #(
   assign product_c0 = $signed(ing_multiplicand) * $signed(ing_multiplier);
   assign sign_bit   = ing_multiplicand[N_BITS_P-1] ^ ing_multiplier[N_BITS_P-1];
 
-  always_ff @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
-      egr_product  <= '0;
-      egr_overflow <= '0;
-    end
-    else begin
+  always_ff @(posedge clk) begin
+    if (clk) begin
+      if (!rst_n) begin
+        egr_product  <= '0;
+        egr_overflow <= '0;
+      end
+      else begin
 
-      egr_product[N_BITS_P-1 : 0] <= product_c0[N_BITS_P-1+Q_BITS_P : Q_BITS_P];
-      egr_overflow                <= sign_bit ? product_c0[2*N_BITS_P-1 : N_BITS_P+Q_BITS_P] != '1 :
-                                                product_c0[2*N_BITS_P-1 : N_BITS_P+Q_BITS_P] != '0;
+        egr_product[N_BITS_P-1 : 0] <= product_c0[N_BITS_P-1+Q_BITS_P : Q_BITS_P];
+        egr_overflow                <= sign_bit ? product_c0[2*N_BITS_P-1 : N_BITS_P+Q_BITS_P] != '1 :
+                                                  product_c0[2*N_BITS_P-1 : N_BITS_P+Q_BITS_P] != '0;
 
+      end
     end
   end
 
