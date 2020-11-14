@@ -60,6 +60,7 @@ if { [expr $run_mode == 0] } {
     }
   }
 
+  foreach f $rtl_files { puts $outfile "$f" }
   foreach f $uvm_files { puts $outfile "$f" }
 
   close $outfile;
