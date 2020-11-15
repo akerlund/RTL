@@ -32,8 +32,17 @@ def generate_uvm(yaml_file_path):
   uvm_reg_file_path   = this_path + "/templates/uvm_reg.sv"
   uvm_block_file_path = this_path + "/templates/uvm_block.sv"
   field_template_path = this_path + "/templates/reg_field.txt"
-  #header_file_path    = this_path + "/templates/header.txt"
-  output_path         = '/'.join(yaml_file_path.split('/')[:-1]) + "/"
+  header_file_path    = this_path + "/templates/header.txt"
+
+
+  rtl_path = '/'.join(yaml_file_path.split('/')[:-2]) + "/rtl/"
+  uvm_path = '/'.join(yaml_file_path.split('/')[:-2]) + "/tb/uvm_reg/"
+
+  if not os.path.exists(rtl_path):
+      os.makedirs(rtl_path)
+
+  if not os.path.exists(uvm_path):
+      os.makedirs(uvm_path)
 
   # ----------------------------------------------------------------------------
   # Loading in the templates
@@ -48,8 +57,8 @@ def generate_uvm(yaml_file_path):
     uvm_block = file.read()
 
   header = ""
-  #with open(header_file_path, 'r') as file:
-  #  header = file.read()
+  with open(header_file_path, 'r') as file:
+    header = file.read()
 
   field_template = ""
   with open(field_template_path, 'r') as file:
@@ -141,7 +150,7 @@ def generate_uvm(yaml_file_path):
     UVM_BUILD    = ""
 
   # Write the register classes to file
-  output_file = output_path + BLOCK_NAME + "_reg.sv"
+  output_file = uvm_path + BLOCK_NAME + "_reg.sv"
   with open(output_file, 'w') as file:
     file.write(reg_classes)
 
@@ -175,7 +184,7 @@ def generate_uvm(yaml_file_path):
   pkt_bot  = "\n\n"
   pkt_bot  = "\nendpackage\n\n`endif\n"
 
-  output_file = output_path + BLOCK_NAME + "_address_pkg.sv"
+  output_file = rtl_path + BLOCK_NAME + "_address_pkg.sv"
   with open(output_file, 'w') as file:
     file.write(header.replace("DATE", str(date.today())))
     file.write(pkt_top)
@@ -232,7 +241,7 @@ def generate_uvm(yaml_file_path):
 
 
   # Write the register block to file
-  output_file = output_path + BLOCK_NAME + "_block.sv"
+  output_file = uvm_path + BLOCK_NAME + "_block.sv"
   with open(output_file, 'w') as file:
     file.write(block)
 

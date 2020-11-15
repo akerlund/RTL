@@ -412,7 +412,8 @@ def generate_axi(yaml_file_path):
   output = output.replace("AXI_READS",          all_rtl_reads)
 
   # Write the AXI slave to file
-  output_file = '/'.join(yaml_file_path.split('/')[:-1]) + "/" + BLOCK_NAME + "_axi_slave.sv"
+  output_path = '/'.join(yaml_file_path.split('/')[:-2]) + "/rtl/"
+  output_file = output_path + BLOCK_NAME + "_axi_slave.sv"
   with open(output_file, 'w') as file:
     file.write(output)
 

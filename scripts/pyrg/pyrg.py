@@ -22,8 +22,8 @@
 ################################################################################
 
 import os, sys, shutil, glob
-import pyreg_uvm
-import pyreg_axi
+import pyrg_uvm
+import pyrg_axi
 
 
 if __name__ == '__main__':
@@ -41,8 +41,8 @@ if __name__ == '__main__':
 
   for yml in yml_files:
 
-    pyreg_uvm.generate_uvm(yml)
-    pyreg_axi.generate_axi(yml)
+    pyrg_uvm.generate_uvm(yml)
+    pyrg_axi.generate_axi(yml)
 
 
   shutil.rmtree(this_path + "/__pycache__")

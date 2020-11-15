@@ -28,7 +28,7 @@ RUN_VIVADO=$(MAKE_ROOT)/scripts/vivado/run.sh
 RUN_ZYNQ=$(MAKE_ROOT)/scripts/vivado/run_zynq.sh
 RUN_XSIM=$(MAKE_ROOT)/scripts/vivado/xsim.sh
 RUN_VERILATOR=$(MAKE_ROOT)/scripts/verilator/run.sh
-RUN_PYRG=$(MAKE_ROOT)/scripts/pyreg/pyreg.py
+RUN_PYRG=$(MAKE_ROOT)/scripts/pyrg/pyrg.py
 
 export
 
