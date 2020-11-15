@@ -22,8 +22,8 @@
 IMPORT
 
 module CLASS_NAME #(
-    parameter integer AXI_DATA_WIDTH_C = -1,
-    parameter integer AXI_ADDR_WIDTH_C = -1
+    parameter int AXI_DATA_WIDTH_P = -1,
+    parameter int AXI_ADDR_WIDTH_P = -1
   )(
 
     // ---------------------------------------------------------------------------
@@ -35,13 +35,13 @@ module CLASS_NAME #(
     input  wire                               rst_n,
 
     // Write Address Channel
-    input  wire      [AXI_ADDR_WIDTH_C-1 : 0] awaddr,
+    input  wire      [AXI_ADDR_WIDTH_P-1 : 0] awaddr,
     input  wire                               awvalid,
     output logic                              awready,
 
     // Write Data Channel
-    input  wire      [AXI_DATA_WIDTH_C-1 : 0] wdata,
-    input  wire  [(AXI_DATA_WIDTH_C/8)-1 : 0] wstrb,
+    input  wire      [AXI_DATA_WIDTH_P-1 : 0] wdata,
+    input  wire  [(AXI_DATA_WIDTH_P/8)-1 : 0] wstrb,
     input  wire                               wvalid,
     output logic                              wready,
 
@@ -51,12 +51,12 @@ module CLASS_NAME #(
     input  wire                               bready,
 
     // Read Address Channel
-    input  wire      [AXI_ADDR_WIDTH_C-1 : 0] araddr,
+    input  wire      [AXI_ADDR_WIDTH_P-1 : 0] araddr,
     input  wire                               arvalid,
     output logic                              arready,
 
     // Read Data Channel
-    output logic     [AXI_DATA_WIDTH_C-1 : 0] rdata,
+    output logic     [AXI_DATA_WIDTH_P-1 : 0] rdata,
     output logic                      [1 : 0] rresp,
     output logic                              rvalid,
     input  wire                               rready,
@@ -65,40 +65,25 @@ module CLASS_NAME #(
     // Register Ports
     // ---------------------------------------------------------------------------
 PORTS
-);
-
-  // ---------------------------------------------------------------------------
-  // Internal AXI signals
-  // ---------------------------------------------------------------------------
-
-  // Example-specific design signals
-  // local parameter for addressing 32 bit / 64 bit AXI_DATA_WIDTH_C
-  // ADDR_LSB_C is used for addressing 32/64 bit registers/memories
-  // ADDR_LSB_C = 2 for 32 bits (n downto 2)
-  // ADDR_LSB_C = 3 for 64 bits (n downto 3)
-  localparam int ADDR_LSB_C          = (AXI_DATA_WIDTH_C / 32) + 1;
-  localparam int OPT_MEM_ADDR_BITS_C = 4;
+  );
 
   // ---------------------------------------------------------------------------
   // Internal signals
   // ---------------------------------------------------------------------------
 
   logic                          aw_enable;
-  logic [AXI_ADDR_WIDTH_C-1 : 0] awaddr_d0;
+  logic [AXI_ADDR_WIDTH_P-1 : 0] awaddr_d0;
   logic                          write_enable;
   logic                          read_enable;
-  logic [AXI_ADDR_WIDTH_C-1 : 0] araddr_d0;
-  logic [AXI_DATA_WIDTH_C-1 : 0] rdata_d0;
-
+  logic [AXI_ADDR_WIDTH_P-1 : 0] araddr_d0;
+  logic [AXI_DATA_WIDTH_P-1 : 0] rdata_d0;
 LOGIC_DECLARATIONS
-
   // ---------------------------------------------------------------------------
   // Internal assignments
   // ---------------------------------------------------------------------------
 
-  assign write_enable = wready  & wvalid  & awready & awvalid;
-  assign read_enable  = arready & arvalid & ~rvalid;
-
+  assign write_enable = wready  && wvalid  && awready && awvalid;
+  assign read_enable  = arready && arvalid && !rvalid;
 
   // ---------------------------------------------------------------------------
   // Write Address Channel
@@ -162,30 +147,18 @@ LOGIC_DECLARATIONS
     if (!rst_n) begin
 
 RESETS
-
     end
     else begin
-
 CMD_REGISTERS
-
       if (write_enable) begin
 
-        case (awaddr_d0[ADDR_LSB_C+OPT_MEM_ADDR_BITS_C : ADDR_LSB_C])
+        case (awaddr_d0)
 
 AXI_WRITES
-
-
-          //5'h00: begin
-          //  for (int byte = 0; byte <= (AXI_DATA_WIDTH_C/8)-1; byte++) begin
-          //    if (wstrb[byte] == 1) begin
-          //      cr_led_0[(byte*8) +: 8] <= wdata[(byte*8) +: 8];
-          //    end
-          //  end
-          //end
-
           default : begin
 
           end
+
         endcase
       end
     end
@@ -249,9 +222,7 @@ AXI_WRITES
       rvalid <= 0;
     end
     else begin
-
 RC_ASSIGNMENTS
-
       if (read_enable) begin
         rdata <= rdata_d0;
       end
@@ -273,13 +244,14 @@ RC_ASSIGNMENTS
   // ---------------------------------------------------------------------------
   always_comb begin
 
+    rdata_d0 <= '0;
+
     // Address decoding for reading registers
-    case (araddr_d0[ADDR_LSB_C+OPT_MEM_ADDR_BITS_C : ADDR_LSB_C])
+    case (araddr_d0)
 
 AXI_READS
-//    5'h00   : rdata_d0 <= 1;
+      default : rdata_d0 = 32'hBAADFACE;
 
-      default : rdata_d0 <= rdata_d0;
     endcase
   end
 

@@ -89,7 +89,6 @@ def generate_axi(yaml_file_path):
     # Register information
     reg_name   = reg['name']
     reg_access = reg['access']
-    reg_type   = reg_name.split("_")[0].upper() # Register have the naming: prefix_block_register
 
     # Generate RTL code (for fields) are appended to these
     _reg_writes = []
@@ -111,6 +110,7 @@ def generate_axi(yaml_file_path):
       #_field_description = field['field']['description']
       _field_size        = field['field']['size']
       _field_lsb_pos     = field['field']['lsb_pos']
+      _field_type        = _field_name.split("_")[0].upper() # Register have the naming: prefix_block_register
 
       # ------------------------------------------------------------------------
       # rtl_ports
@@ -127,11 +127,11 @@ def generate_axi(yaml_file_path):
       else:
         _port_width = "[%s : 0]" % (str(_field_size-1))
 
-      if (reg_type in ["CR", "CMD"]):
+      if (_field_type in ["CR", "CMD"]):
         rtl_ports.append(("    output logic ", _port_width, _field_name))
-      elif (reg_type in ["SR", "IRQ"]):
+      elif (_field_type in ["SR", "IRQ"]):
         rtl_ports.append(("    input  wire  ", _port_width, _field_name))
-      elif (reg_type in ["ROM"]):
+      elif (_field_type in ["ROM"]):
         reg_rom_declarations.append((_port_width, _field_name))
 
       # Declaration of Read and Clear registers
@@ -156,7 +156,7 @@ def generate_axi(yaml_file_path):
       # supposed to be strobe signals
       # ------------------------------------------------------------------------
 
-      if (reg_type in ["CMD"]):
+      if (_field_type in ["CMD"]):
         rtl_cmd_registers.append(_field_name)
 
       # ------------------------------------------------------------------------
@@ -389,7 +389,8 @@ def generate_axi(yaml_file_path):
   output = output.replace("AXI_READS",          all_rtl_reads)
 
   # Write the AXI slave to file
-  with open(this_path + "/rundir/" + BLOCK_NAME + "_axi_slave.sv", 'w') as file:
+  output_file = '/'.join(yaml_file_path.split('/')[:-1]) + "/" + BLOCK_NAME + "_axi_slave.sv"
+  with open(output_file, 'w') as file:
     file.write(output)
 
-  print("INFO [pyrg] Generated ./rundir/"+ BLOCK_NAME + "_axi_slave.sv")
+  print("INFO [pyrg] Generated %s" % output_file)

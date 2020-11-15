@@ -21,7 +21,7 @@
 ##
 ################################################################################
 
-import os, sys, shutil
+import os, sys, shutil, glob
 import pyreg_uvm
 import pyreg_axi
 
@@ -30,13 +30,19 @@ if __name__ == '__main__':
 
   this_path = os.path.dirname(os.path.abspath(sys.argv[0]))
 
-  yml_files = [
-    (this_path + "/register_example.yml")
-  ]
+  if (len(sys.argv) != 2):
+    sys.exit("ERROR [yml] Provide a YML file with register definitions")
+
+  yml_files = os.listdir(sys.argv[1])
+  yml_files = glob.glob(sys.argv[1]+"/*.yml")
+
+  if (len(yml_files) == 0):
+    sys.exit("ERROR [yml] No files found")
 
   for yml in yml_files:
 
     pyreg_uvm.generate_uvm(yml)
     pyreg_axi.generate_axi(yml)
+
 
   shutil.rmtree(this_path + "/__pycache__")

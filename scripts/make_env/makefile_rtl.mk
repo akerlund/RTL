@@ -4,10 +4,9 @@
 
 MAKE_ROOT?=$(shell git rev-parse --show-toplevel)
 
-$(info MAKE_ROOT is $(MAKE_ROOT))
-
 # Defaults
 RUN_DIR?=$(shell pwd)/rundir
+PYRG_DIR?=$(shell pwd)/pyrg
 UVM_TR_RECORD?=UVM_HIGH
 UVM_VERBOSITY?=LOW
 VIV_OOC?=1
@@ -29,6 +28,7 @@ RUN_VIVADO=$(MAKE_ROOT)/scripts/vivado/run.sh
 RUN_ZYNQ=$(MAKE_ROOT)/scripts/vivado/run_zynq.sh
 RUN_XSIM=$(MAKE_ROOT)/scripts/vivado/xsim.sh
 RUN_VERILATOR=$(MAKE_ROOT)/scripts/verilator/run.sh
+RUN_PYRG=$(MAKE_ROOT)/scripts/pyreg/pyreg.py
 
 export
 
@@ -36,7 +36,7 @@ export
 # Make targets
 # ------------------------------------------------------------------------------
 
-.PHONY: help build synthesize verilate clean clean_verilator $(TC_LIST)
+.PHONY: help build synth route zynq pyrg verilate clean $(TC_LIST)
 
 help:
 	@echo "  ------------------------------------------------------------------------------"
@@ -52,6 +52,7 @@ help:
 	@echo "  place    : Vivado synthesis and design place"
 	@echo "  route    : Vivado synthesis, design place, routing and bitstream"
 	@echo "  zynq     : Export a generated IP inside a block design for ZynQ"
+	@echo "  pyrg     : Create register RTL with the module's register yaml file"
 	@echo "  verilate : Run Verilator"
 	@echo "  list     : List the module's testcases"
 	@echo "  tc_*     : Run testcase tc_*"
@@ -75,6 +76,9 @@ route:
 
 zynq:
 	@$(RUN_ZYNQ) $(MAKE_ROOT) $(MODULE_FILE_LIST) $(RUN_DIR)
+
+pyrg:
+	@$(RUN_PYRG) $(PYRG_DIR)
 
 verilate:
 	@$(RUN_VERILATOR) $(MODULE_FILE_LIST) $(RUN_DIR)

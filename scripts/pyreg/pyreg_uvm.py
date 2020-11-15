@@ -33,6 +33,7 @@ def generate_uvm(yaml_file_path):
   uvm_block_file_path = this_path + "/templates/uvm_block.sv"
   field_template_path = this_path + "/templates/reg_field.txt"
   #header_file_path    = this_path + "/templates/header.txt"
+  output_path         = '/'.join(yaml_file_path.split('/')[:-1]) + "/"
 
   # ----------------------------------------------------------------------------
   # Loading in the templates
@@ -140,10 +141,11 @@ def generate_uvm(yaml_file_path):
     UVM_BUILD    = ""
 
   # Write the register classes to file
-  with open(this_path + "/rundir/" + BLOCK_NAME + "_reg.sv", 'w') as file:
+  output_file = output_path + BLOCK_NAME + "_reg.sv"
+  with open(output_file, 'w') as file:
     file.write(reg_classes)
 
-  print("INFO [pyrg] Generated ./rundir/"+ BLOCK_NAME + "_reg.sv")
+  print("INFO [pyrg] Generated %s" % output_file)
 
 
 
@@ -173,14 +175,15 @@ def generate_uvm(yaml_file_path):
   pkt_bot  = "\n\n"
   pkt_bot  = "\nendpackage\n\n`endif\n"
 
-  with open(this_path + "/rundir/" + BLOCK_NAME + "_address_pkg.sv", 'w') as file:
+  output_file = output_path + BLOCK_NAME + "_address_pkg.sv"
+  with open(output_file, 'w') as file:
     file.write(header.replace("DATE", str(date.today())))
     file.write(pkt_top)
     file.write(ADDRESS_HIGH)
     file.write(''.join(address_map))
     file.write(pkt_bot)
 
-  print("INFO [pyrg] Generated ./rundir/"+ BLOCK_NAME + "_address_pkg.sv")
+  print("INFO [pyrg] Generated %s" % output_file)
 
 
 
@@ -229,7 +232,8 @@ def generate_uvm(yaml_file_path):
 
 
   # Write the register block to file
-  with open(this_path + "/rundir/" + BLOCK_NAME + "_block.sv", 'w') as file:
+  output_file = output_path + BLOCK_NAME + "_block.sv"
+  with open(output_file, 'w') as file:
     file.write(block)
 
-  print("INFO [pyrg] Generated ./rundir/"+ BLOCK_NAME + "_block.sv")
+  print("INFO [pyrg] Generated %s" % output_file)
