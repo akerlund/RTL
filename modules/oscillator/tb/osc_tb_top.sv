@@ -33,6 +33,8 @@ module osc_tb_top;
   // IF
   vip_apb3_if #(vip_apb3_cfg) apb3_vif(clk, rst_n);
 
+  logic signed       [WAVE_WIDTH_C-1 : 0] waveform;
+
   // AXI4-S signals betwwen the Oscillator top and the divider
   logic                                   osc_div_tvalid;
   logic                                   osc_div_tready;
@@ -55,10 +57,52 @@ module osc_tb_top;
   logic signed [2*AXI_DATA_WIDTH_C-1 : 0] cor_osc_tdata;
   logic            [AXI_ID_WIDTH_C-1 : 0] cor_osc_tid;
 
+  // Mixer
+  logic  [NR_OF_CHANNELS_C-1 : 0] [WAVE_WIDTH_C-1 : 0] channel_data;
+  logic                                                channel_valid;
+  logic                           [WAVE_WIDTH_C-1 : 0] out_left;
+  logic                           [WAVE_WIDTH_C-1 : 0] out_right;
+  logic                       [NR_OF_CHANNELS_C-1 : 0] sr_mix_channel_clip;
+  logic                                                sr_mix_out_clip;
+  logic                                                out_valid;
+  logic                                                out_ready;
+  logic  [NR_OF_CHANNELS_C-1 : 0] [WAVE_WIDTH_C-1 : 0] cr_channel_gain;
+  logic  [NR_OF_CHANNELS_C-1 : 0]                      cr_channel_pan;
+  logic                           [WAVE_WIDTH_C-1 : 0] cr_output_gain;
+
   // APB signals
   logic           [AXI_DATA_WIDTH_C-1 : 0] cr_waveform_select;
   logic           [AXI_DATA_WIDTH_C-1 : 0] cr_frequency;
   logic           [AXI_DATA_WIDTH_C-1 : 0] cr_duty_cycle;
+
+  assign channel_data[0]    = waveform;
+  assign channel_data[1]    = waveform;
+  assign cr_channel_gain[0] = (1 <<< Q_BITS_C);
+  assign cr_channel_gain[1] = (1 <<< Q_BITS_C);
+  assign cr_channel_pan[0]  = 1'b0;
+  assign cr_channel_pan[1]  = 1'b1;
+  assign cr_output_gain     = (1 <<< Q_BITS_C);
+
+  mixer #(
+    .AUDIO_WIDTH_P       ( WAVE_WIDTH_C        ),
+    .GAIN_WIDTH_P        ( WAVE_WIDTH_C        ),
+    .NR_OF_CHANNELS_P    ( NR_OF_CHANNELS_C    ),
+    .Q_BITS_P            ( Q_BITS_C            )
+  ) mixer_i0 (
+    .clk                 ( clk                 ), // input
+    .rst_n               ( rst_n               ), // input
+    .channel_data        ( channel_data        ), // input
+    .channel_valid       ( channel_valid       ), // input
+    .out_left            ( out_left            ), // output
+    .out_right           ( out_right           ), // output
+    .out_valid           ( out_valid           ), // output
+    .out_ready           ( out_ready           ), // input
+    .sr_mix_channel_clip ( sr_mix_channel_clip ), // output
+    .sr_mix_out_clip     ( sr_mix_out_clip     ), // output
+    .cr_mix_channel_gain ( cr_channel_gain     ), // input
+    .cr_mix_channel_pan  ( cr_channel_pan      ), // input
+    .cr_mix_output_gain  ( cr_output_gain      )  // input
+  );
 
 
   oscillator_top #(
@@ -76,7 +120,7 @@ module osc_tb_top;
     .rst_n                ( rst_n                           ), // input
 
     // Long division interface
-    .waveform             (                                 ), // output
+    .waveform             ( waveform                        ), // output
     .div_egr_tvalid       ( osc_div_tvalid                  ), // output
     .div_egr_tready       ( osc_div_tready                  ), // input
     .div_egr_tdata        ( osc_div_tdata                   ), // output

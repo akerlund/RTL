@@ -47,3 +47,5 @@ import vip_apb3_types_pkg::*;
 `include "cordic_radian_core.sv"
 `include "cordic_radian_top.sv"
 `include "cordic_axi4s_if.sv"
+
+`include "mixer.sv"

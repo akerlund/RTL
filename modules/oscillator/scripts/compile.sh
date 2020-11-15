@@ -15,6 +15,8 @@ source $git_root/modules/clock_enablers/clock_enable/rtl/rtl_files.lst
 source $git_root/modules/clock_enablers/clock_enable_scaler/rtl/rtl_files.lst
 source $git_root/modules/clock_enablers/delay_enable/rtl/rtl_files.lst
 source $git_root/modules/clock_enablers/frequency_enable/rtl/rtl_files.lst
+source $git_root/modules/math/multiplication/rtl/rtl_files.lst
+source $git_root/modules/mixer/rtl/rtl_files.lst
 
 # Source the module's file lists
 source ./rtl/rtl_files.lst
