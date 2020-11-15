@@ -24,21 +24,26 @@
 
 import yaml
 import sys, os
+import itertools, operator
 from datetime import date
+
+def sort_uniq(sequence):
+  return map(operator.itemgetter(0),
+             itertools.groupby(sorted(sequence)))
 
 def generate_axi(yaml_file_path):
 
   this_path          = os.path.dirname(os.path.abspath(sys.argv[0]))
   axi_template_path  = this_path + "/templates/axi4_reg_slave.sv"
-  #header_file_path   = this_path + "/templates/header.txt"
+  header_file_path   = this_path + "/templates/header.txt"
 
   # ----------------------------------------------------------------------------
   # Loading in the templates
   # ----------------------------------------------------------------------------
 
   header = ""
-  #with open(header_file_path, 'r') as file:
-  #  header = file.read()
+  with open(header_file_path, 'r') as file:
+    header = file.read()
 
   axi_template = ""
   with open(axi_template_path, 'r') as file:
@@ -69,6 +74,7 @@ def generate_axi(yaml_file_path):
 
   # Variables for construction the AXI slave
   #MODULE_NAME
+  rtl_parameters       = [] # Size fields which are strings are considered parameters
   rtl_ports            = [] # We list all ports we generate as tuples (IO, PORT_WIDTH, FIELD_NAME)
   rtl_resets           = [] # If a reset value is specified for a register we add in this list
   rtl_cmd_registers    = [] # Save all 'cmd_' registers here, used later to set them to '0' as default
@@ -120,6 +126,7 @@ def generate_axi(yaml_file_path):
       # If the size is a string, i.e., a constant
       if (isinstance(_field_size, str)):
         _port_width = "[%s-1 : 0]" % (_field_size)
+        rtl_parameters.append(_field_size)
       # If the size is just one bit
       elif (_field_size == 1):
         _port_width = " "
@@ -291,6 +298,21 @@ def generate_axi(yaml_file_path):
 
   IMPORT = "import " + BLOCK_NAME + "_address_pkg::*;"
 
+  # ------------------------------------------------------------------------
+  # rtl_parameters
+  # ------------------------------------------------------------------------
+
+  PARAMETERS = ""
+
+  if rtl_parameters:
+
+    PARAMETERS = ",\n"
+    rtl_parameters = sort_uniq(rtl_parameters)
+
+    for p in rtl_parameters:
+      PARAMETERS += 4*' ' + "parameter int %s = -1,\n" % p
+
+    PARAMETERS = PARAMETERS[:-2]
 
   # ------------------------------------------------------------------------
   # rtl_ports
@@ -379,6 +401,7 @@ def generate_axi(yaml_file_path):
 
   output = header + axi_template
   output = output.replace("IMPORT",             IMPORT)
+  output = output.replace("PARAMETERS",         PARAMETERS)
   output = output.replace("CLASS_NAME",         (BLOCK_NAME + "_axi_slave"))
   output = output.replace("PORTS",              AXI_PORTS)
   output = output.replace("LOGIC_DECLARATIONS", LOGIC_DECLARATIONS)
