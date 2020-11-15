@@ -45,25 +45,28 @@ module osc_triangle_top #(
     input  wire         [COUNTER_WIDTH_P-1 : 0] cr_clock_enable
   );
 
+  // A 24-bit signed wave has a maximum amplitude of 8388607
+  localparam int MAX_WAVE_AMPLITUDE_C      = 2**(WAVE_WIDTH_P-1)-1;
+
+  // A 24-bit signed wave has a minimum amplitude of -8388608
+  localparam int MIN_WAVE_AMPLITUDE_C      =  -2**(WAVE_WIDTH_P-1);
+
   // The prime (or higest/base) frequency's period in system clock periods, e.g.,
-  // 200MHz / 1MHz = 200
-  localparam int PERIOD_IN_SYS_CLKS_C = SYS_CLK_FREQUENCY_P / PRIME_FREQUENCY_P;
+  // 125MHz / 1MHz = 125
+  localparam int PERIOD_IN_SYS_CLKS_C      = SYS_CLK_FREQUENCY_P / PRIME_FREQUENCY_P;
+
+  // For example: 125 / 2 = 63
+  localparam int HALF_PERIOD_IN_SYS_CLKS_C = int'($ceil(real'(PERIOD_IN_SYS_CLKS_C) / real'(2.0)));
 
   // The increment value of the counter depending on the given maximum frequency, e.g.,
-  // (2**24 -1) / (200/2) = 16777215 / 100 = 167772
-  localparam logic signed [WAVE_WIDTH_P-1 : 0] WAVE_AMPLITUDE_INC_C =
-    (2**WAVE_WIDTH_P-1) / (PERIOD_IN_SYS_CLKS_C/2);
+  // For example: 8388607 / 63 = 133152
+  localparam logic signed [WAVE_WIDTH_P-1 : 0] WAVE_AMPLITUDE_INC_C = MAX_WAVE_AMPLITUDE_C / HALF_PERIOD_IN_SYS_CLKS_C;
 
   // The max amplitude of the wave is (minimum amplitude) plus increment size times number of increments, e.g.,
-  // -2**(24-1) + 167772*200/2 = -8388608 + 16777200 = 8388592
-  localparam logic signed [WAVE_WIDTH_P-1 : 0] WAVE_AMPLITUDE_MAX_C =
-    -2**(WAVE_WIDTH_P-1) + WAVE_AMPLITUDE_INC_C*PERIOD_IN_SYS_CLKS_C/2;
+  // For example: (-8388608 + 133152*125 = 8255392) < 8388607 => 8388607 - 8255392 = 133215
+  localparam logic signed [WAVE_WIDTH_P-1 : 0] WAVE_AMPLITUDE_MAX_C = MIN_WAVE_AMPLITUDE_C + WAVE_AMPLITUDE_INC_C*PERIOD_IN_SYS_CLKS_C;
 
   logic clock_enable;
-
-  logic period_debug;
-  assign period_debug = osc_triangle == {1'b1, {(WAVE_WIDTH_P-1){1'b0}}} ? '1 : '0;
-
 
   osc_triangle_core #(
     .WAVE_WIDTH_P         ( WAVE_WIDTH_P         ), // Width of the wave
