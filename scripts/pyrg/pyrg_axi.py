@@ -89,6 +89,10 @@ def generate_axi(yaml_file_path):
   reg_rc_declarations  = []
   reg_rom_declarations = []
 
+  rtl_parameters.append("AXI_DATA_WIDTH_P")
+  rtl_parameters.append("AXI_ADDR_WIDTH_P")
+
+
   # Iterating through the list of registers
   for reg in block_contents['registers']:
 
@@ -303,16 +307,12 @@ def generate_axi(yaml_file_path):
   # ------------------------------------------------------------------------
 
   PARAMETERS = ""
+  rtl_parameters = sort_uniq(rtl_parameters)
 
-  if rtl_parameters:
+  for p in rtl_parameters:
+    PARAMETERS += 4*' ' + "parameter int %s = -1,\n" % p
 
-    PARAMETERS = ",\n"
-    rtl_parameters = sort_uniq(rtl_parameters)
-
-    for p in rtl_parameters:
-      PARAMETERS += 4*' ' + "parameter int %s = -1,\n" % p
-
-    PARAMETERS = PARAMETERS[:-2]
+  PARAMETERS = PARAMETERS[:-2]
 
   # ------------------------------------------------------------------------
   # rtl_ports

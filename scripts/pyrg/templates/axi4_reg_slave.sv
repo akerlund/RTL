@@ -2,8 +2,7 @@
 IMPORT
 
 module CLASS_NAME #(
-    parameter int AXI_DATA_WIDTH_P = -1,
-    parameter int AXI_ADDR_WIDTH_P = -1PARAMETERS
+PARAMETERS
   )(
 
     // ---------------------------------------------------------------------------
