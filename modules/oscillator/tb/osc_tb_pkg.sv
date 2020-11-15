@@ -35,6 +35,7 @@ package osc_tb_pkg;
   // DUT constants
   localparam int SYS_CLK_FREQUENCY_C  = 125000000;
   localparam int PRIME_FREQUENCY_C    = 1000000;
+  localparam int SAMPLING_FREQUENCY_C = 44100;
   localparam int WAVE_WIDTH_C         = 24;
   localparam int DUTY_CYCLE_DIVIDER_C = 1000;
   localparam int N_BITS_C             = 32;
@@ -42,8 +43,8 @@ package osc_tb_pkg;
   localparam int AXI_DATA_WIDTH_C     = 32;
   localparam int AXI_ID_WIDTH_C       = 32;
   localparam int AXI_ID_C             = 32'hDEADBEA7;
-
   localparam int NR_OF_CHANNELS_C = 2;
+  localparam int COUNTER_WIDTH_C  = $clog2(SYS_CLK_FREQUENCY_C / SAMPLING_FREQUENCY_C);
 
   // APB
   localparam int OSC_BASE_ADDR_C  = 0;

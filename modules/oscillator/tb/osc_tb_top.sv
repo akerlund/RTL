@@ -33,7 +33,14 @@ module osc_tb_top;
   // IF
   vip_apb3_if #(vip_apb3_cfg) apb3_vif(clk, rst_n);
 
+  logic                          [31 : 0] counter;
+
   logic signed       [WAVE_WIDTH_C-1 : 0] waveform;
+
+  //
+  logic                                   frequency_enable;
+  logic           [COUNTER_WIDTH_C-1 : 0] cr_enable_period;
+  assign cr_enable_period = SYS_CLK_FREQUENCY_C / SAMPLING_FREQUENCY_C;
 
   // AXI4-S signals betwwen the Oscillator top and the divider
   logic                                   osc_div_tvalid;
@@ -75,14 +82,57 @@ module osc_tb_top;
   logic           [AXI_DATA_WIDTH_C-1 : 0] cr_frequency;
   logic           [AXI_DATA_WIDTH_C-1 : 0] cr_duty_cycle;
 
-  assign channel_data[0]    = waveform;
-  assign channel_data[1]    = waveform;
-  assign cr_channel_gain[0] = (1 <<< Q_BITS_C);
-  assign cr_channel_gain[1] = (1 <<< Q_BITS_C);
+  assign cr_channel_gain[0] = (1024 <<< Q_BITS_C);
+  assign cr_channel_gain[1] = (1024 <<< Q_BITS_C);
   assign cr_channel_pan[0]  = 1'b0;
   assign cr_channel_pan[1]  = 1'b1;
   assign cr_output_gain     = (1 <<< Q_BITS_C);
 
+  assign out_ready = '1;
+
+  always_ff @(posedge clk or negedge rst_n) begin : mixer_output_p0
+    if (!rst_n) begin
+      channel_data[0]    <= '0;
+      channel_data[1]    <= '0;
+      channel_valid      <= '0;
+      counter            <= '0;
+      cr_waveform_select <= '0;
+    end
+    else begin
+
+      channel_valid <= '0;
+      if (frequency_enable) begin
+        counter         <= counter + 1;
+        channel_valid   <= '1;
+        channel_data[0] <= waveform;
+        channel_data[1] <= waveform;
+      end
+
+      // Changing the output waveform
+      if (counter == 100) begin
+        counter            <= '0;
+        cr_waveform_select <= cr_waveform_select + 1;
+      end
+
+    end
+  end
+
+  // ---------------------------------------------------------------------------
+  // Generating the sample frequency with a clock enable
+  // ---------------------------------------------------------------------------
+  clock_enable #(
+    .COUNTER_WIDTH_P  ( COUNTER_WIDTH_C    )
+  ) clock_enable_i0 (
+    .clk              ( clk                ), // input
+    .rst_n            ( rst_n              ), // input
+    .reset_counter_n  ( '1                 ), // input
+    .enable           ( frequency_enable   ), // output
+    .cr_enable_period ( cr_enable_period   )  // input
+  );
+
+  // ---------------------------------------------------------------------------
+  // Mixer for audio
+  // ---------------------------------------------------------------------------
   mixer #(
     .AUDIO_WIDTH_P       ( WAVE_WIDTH_C        ),
     .GAIN_WIDTH_P        ( WAVE_WIDTH_C        ),
@@ -104,7 +154,9 @@ module osc_tb_top;
     .cr_mix_output_gain  ( cr_output_gain      )  // input
   );
 
-
+  // ---------------------------------------------------------------------------
+  // Oscillator
+  // ---------------------------------------------------------------------------
   oscillator_top #(
     .SYS_CLK_FREQUENCY_P  ( SYS_CLK_FREQUENCY_C             ),
     .PRIME_FREQUENCY_P    ( PRIME_FREQUENCY_C               ),
@@ -151,7 +203,9 @@ module osc_tb_top;
     .cr_duty_cycle        ( cr_duty_cycle[N_BITS_C-1 : 0]   )  // input
   );
 
-
+  // ---------------------------------------------------------------------------
+  // Long Division
+  // ---------------------------------------------------------------------------
   long_division_axi4s_if #(
     .AXI_DATA_WIDTH_P ( AXI_DATA_WIDTH_C ),
     .AXI_ID_WIDTH_P   ( AXI_ID_WIDTH_C   ),
@@ -175,7 +229,9 @@ module osc_tb_top;
     .egr_tuser        ( div_osc_tuser    )  // output
   );
 
-
+  // ---------------------------------------------------------------------------
+  // CORDIC
+  // ---------------------------------------------------------------------------
   cordic_axi4s_if #(
     .AXI_DATA_WIDTH_P ( AXI_DATA_WIDTH_C ),
     .AXI_ID_WIDTH_P   ( AXI_ID_WIDTH_C   ),
@@ -195,6 +251,9 @@ module osc_tb_top;
     .egr_tid          ( cor_osc_tid      )  // output
   );
 
+  // ---------------------------------------------------------------------------
+  // APB Registers
+  // ---------------------------------------------------------------------------
   oscillator_apb3_slave #(
     .APB_BASE_ADDR_P    ( '0                              ),
     .APB_ADDR_WIDTH_P   ( vip_apb3_cfg.APB_ADDR_WIDTH_P   ),
@@ -209,7 +268,7 @@ module osc_tb_top;
     .apb3_pwrite        ( apb3_vif.pwrite                 ),
     .apb3_penable       ( apb3_vif.penable                ),
     .apb3_pwdata        ( apb3_vif.pwdata                 ),
-    .cr_waveform_select ( cr_waveform_select              ),
+    .cr_waveform_select (               ),
     .cr_frequency       ( cr_frequency                    ),
     .cr_duty_cycle      ( cr_duty_cycle                   )
   );
