@@ -1,0 +1,3 @@
+[submodule "submodules/VIP"]
+	path = submodules/VIP
+	url = git@github.com:akerlund/VIP.git
