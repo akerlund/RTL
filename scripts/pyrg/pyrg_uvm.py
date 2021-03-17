@@ -37,11 +37,15 @@ def generate_uvm(yaml_file_path):
 
   rtl_path = '/'.join(yaml_file_path.split('/')[:-2]) + "/rtl/"
   uvm_path = '/'.join(yaml_file_path.split('/')[:-2]) + "/tb/uvm_reg/"
+  sw_path  = '/'.join(yaml_file_path.split('/')[:-2]) + "/sw/"
 
   if not os.path.exists(rtl_path):
       os.makedirs(rtl_path)
 
   if not os.path.exists(uvm_path):
+      os.makedirs(uvm_path)
+
+  if not os.path.exists(sw_path):
       os.makedirs(uvm_path)
 
   # ----------------------------------------------------------------------------
@@ -89,11 +93,11 @@ def generate_uvm(yaml_file_path):
   BUS_BIT_WIDTH = block_contents['bus_width']
   ACRONYM       = block_contents['acronym'].upper()
 
-  # Variable used
-  UVM_BUILD              = ""
+  UVM_BUILD      = ""
 
-  register_names         = [] # Used later to generate the register block
-  address_map            = []
+  register_names = [] # Used later to generate the register block
+  sv_address_map = []
+  c_address_map  = []
 
   # We are saving the generated "uvm_reg" classes in this variable
   reg_classes = header.replace("DATE", str(date.today()))
@@ -106,7 +110,8 @@ def generate_uvm(yaml_file_path):
     reg_class  = uvm_reg.replace("CLASS_DESCRIPTION", reg['desc'])
 
     register_names.append((reg_name, reg_access))
-    address_map.append("  localparam logic [%d : 0] %s_%s_ADDR" % ((int(BUS_BIT_WIDTH)-1), ACRONYM, reg_name.upper()))
+    sv_address_map.append("  localparam logic [%d : 0] %s_%s_ADDR" % ((int(BUS_BIT_WIDTH)-1), ACRONYM, reg_name.upper()))
+    c_address_map.append("  #define %s_%s_ADDR" % (ACRONYM, reg_name.upper()))
 
     reg_field_declarations = ""
 
@@ -161,19 +166,20 @@ def generate_uvm(yaml_file_path):
 
 
   # ----------------------------------------------------------------------------
-  # PART 2
-  # Creating the address map
+  # PART 2.1
+  # Creating the System Verilog address map
   # ----------------------------------------------------------------------------
 
   longest_name = 0
-  for addr in address_map:
+  for addr in sv_address_map:
     if len(addr) > longest_name:
       longest_name = len(addr)
 
-  for i in range(len(address_map)):
-    address_map[i] = address_map[i].ljust(longest_name, " ") + " = %d'h" % BUS_BIT_WIDTH + str(hex(i*4)[2:].zfill(4)).upper() + ";\n"
+  for i in range(len(sv_address_map)):
+    sv_address_map[i] = sv_address_map[i].ljust(longest_name, " ") + " = %d'h" % BUS_BIT_WIDTH + str(hex(i*4)[2:].zfill(4)).upper() + ";\n"
 
-  ADDRESS_HIGH = ("  localparam logic [%d : 0] " % (int(BUS_BIT_WIDTH)-1) + ACRONYM + "_HIGH_ADDRESS").ljust(longest_name, " ") + " = %d'h" % BUS_BIT_WIDTH + str(hex(len(address_map)*4)[2:].zfill(4)).upper() + ";\n"
+  ADDRESS_HIGH = ("  localparam logic [%d : 0] " % (int(BUS_BIT_WIDTH)-1) + ACRONYM + "_HIGH_ADDRESS").ljust(longest_name, " ") +\
+                  " = %d'h" % BUS_BIT_WIDTH + str(hex(len(sv_address_map)*4)[2:].zfill(4)).upper() + ";\n"
 
   pkt_top  = ""
   pkt_top += "`ifndef %s\n"   % (BLOCK_NAME.upper() + "_ADDRESS_PKG")
@@ -189,13 +195,45 @@ def generate_uvm(yaml_file_path):
     file.write(header.replace("DATE", str(date.today())))
     file.write(pkt_top)
     file.write(ADDRESS_HIGH)
-    file.write(''.join(address_map))
+    file.write(''.join(sv_address_map))
     file.write(pkt_bot)
 
   print("INFO [pyrg] Generated %s" % output_file)
 
 
+  # ----------------------------------------------------------------------------
+  # PART 2.1
+  # Creating the C address map
+  # ----------------------------------------------------------------------------
 
+  longest_name = 0
+  for addr in c_address_map:
+    if len(addr) > longest_name:
+      longest_name = len(addr)
+
+  for i in range(len(c_address_map)):
+    c_address_map[i] = c_address_map[i].ljust(longest_name, " ") +\
+                       " 0x%s\n" % str(hex(i*4)[2:].zfill(4)).upper()
+
+  ADDRESS_HIGH = ("  #define %s" % (ACRONYM + "_HIGH_ADDRESS")).ljust(longest_name, " ") +\
+                  " 0x%s\n" % str(hex(len(c_address_map)*4)[2:].zfill(4)).upper()
+
+  pkt_top  = ""
+  pkt_top += "#ifndef %s\n"   % (BLOCK_NAME.upper() + "_ADDRESS_H")
+  pkt_top += "#define %s\n" % (BLOCK_NAME.upper() + "_ADDRESS_H")
+  pkt_top += "\n"
+
+  pkt_bot  = "\n#endif\n"
+
+  output_file = sw_path + BLOCK_NAME + "_address.h"
+  with open(output_file, 'w') as file:
+    file.write(header.replace("DATE", str(date.today())))
+    file.write(pkt_top)
+    file.write(ADDRESS_HIGH)
+    file.write(''.join(c_address_map))
+    file.write(pkt_bot)
+
+  print("INFO [pyrg] Generated %s" % output_file)
 
 
   # ----------------------------------------------------------------------------

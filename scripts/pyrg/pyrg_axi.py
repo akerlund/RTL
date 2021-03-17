@@ -201,13 +201,13 @@ def generate_axi(yaml_file_path):
 
         # Reads
         if (reg_access in ["RO", "RW", "ROM"]):
-          _read = 8*" " + ("rdata_d0[%s] <= ") % (_axi_range) + _field_name
+          _read = 8*" " + ("rdata_d0[%s] = ") % (_axi_range) + _field_name
           _reg_reads.append(_read)
 
         # Read and Clear
         if (reg_access in ["RC"]):
           reg_rc_accessed[reg_name].append(_field_name)
-          _read  = 6*" " + ("rdata_d0[%s] <= rc_") % (_axi_range) + _field_name
+          _read  = 6*" " + ("rdata_d0[%s] = rc_") % (_axi_range) + _field_name
           _read += 6*" " + "rc_" + _field_name + " <= '0"
           _reg_reads.append(_read)
 
@@ -242,7 +242,7 @@ def generate_axi(yaml_file_path):
         _reg_writes.append(_write)
 
       if (reg_access in ["RO", "RW"]):
-        _read = 12*" " + "rdata_d0 <= " + "{" + _fields_concatenated + "}"
+        _read = 12*" " + "rdata_d0 = " + "{" + _fields_concatenated + "}"
         _reg_reads.append(_read)
 
 
@@ -254,7 +254,7 @@ def generate_axi(yaml_file_path):
       _fields_concatenated    = ", ".join(reg_rc_accessed[reg_name][::-1])
       _rc_fields_concatenated = "rc_" + ", rc_".join(reg_rc_accessed[reg_name][::-1])
       # AXI Read operation
-      _read  = 12*" " + "rdata_d0 <= " + "{" + _rc_fields_concatenated + "};\n" # Assign the AXI read bus
+      _read  = 12*" " + "rdata_d0 = " + "{" + _rc_fields_concatenated + "};\n" # Assign the AXI read bus
       _read += 12*" " + "{" + _rc_fields_concatenated + "} <= '0"             # Clear the "rc_" fields
       _reg_reads.append(_read)
 

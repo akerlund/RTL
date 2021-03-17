@@ -223,7 +223,7 @@ RC_ASSIGNMENTS
   // ---------------------------------------------------------------------------
   always_comb begin
 
-    rdata_d0 <= '0;
+    rdata_d0 = '0;
 
     // Address decoding for reading registers
     case (araddr_d0)
