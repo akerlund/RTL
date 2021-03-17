@@ -51,21 +51,21 @@ module mixer #(
 
 
   logic signed [NR_OF_CHANNELS_P-1 : 0]   [AUDIO_WIDTH_P-1 : 0] channel_products;
-  logic signed                              [AUDIO_WIDTH_P : 0] left_channel_sum;
-  logic signed                              [AUDIO_WIDTH_P : 0] right_channel_sum;
+  logic signed                            [AUDIO_WIDTH_P-1 : 0] left_channel_sum;
+  logic signed                            [AUDIO_WIDTH_P-1 : 0] right_channel_sum;
 
-  logic signed                            [AUDIO_WIDTH_P-1 : 0] left_channel_sum_r0;
-  logic signed                            [AUDIO_WIDTH_P-1 : 0] right_channel_sum_r0;
-  logic signed                            [AUDIO_WIDTH_P-1 : 0] left_channel_sum_c0;
-  logic signed                            [AUDIO_WIDTH_P-1 : 0] right_channel_sum_c0;
+  logic signed                              [AUDIO_WIDTH_P : 0] left_channel_sum_r0;
+  logic signed                              [AUDIO_WIDTH_P : 0] right_channel_sum_r0;
+  logic signed                              [AUDIO_WIDTH_P : 0] left_channel_sum_c0;
+  logic signed                              [AUDIO_WIDTH_P : 0] right_channel_sum_c0;
 
   logic [2 : 0] valid_d0;
   logic         out_clip_left;
   logic         out_clip_right;
 
   assign out_valid = valid_d0[0];
-  assign sr_mix_out_clip  = out_clip_left || out_clip_right;
 
+  assign sr_mix_out_clip   = out_clip_left || out_clip_right;
   assign left_channel_sum  = left_channel_sum_r0[AUDIO_WIDTH_P-1 : 0];
   assign right_channel_sum = right_channel_sum_r0[AUDIO_WIDTH_P-1 : 0];
 
@@ -96,10 +96,10 @@ module mixer #(
     if (valid_d0[2]) begin
       for (int i = 0; i < NR_OF_CHANNELS_P; i++) begin
         if (!cr_mix_channel_pan[i]) begin
-          left_channel_sum_c0  = left_channel_sum_c0 + channel_products[i];
+          left_channel_sum_c0  = left_channel_sum_c0 + {channel_products[i][AUDIO_WIDTH_P-1], channel_products[i]};
         end
         else begin
-          right_channel_sum_c0 = right_channel_sum_c0 + channel_products[i];
+          right_channel_sum_c0 = right_channel_sum_c0 + {channel_products[i][AUDIO_WIDTH_P-1], channel_products[i]};
         end
       end
     end
