@@ -111,13 +111,14 @@ module oscillator_core #(
 
 
   // Internal registers
-  logic          [N_BITS_P-1 : 0] cr_frequency_d0;        // Copy of cr_frequency, used to re-calculate when new input
-  logic signed   [N_BITS_P-1 : 0] cr_duty_cycle_d0;       // Copy of cr_duty_cycle
-  logic signed [2*N_BITS_P-1 : 0] multiplication_product;
+  logic                [N_BITS_P-1 : 0] cr_frequency_r0;         // Copy of cr_frequency, used to re-calculate when new input
+  logic signed         [N_BITS_P-1 : 0] cr_duty_cycle_r0;        // Copy of cr_duty_cycle
+  logic signed [AXI_DATA_WIDTH_P-1 : 0] cr_duty_cycle_q_shifted; // Copy of cr_duty_cycle
+  logic signed       [2*N_BITS_P-1 : 0] multiplication_product;
 
 
-  logic   [N_BITS_P-1 : 0] enable_period;          // Intermediate register the triangle and square enable periods
-  logic   [N_BITS_P-1 : 0] duty_cycle;             // Intermediate register the square duty cycle
+  logic   [N_BITS_P-1 : 0] enable_period; // Intermediate register the triangle and square enable periods
+  logic   [N_BITS_P-1 : 0] duty_cycle;    // Intermediate register the square duty cycle
 
   // Internal signals
   logic   [N_BITS_P-1 : 0] tri_enable_period;
@@ -132,24 +133,25 @@ module oscillator_core #(
     if (!rst_n) begin
 
       // Internal signals
-      osc_core_state         <= WAIT_FOR_CONFIGURATIONS_E;
-      tri_enable_period      <= '0;
-      sqr_enable_period      <= '0;
-      sqr_duty_cycle         <= '0;
-      multiplication_product <= '0;
+      osc_core_state          <= WAIT_FOR_CONFIGURATIONS_E;
+      tri_enable_period       <= '0;
+      sqr_enable_period       <= '0;
+      sqr_duty_cycle          <= '0;
+      multiplication_product  <= '0;
 
       // Registers
-      cr_frequency_d0        <= '0;
-      cr_duty_cycle_d0       <= '0;
-      enable_period          <= '0;
-      duty_cycle             <= '0;
+      cr_frequency_r0         <= '0;
+      cr_duty_cycle_r0        <= '0;
+      cr_duty_cycle_q_shifted <= '0;
+      enable_period           <= '0;
+      duty_cycle              <= '0;
 
       // Ports
-      div_egr_tvalid         <= '0;
-      div_egr_tdata          <= '0;
-      div_egr_tlast          <= '0;
-      div_egr_tid            <= '0;
-      div_ing_tready         <= '0;
+      div_egr_tvalid          <= '0;
+      div_egr_tdata           <= '0;
+      div_egr_tlast           <= '0;
+      div_egr_tid             <= '0;
+      div_ing_tready          <= '0;
 
     end
     else begin
@@ -161,14 +163,16 @@ module oscillator_core #(
         WAIT_FOR_CONFIGURATIONS_E: begin
 
           // New frequency
-          if (cr_frequency != cr_frequency_d0) begin
-            cr_frequency_d0 <= cr_frequency;
+          if (cr_frequency != cr_frequency_r0) begin
+            cr_frequency_r0 <= cr_frequency;
             osc_core_state  <= SEND_DIVIDEND_PRIME_FREQUENCY_E;
           end
 
           // New duty cycle
-          if (cr_duty_cycle != cr_duty_cycle_d0) begin
-            osc_core_state  <= SEND_DIVIDEND_DUTY_CYCLE_STEP_E;
+          if (cr_duty_cycle != cr_duty_cycle_r0) begin
+            cr_duty_cycle_r0        <= cr_duty_cycle;
+            cr_duty_cycle_q_shifted <= cr_duty_cycle_r0 <<< Q_BITS_P;
+            osc_core_state          <= SEND_DIVIDEND_DUTY_CYCLE_STEP_E;
           end
 
         end
@@ -189,7 +193,7 @@ module oscillator_core #(
 
             // Dividend was sent
             if (!div_egr_tlast) begin
-              div_egr_tdata  <= cr_frequency_d0;
+              div_egr_tdata  <= cr_frequency_r0;
               div_egr_tlast  <= '1;
             end
             // Divisor was sent
@@ -230,7 +234,7 @@ module oscillator_core #(
           if (div_egr_tready) begin
 
             if (!div_egr_tlast) begin
-              div_egr_tdata  <= cr_frequency_d0;
+              div_egr_tdata  <= cr_frequency_r0;
               div_egr_tlast  <= '1;
             end
             else begin
@@ -251,14 +255,14 @@ module oscillator_core #(
             osc_core_state <= MULTIPLY_DUTY_CYCLE_E;
             div_ing_tready <= '0;
 
-            if ((cr_duty_cycle <<< Q_BITS_P) > MAXIMUM_DUTY_CYCLE_C) begin
+            if (cr_duty_cycle_q_shifted > MAXIMUM_DUTY_CYCLE_C) begin
               multiplication_product <= div_ing_tdata * MAXIMUM_DUTY_CYCLE_C;
             end
-            else if ((cr_duty_cycle <<< Q_BITS_P) < MINIMUM_DUTY_CYCLE_C) begin
+            else if (cr_duty_cycle_q_shifted < MINIMUM_DUTY_CYCLE_C) begin
               multiplication_product <= div_ing_tdata * MINIMUM_DUTY_CYCLE_C;
             end
             else begin
-              multiplication_product <= div_ing_tdata * (cr_duty_cycle <<< Q_BITS_P);
+              multiplication_product <= div_ing_tdata * cr_duty_cycle_q_shifted;
             end
 
           end
@@ -266,7 +270,6 @@ module oscillator_core #(
 
 
         MULTIPLY_DUTY_CYCLE_E: begin
-          multiplication_product <= (multiplication_product >> Q_BITS_P);
           osc_core_state         <= WRITE_CONFIGURATION_E;
         end
 
@@ -274,7 +277,7 @@ module oscillator_core #(
         WRITE_CONFIGURATION_E: begin
           tri_enable_period <= enable_period;
           sqr_enable_period <= enable_period;
-          sqr_duty_cycle    <= multiplication_product >> (Q_BITS_P); // Also, truncate the decimals
+          sqr_duty_cycle    <= multiplication_product >>> (2*Q_BITS_P); // Also, truncate the decimals
           osc_core_state    <= WAIT_FOR_CONFIGURATIONS_E;
         end
 
