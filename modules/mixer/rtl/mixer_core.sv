@@ -21,7 +21,7 @@
 
 `default_nettype none
 
-module mixer #(
+module mixer_core #(
     parameter int AUDIO_WIDTH_P    = -1,
     parameter int GAIN_WIDTH_P     = -1,
     parameter int NR_OF_CHANNELS_P = -1,
