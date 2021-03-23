@@ -42,11 +42,11 @@ module mixer_core #(
     input  wire                                                       out_ready,
 
     // Registers
-    output logic                             [NR_OF_CHANNELS_P-1 : 0] sr_mix_channel_clip,
-    output logic                                                      sr_mix_out_clip,
     input  wire         [NR_OF_CHANNELS_P-1 : 0] [GAIN_WIDTH_P-1 : 0] cr_mix_channel_gain,
     input  wire                              [NR_OF_CHANNELS_P-1 : 0] cr_mix_channel_pan,
-    input  wire                                  [GAIN_WIDTH_P-1 : 0] cr_mix_output_gain
+    input  wire                                  [GAIN_WIDTH_P-1 : 0] cr_mix_output_gain,
+    output logic                                                      sr_mix_out_clip,
+    output logic                             [NR_OF_CHANNELS_P-1 : 0] sr_mix_channel_clip
   );
 
 
@@ -106,6 +106,24 @@ module mixer_core #(
 
   end
 
+  // Input channel gain
+  genvar i;
+  generate
+    for (i = 0; i < NR_OF_CHANNELS_P; i++) begin
+      dsp48_nq_multiplier #(
+        .N_BITS_P         ( AUDIO_WIDTH_P          ),
+        .Q_BITS_P         ( Q_BITS_P               )
+      ) dsp48_nq_multiplier_i (
+        .clk              ( clk                    ), // input
+        .rst_n            ( rst_n                  ), // input
+        .ing_multiplicand ( channel_data[i]        ), // input
+        .ing_multiplier   ( cr_mix_channel_gain[i] ), // input
+        .egr_product      ( channel_products[i]    ), // output
+        .egr_overflow     ( sr_mix_channel_clip[i] )  // output
+      );
+    end
+  endgenerate
+
   // Left output gain
   dsp48_nq_multiplier #(
     .N_BITS_P         ( AUDIO_WIDTH_P      ),
@@ -131,24 +149,6 @@ module mixer_core #(
     .egr_product      ( out_right          ), // output
     .egr_overflow     ( out_clip_right     )  // output
   );
-
-  // Input channel gain
-  genvar i;
-  generate
-    for (i = 0; i < NR_OF_CHANNELS_P; i++) begin
-      dsp48_nq_multiplier #(
-        .N_BITS_P         ( AUDIO_WIDTH_P          ),
-        .Q_BITS_P         ( Q_BITS_P               )
-      ) dsp48_nq_multiplier_i (
-        .clk              ( clk                    ), // input
-        .rst_n            ( rst_n                  ), // input
-        .ing_multiplicand ( channel_data[i]        ), // input
-        .ing_multiplier   ( cr_mix_channel_gain[i] ), // input
-        .egr_product      ( channel_products[i]    ), // output
-        .egr_overflow     ( sr_mix_channel_clip[i] )  // output
-      );
-    end
-  endgenerate
 
 
 endmodule
