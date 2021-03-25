@@ -97,12 +97,12 @@ module osc_square_top #(
   // ---------------------------------------------------------------------------
 
   osc_square_core #(
-    .WAVE_WIDTH_P  ( WAVE_WIDTH_P     )
+    .WAVE_WIDTH_P  ( WAVE_WIDTH_P )
   ) osc_square_core_i0 (
-    .clk           ( clk              ),
-    .rst_n         ( rst_n            ),
-    .clock_enable  ( sqr_enable       ),
-    .osc_square    ( osc_square       )
+    .clk           ( clk          ), // input
+    .rst_n         ( rst_n        ), // input
+    .clock_enable  ( sqr_enable   ), // input
+    .osc_square    ( osc_square   )  // output
   );
 
 

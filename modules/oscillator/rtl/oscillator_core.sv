@@ -162,16 +162,12 @@ module oscillator_core #(
 
         WAIT_FOR_CONFIGURATIONS_E: begin
 
-          // New frequency
-          if (cr_frequency != cr_frequency_r0) begin
+          if (cr_frequency != cr_frequency_r0) begin             // New frequency
             cr_frequency_r0 <= cr_frequency;
             osc_core_state  <= SEND_DIVIDEND_PRIME_FREQUENCY_E;
-          end
-
-          // New duty cycle
-          if (cr_duty_cycle != cr_duty_cycle_r0) begin
+          end else if (cr_duty_cycle != cr_duty_cycle_r0) begin  // New duty cycle
             cr_duty_cycle_r0        <= cr_duty_cycle;
-            cr_duty_cycle_q_shifted <= cr_duty_cycle_r0 <<< Q_BITS_P;
+            cr_duty_cycle_q_shifted <= cr_duty_cycle <<< Q_BITS_P;
             osc_core_state          <= SEND_DIVIDEND_DUTY_CYCLE_STEP_E;
           end
 

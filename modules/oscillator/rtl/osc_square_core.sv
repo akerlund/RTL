@@ -31,7 +31,7 @@ module osc_square_core #(
     output logic signed [WAVE_WIDTH_P-1 : 0] osc_square
   );
 
-  localparam logic signed [WAVE_WIDTH_P-1 : 0] SQUARE_LOW_C  = {1'b1, {(WAVE_WIDTH_P-1){1'b0}}}; // Lowest signed integer
+  localparam logic signed [WAVE_WIDTH_P-1 : 0] SQUARE_LOW_C = {1'b1, {(WAVE_WIDTH_P-1){1'b0}}}; // Lowest signed integer
   //localparam logic [WAVE_WIDTH_P-1 : 0] SQUARE_HIGH_C = {1'b0, {(WAVE_WIDTH_P-1){1'b1}}}; // Highest signed integer
 
   always_ff @(posedge clk or negedge rst_n) begin

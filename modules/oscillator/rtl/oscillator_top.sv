@@ -71,47 +71,35 @@ module oscillator_top #(
     input  wire                   [N_BITS_P-1 : 0] cr_duty_cycle
   );
 
-
   // Waveform outputs from the core
-  logic signed     [WAVE_WIDTH_P-1 : 0] wave_square;
-  logic signed     [WAVE_WIDTH_P-1 : 0] wave_triangle;
-  logic signed     [WAVE_WIDTH_P-1 : 0] wave_saw;
-  logic signed         [N_BITS_P-1 : 0] wave_sin;
+  logic signed [WAVE_WIDTH_P-1 : 0] wave_square;
+  logic signed [WAVE_WIDTH_P-1 : 0] wave_triangle;
+  logic signed [WAVE_WIDTH_P-1 : 0] wave_saw;
+  logic signed     [N_BITS_P-1 : 0] wave_sin;
 
-  // Type converting the configuration in "cr_waveform_select"
-  osc_waveform_type_t osc_selected_waveform;
-  assign osc_selected_waveform = osc_waveform_type_t'(cr_waveform_select);
 
-  // Waveform output selection
-  always_ff @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
-      waveform <= '0;
-    end
-    else begin
-
-      case (osc_selected_waveform)
+    always_comb begin
+      case (osc_waveform_type_t'(cr_waveform_select))
 
         OSC_SQUARE_E: begin
-          waveform <= wave_square   >>> (WAVE_WIDTH_P - Q_BITS_P - 1);
+          waveform = wave_square;
         end
 
         OSC_TRIANGLE_E: begin
-          waveform <= wave_triangle >>> (WAVE_WIDTH_P - Q_BITS_P - 1);
+          waveform = wave_triangle;
         end
 
         OSC_SAW_E: begin
-          waveform <= wave_saw      >>> (WAVE_WIDTH_P - Q_BITS_P - 1);
+          waveform = wave_saw;
         end
 
         OSC_SINE_E: begin
-          waveform <= wave_saw      >>> (WAVE_WIDTH_P - Q_BITS_P - 1);
+          waveform = wave_sin <<< (Q_BITS_P+1);
         end
 
       endcase
-
     end
 
-  end
 
   oscillator_core #(
     .SYS_CLK_FREQUENCY_P  ( SYS_CLK_FREQUENCY_P  ),

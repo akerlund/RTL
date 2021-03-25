@@ -87,7 +87,6 @@ module osc_sin_top #(
 
   // CORDIC
   logic signed      [AXI_DATA_WIDTH_P-1 : 0] cordic_sine;
-  logic signed      [AXI_DATA_WIDTH_P-1 : 0] cordic_sine_cp;
   logic signed      [AXI_DATA_WIDTH_P-1 : 0] cordic_cosine;
 
   // Internal signals of sine and cosine, result from the CORDIC
@@ -100,7 +99,6 @@ module osc_sin_top #(
     if (!rst_n) begin
       // Ports
       osc_sine          <= '0;
-      cordic_sine_cp    <= '0;
       cordic_egr_tvalid <= '0;
       cordic_egr_tdata  <= '0;
       cordic_egr_tlast  <= '0;
@@ -154,9 +152,6 @@ module osc_sin_top #(
           if (cordic_ing_tvalid && cordic_ing_tready) begin
             // CORDIC always returns +-1, the MSB is the sign, the rest are q-bits
             cordic_ing_tready <= '0;
-            cordic_sine_cp    <= cordic_sine >>> (CORDIC_Q_BITS_C - Q_BITS_P);
-          end
-          else if (!cordic_ing_tready) begin
             sin_state         <= SEND_SINE_OF_THETA_E;
             osc_sine          <= cordic_sine >>> (CORDIC_Q_BITS_C - Q_BITS_P);
           end
