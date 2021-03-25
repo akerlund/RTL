@@ -31,11 +31,12 @@ module mixer_top #(
     input  wire                                                       clk,
     input  wire                                                       rst_n,
 
-    // ADC
-    input  wire                                              [23 : 0] adc_data,
-    input  wire                                                       adc_valid,
-    output logic                                                      adc_ready,
-    input  wire                                                       adc_last,
+    // Connect LED for blink effect
+    output logic                                                      clip_led,
+
+    // Data of channels and sampling enable strobe
+    input  wire                                                       fs_strobe,
+    input  wire signed [NR_OF_CHANNELS_P-1 : 0] [AUDIO_WIDTH_P-1 : 0] channel_data,
 
     // DAC
     output logic                                             [23 : 0] dac_data,
@@ -43,59 +44,108 @@ module mixer_top #(
     input  wire                                                       dac_ready,
     output logic                                                      dac_last,
 
-    logic signed       [NR_OF_CHANNELS_C-1 : 0] [AUDIO_WIDTH_C-1 : 0] channel_data,
-
     // Registers
-    output logic                             [NR_OF_CHANNELS_P-1 : 0] sr_mix_channel_clip,
-    output logic                                                      sr_mix_out_clip,
+    input  wire                                                       cmd_mix_clear_dac_min_max,
     input  wire         [NR_OF_CHANNELS_P-1 : 0] [GAIN_WIDTH_P-1 : 0] cr_mix_channel_gain,
     input  wire                              [NR_OF_CHANNELS_P-1 : 0] cr_mix_channel_pan,
     input  wire                                  [GAIN_WIDTH_P-1 : 0] cr_mix_output_gain,
-
-    output logic                                [AUDIO_WIDTH_C-1 : 0] sr_cir_max_adc_amplitude,
-    output logic                                [AUDIO_WIDTH_C-1 : 0] sr_cir_min_adc_amplitude,
-    output logic                                [AUDIO_WIDTH_C-1 : 0] sr_cir_max_dac_amplitude,
-    output logic                                [AUDIO_WIDTH_C-1 : 0] sr_cir_min_dac_amplitude,
-    input  wire                                                       cmd_cir_clear_max
+    output logic                                                      sr_mix_out_clip,
+    output logic                             [NR_OF_CHANNELS_P-1 : 0] sr_mix_channel_clip,
+    output logic                                [AUDIO_WIDTH_P-1 : 0] sr_mix_max_dac_amplitude,
+    output logic                                [AUDIO_WIDTH_P-1 : 0] sr_mix_min_dac_amplitude
   );
 
   typedef enum {
-    MIX_WAIT_VALID,
-    MIX_SEND_FIRST,
-    MIX_SEND_LAST
-  } mix_egr_state_t;
+    DAC_WAIT_MIX_VALID_E,
+    DAC_SEND_LEFT_E,
+    DAC_SEND_RIGHT_E
+  } dac_state_t;
 
-  mix_egr_state_t mix_egr_state;
+  dac_state_t dac_state;
 
+  logic signed [AUDIO_WIDTH_P-1 : 0] mix_out_left;
+  logic signed [AUDIO_WIDTH_P-1 : 0] mix_out_right;
+  logic                              mix_out_valid;
+  logic                              mix_out_ready;
+  logic signed [AUDIO_WIDTH_P-1 : 0] mix_out_right_r0;
 
-  logic signed [NR_OF_CHANNELS_C-1 : 0] [AUDIO_WIDTH_C-1 : 0] channel_data;
-  logic                                                       channel_valid;
-  logic signed                          [AUDIO_WIDTH_C-1 : 0] out_left;
-  logic signed                          [AUDIO_WIDTH_C-1 : 0] out_right;
-  logic                                                       out_valid;
-  logic                                                       out_ready;
-  logic signed                          [AUDIO_WIDTH_C-1 : 0] out_right_r0;
+  logic                              clip_detected;
+  logic                     [31 : 0] clip_counter;
 
-  logic                              [NR_OF_CHANNELS_C-1 : 0] sr_mix_channel_clip;
-  logic                                                       sr_mix_out_clip;
-  logic         [NR_OF_CHANNELS_C-1 : 0] [GAIN_WIDTH_C-1 : 0] cr_mix_channel_gain;
-  logic                              [NR_OF_CHANNELS_C-1 : 0] cr_mix_channel_pan;
-  logic                                  [GAIN_WIDTH_C-1 : 0] cr_mix_output_gain;
+  // Mixer Egress
+  always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      dac_state        <= DAC_WAIT_MIX_VALID_E;
+      mix_out_ready    <= '1;
+      mix_out_right_r0 <= '0;
+      dac_data         <= '0;
+      dac_last         <= '0;
+      dac_valid        <= '0;
+    end
+    else begin
 
-  logic                                                       clip_detected;
-  logic                                              [31 : 0] clip_counter;
+      case (dac_state)
 
+        DAC_WAIT_MIX_VALID_E: begin
+          if (mix_out_valid) begin
+            dac_state        <= DAC_SEND_LEFT_E;
+            dac_data         <= mix_out_left;
+            dac_last         <= '0;
+            dac_valid        <= '1;
+            mix_out_right_r0 <= mix_out_right;
+          end
+        end
+
+        DAC_SEND_LEFT_E: begin
+          if (dac_ready) begin
+            dac_state <= DAC_SEND_RIGHT_E;
+            dac_data  <= mix_out_right_r0;
+            dac_last  <= '1;
+          end
+
+        end
+
+        DAC_SEND_RIGHT_E: begin
+          if (dac_ready) begin
+            dac_state <= DAC_WAIT_MIX_VALID_E;
+            dac_valid <= '0;
+          end
+        end
+      endcase
+    end
+  end
+
+  // DAC amplitude status register
+  always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      sr_mix_min_dac_amplitude <= '1;
+      sr_mix_max_dac_amplitude <= '0;
+    end
+    else begin
+      if (cmd_mix_clear_dac_min_max) begin
+        sr_mix_min_dac_amplitude <= '1;
+        sr_mix_max_dac_amplitude <= '0;
+      end else if (dac_valid) begin
+        if ($signed(dac_data) < $signed(sr_mix_min_dac_amplitude)) begin
+          sr_mix_min_dac_amplitude <= dac_data;
+        end
+        if ($signed(dac_data) > $signed(sr_mix_max_dac_amplitude)) begin
+          sr_mix_max_dac_amplitude <= dac_data;
+        end
+      end
+    end
+  end
 
   // Mixer Clip LED
-  always_ff @(posedge clk or negedge rst_n) begin : mixer_clip_p0
+  always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-      led_1         <= '0;
+      clip_led      <= '0;
       clip_detected <= '0;
       clip_counter  <= '0;
     end
     else begin
 
-      led_1 <= clip_counter[25]; // 2**25 = 67108864/2
+      clip_led <= clip_counter[25]; // 2**25 = 67108864/2
 
       if ((|sr_mix_channel_clip) || sr_mix_out_clip) begin
         clip_detected <= '1;
@@ -113,130 +163,25 @@ module mixer_top #(
   end
 
 
-
-  // Mixer Ingress
-  always_ff @(posedge clk or negedge rst_n) begin : mixer_ingress_p0
-    if (!rst_n) begin
-      channel_data[0]          <= '0;
-      channel_data[1]          <= '0;
-      channel_valid            <= '0;
-      cr_mix_channel_pan[0]    <= '0;
-      cr_mix_channel_pan[1]    <= '1;
-      cr_mix_channel_pan[2]    <= '1;
-      adc_ready                <= '1;
-      sr_cir_min_adc_amplitude <= '0;
-      sr_cir_max_adc_amplitude <= '0;
-      sr_cir_min_dac_amplitude <= '0;
-      sr_cir_max_dac_amplitude <= '0;
-    end
-    else begin
-
-      channel_valid <= '0;
-
-      if (adc_valid && !adc_last) begin
-        channel_data[0] <= adc_data;
-      end
-
-      if (adc_valid && adc_last) begin
-        channel_data[1] <= adc_data;
-        channel_valid   <= '1;
-      end
-
-      if (cmd_cir_clear_max) begin
-        sr_cir_min_adc_amplitude <= '0;
-        sr_cir_max_adc_amplitude <= '0;
-        sr_cir_min_dac_amplitude <= '0;
-        sr_cir_max_dac_amplitude <= '0;
-      end
-      else if (adc_valid) begin
-
-        if ($signed(adc_data) < $signed(sr_cir_min_adc_amplitude)) begin
-          sr_cir_min_adc_amplitude <= adc_data;
-        end
-
-        if ($signed(adc_data) > $signed(sr_cir_max_adc_amplitude)) begin
-          sr_cir_max_adc_amplitude <= adc_data;
-        end
-
-        if ($signed(adc_data) < $signed(sr_cir_min_dac_amplitude)) begin
-          sr_cir_min_dac_amplitude <= adc_data;
-        end
-
-        if ($signed(adc_data) > $signed(sr_cir_max_dac_amplitude)) begin
-          sr_cir_max_dac_amplitude <= adc_data;
-        end
-
-      end
-    end
-  end
-
-
-
-  // Mixer Egress
-  always_ff @(posedge clk or negedge rst_n) begin : mixer_egress_p0
-    if (!rst_n) begin
-      mix_egr_state <= MIX_WAIT_VALID;
-      out_ready     <= '1;
-      out_right_r0  <= '0;
-      dac_data      <= '0;
-      dac_last      <= '0;
-      dac_valid     <= '0;
-    end
-    else begin
-
-      case (mix_egr_state)
-
-        MIX_WAIT_VALID: begin
-          if (out_valid) begin
-            mix_egr_state <= MIX_SEND_FIRST;
-            out_right_r0  <= out_right;
-            dac_data      <= out_left;
-            dac_last      <= '0;
-            dac_valid     <= '1;
-          end
-        end
-
-        MIX_SEND_FIRST: begin
-          if (dac_ready) begin
-            mix_egr_state <= MIX_SEND_LAST;
-            dac_data   <= out_right_r0;
-            dac_last   <= '1;
-          end
-
-        end
-
-        MIX_SEND_LAST: begin
-          if (dac_ready) begin
-            mix_egr_state <= MIX_WAIT_VALID;
-            dac_valid  <= '0;
-          end
-        end
-
-      endcase
-    end
-  end
-
-
-
   mixer_core #(
-    .AUDIO_WIDTH_P       ( AUDIO_WIDTH_C       ),
-    .GAIN_WIDTH_P        ( GAIN_WIDTH_C        ),
-    .NR_OF_CHANNELS_P    ( NR_OF_CHANNELS_C    ),
-    .Q_BITS_P            ( Q_BITS_C            )
+    .AUDIO_WIDTH_P       ( AUDIO_WIDTH_P       ),
+    .GAIN_WIDTH_P        ( GAIN_WIDTH_P        ),
+    .NR_OF_CHANNELS_P    ( NR_OF_CHANNELS_P    ),
+    .Q_BITS_P            ( Q_BITS_P            )
   ) mixer_core_i0 (
     .clk                 ( clk                 ), // input
     .rst_n               ( rst_n               ), // input
     .channel_data        ( channel_data        ), // input
-    .channel_valid       ( channel_valid       ), // input
-    .out_left            ( out_left            ), // output
-    .out_right           ( out_right           ), // output
-    .out_valid           ( out_valid           ), // input
-    .out_ready           ( out_ready           ), // input
-    .sr_mix_channel_clip ( sr_mix_channel_clip ), // output
-    .sr_mix_out_clip     ( sr_mix_out_clip     ), // output
+    .channel_valid       ( fs_strobe           ), // input
+    .out_left            ( mix_out_left        ), // output
+    .out_right           ( mix_out_right       ), // output
+    .out_valid           ( mix_out_valid       ), // input
+    .out_ready           ( mix_out_ready       ), // input
     .cr_mix_channel_gain ( cr_mix_channel_gain ), // input
     .cr_mix_channel_pan  ( cr_mix_channel_pan  ), // input
-    .cr_mix_output_gain  ( cr_mix_output_gain  )  // input
+    .cr_mix_output_gain  ( cr_mix_output_gain  ), // input
+    .sr_mix_out_clip     ( sr_mix_out_clip     ), // output
+    .sr_mix_channel_clip ( sr_mix_channel_clip )  // output
   );
 
 
