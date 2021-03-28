@@ -42,6 +42,9 @@ module axi4_write_arbiter #(
     input  wire  [NR_OF_MASTERS_P-1 : 0]   [AXI_ID_WIDTH_P-1 : 0] mst_awid,
     input  wire  [NR_OF_MASTERS_P-1 : 0] [AXI_ADDR_WIDTH_P-1 : 0] mst_awaddr,
     input  wire  [NR_OF_MASTERS_P-1 : 0]                  [7 : 0] mst_awlen,
+    input  wire  [NR_OF_MASTERS_P-1 : 0]                  [2 : 0] mst_awsize,
+    input  wire  [NR_OF_MASTERS_P-1 : 0]                  [1 : 0] mst_awburst,
+    input  wire  [NR_OF_MASTERS_P-1 : 0]                  [3 : 0] mst_awregion,
     input  wire  [NR_OF_MASTERS_P-1 : 0]                          mst_awvalid,
     output logic [NR_OF_MASTERS_P-1 : 0]                          mst_awready,
 
@@ -51,6 +54,12 @@ module axi4_write_arbiter #(
     input  wire  [NR_OF_MASTERS_P-1 : 0]                          mst_wlast,
     input  wire  [NR_OF_MASTERS_P-1 : 0]                          mst_wvalid,
     output logic [NR_OF_MASTERS_P-1 : 0]                          mst_wready,
+
+    // Write Response Channel
+    output logic                           [AXI_ID_WIDTH_P-1 : 0] mst_bid,
+    output logic                                          [1 : 0] mst_bresp,
+    output logic                          [NR_OF_MASTERS_P-1 : 0] mst_bvalid,
+    input  wire                           [NR_OF_MASTERS_P-1 : 0] mst_bready,
 
     // -------------------------------------------------------------------------
     // AXI4 Slave
@@ -62,10 +71,7 @@ module axi4_write_arbiter #(
     output logic                                          [7 : 0] slv_awlen,
     output logic                                          [2 : 0] slv_awsize,
     output logic                                          [1 : 0] slv_awburst,
-    output logic                                                  slv_awlock,
-    output logic                                          [3 : 0] slv_awcache,
-    output logic                                          [2 : 0] slv_awprot,
-    output logic                                          [3 : 0] slv_awqos,
+    output logic                                          [3 : 0] slv_awregion,
     output logic                                                  slv_awvalid,
     input  wire                                                   slv_awready,
 
@@ -106,13 +112,8 @@ module axi4_write_arbiter #(
   // Port assignments
   // ---------------------------------------------------------------------------
 
-  // AXI4 Write Channel
-  assign slv_awsize  =  3'b100;
-  assign slv_awburst =  2'b01;
-  assign slv_awlock  = '0;
-  assign slv_awcache = '0;
-  assign slv_awprot  = '0;
-  assign slv_awqos   = '0;
+  assign mst_bid   = slv_bid;
+  assign mst_bresp = slv_bresp;
 
   // ---------------------------------------------------------------------------
   // Write processes
@@ -125,7 +126,6 @@ module axi4_write_arbiter #(
       wr_rotating_mst  <= '0;                 // Round Robin counter
       wr_selected_mst  <= '0;                 // MUX select
       wr_mst_is_chosen <= '0;                 // Output enable
-      slv_bready       <= '0;                 // Write Response Channel
       mst_awready      <= '0;
     end
     else begin
@@ -167,7 +167,6 @@ module axi4_write_arbiter #(
 
           if (slv_wlast && slv_wvalid && slv_wready) begin
             write_state <= WAIT_FOR_BVALID_E;
-            slv_bready  <= '1;
           end
 
         end
@@ -176,9 +175,8 @@ module axi4_write_arbiter #(
         WAIT_FOR_BVALID_E: begin
 
 
-          if (slv_bvalid) begin
+          if (slv_bvalid && slv_bready) begin
             write_state      <= FIND_MST_AWVALID_E;
-            slv_bready       <= '0;
             wr_mst_is_chosen <= '0;
           end
 
@@ -193,41 +191,57 @@ module axi4_write_arbiter #(
   always_comb begin
 
     // Write Address Channel
-    slv_awid    = '0;
-    slv_awaddr  = '0;
-    slv_awlen   = '0;
-    slv_awvalid = '0;
+    slv_awid     = '0;
+    slv_awaddr   = '0;
+    slv_awlen    = '0;
+    slv_awvalid  = '0;
+    slv_awsize   = '0;
+    slv_awburst  = '0;
+    slv_awregion = '0;
 
     // Write Data Channel
-    slv_wdata   = '0;
-    slv_wstrb   = '0;
-    slv_wlast   = '0;
-    slv_wvalid  = '0;
-    mst_wready  = '0;
+    slv_wdata  = '0;
+    slv_wstrb  = '0;
+    slv_wlast  = '0;
+    slv_wvalid = '0;
+    mst_wready = '0;
 
-    if (wr_mst_is_chosen) begin
+    // Write Response Channel
+    mst_bvalid = '0;
+    slv_bready = '0;
+
+    if (!wr_mst_is_chosen) begin
 
       // Write Address Channel
-      slv_awid    = '0;
-      slv_awaddr  = '0;
-      slv_awlen   = '0;
-      slv_awvalid = '0;
+      slv_awid     = '0;
+      slv_awaddr   = '0;
+      slv_awlen    = '0;
+      slv_awvalid  = '0;
+      slv_awsize   = '0;
+      slv_awregion = '0;
 
       // Write Data Channel
-      slv_wdata   = '0;
-      slv_wstrb   = '0;
-      slv_wlast   = '0;
-      slv_wvalid  = '0;
-      mst_wready  = '0;
+      slv_wdata  = '0;
+      slv_wstrb  = '0;
+      slv_wlast  = '0;
+      slv_wvalid = '0;
+      mst_wready = '0;
+
+      // Write Response Channel
+      mst_bvalid = '0;
+      slv_bready = '0;
 
     end
     else begin
 
       // Write Address Channel
-      slv_awid                     = mst_awid    [wr_selected_mst];
-      slv_awaddr                   = mst_awaddr  [wr_selected_mst];
-      slv_awlen                    = mst_awlen   [wr_selected_mst];
-      slv_awvalid                  = mst_awvalid [wr_selected_mst];
+      slv_awid                     = mst_awid     [wr_selected_mst];
+      slv_awaddr                   = mst_awaddr   [wr_selected_mst];
+      slv_awlen                    = mst_awlen    [wr_selected_mst];
+      slv_awvalid                  = mst_awvalid  [wr_selected_mst];
+      slv_awsize                   = mst_awsize   [wr_selected_mst];
+      slv_awburst                  = mst_awburst  [wr_selected_mst];
+      slv_awregion                 = mst_awregion [wr_selected_mst];
 
       // Write Data Channel
       slv_wdata                    = mst_wdata  [wr_selected_mst];
@@ -235,6 +249,10 @@ module axi4_write_arbiter #(
       slv_wlast                    = mst_wlast  [wr_selected_mst];
       slv_wvalid                   = mst_wvalid [wr_selected_mst];
       mst_wready[wr_selected_mst]  = slv_wready;
+
+      // Write Response Channel
+      mst_bvalid[wr_selected_mst] = slv_bvalid;
+      slv_bready                  = mst_bready[wr_selected_mst];
 
     end
 
