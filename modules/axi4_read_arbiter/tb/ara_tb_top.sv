@@ -19,40 +19,32 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+import uvm_pkg::*;
+import ara_tb_pkg::*;
+import ara_tc_pkg::*;
+
 module ara_tb_top;
 
-  import uvm_pkg::*;
-  import ara_tb_pkg::*;
-  import ara_tc_pkg::*;
-  import axi4_types_pkg::*;
-  import ip_top_pkg::*;
-
-  bit clk;
-  bit rst_n;
-  bit rst_axi_n;
-
-  time clk_period = 10ns;
-  time rst_period = 10*clk_period;
-
   // IF
-  axi4_read_if   #(vip_axi4_cfg) mst_vif0(clk, rst_n);
-  axi4_read_if   #(vip_axi4_cfg) mst_vif1(clk, rst_n);
-  axi4_read_if   #(vip_axi4_cfg) mst_vif2(clk, rst_n);
-  axi4_memory_if #(vip_axi4_cfg) mem_vif(clk, rst_n);
+  clk_rst_if                    clk_rst_vif();
+  vip_axi4_if #(VIP_AXI4_CFG_C) mst_vif0(clk_rst_vif.clk, clk_rst_vif.rst_n);
+  vip_axi4_if #(VIP_AXI4_CFG_C) mst_vif1(clk_rst_vif.clk, clk_rst_vif.rst_n);
+  vip_axi4_if #(VIP_AXI4_CFG_C) mst_vif2(clk_rst_vif.clk, clk_rst_vif.rst_n);
+  vip_axi4_if #(VIP_AXI4_CFG_C) mem_vif(clk_rst_vif.clk, clk_rst_vif.rst_n);
 
   // Read Address Channel
-  logic [0 : NR_OF_MASTERS_C-1]   [vip_axi4_cfg.AXI_ID_WIDTH_P-1 : 0] mst_arid;
-  logic [0 : NR_OF_MASTERS_C-1] [vip_axi4_cfg.AXI_ADDR_WIDTH_P-1 : 0] mst_araddr;
-  logic [0 : NR_OF_MASTERS_C-1]                               [7 : 0] mst_arlen;
-  logic [0 : NR_OF_MASTERS_C-1]                                       mst_arvalid;
-  logic [0 : NR_OF_MASTERS_C-1]                                       mst_arready;
+  logic [0 : NR_OF_MASTERS_C-1]   [VIP_AXI4_CFG_C.VIP_AXI4_ID_WIDTH_P-1 : 0] mst_arid;
+  logic [0 : NR_OF_MASTERS_C-1] [VIP_AXI4_CFG_C.VIP_AXI4_ADDR_WIDTH_P-1 : 0] mst_araddr;
+  logic [0 : NR_OF_MASTERS_C-1]                                      [7 : 0] mst_arlen;
+  logic [0 : NR_OF_MASTERS_C-1]                                              mst_arvalid;
+  logic [0 : NR_OF_MASTERS_C-1]                                              mst_arready;
 
   // Read Data Channel
-  logic                           [vip_axi4_cfg.AXI_ID_WIDTH_P-1 : 0] mst_rid;
-  logic                         [vip_axi4_cfg.AXI_DATA_WIDTH_P-1 : 0] mst_rdata;
-  logic                                                               mst_rlast;
-  logic [0 : NR_OF_MASTERS_C-1]                                       mst_rvalid;
-  logic [0 : NR_OF_MASTERS_C-1]                                       mst_rready;
+  logic                           [VIP_AXI4_CFG_C.VIP_AXI4_ID_WIDTH_P-1 : 0] mst_rid;
+  logic                         [VIP_AXI4_CFG_C.VIP_AXI4_DATA_WIDTH_P-1 : 0] mst_rdata;
+  logic                                                                      mst_rlast;
+  logic [0 : NR_OF_MASTERS_C-1]                                              mst_rvalid;
+  logic [0 : NR_OF_MASTERS_C-1]                                              mst_rready;
 
   // ---------------------------------------------------------------------------
   // Connecting the Agents to the DUT
@@ -117,80 +109,74 @@ module ara_tb_top;
 
   // DUT
   axi4_read_arbiter #(
-
-    .AXI_ID_WIDTH_P     ( vip_axi4_cfg.AXI_ID_WIDTH_P   ),
-    .AXI_ADDR_WIDTH_P   ( vip_axi4_cfg.AXI_ADDR_WIDTH_P ),
-    .AXI_DATA_WIDTH_P   ( vip_axi4_cfg.AXI_DATA_WIDTH_P ),
-    .NR_OF_MASTERS_P    ( NR_OF_MASTERS_C               )
-
+    .AXI_ID_WIDTH_P   ( VIP_AXI4_CFG_C.VIP_AXI4_ID_WIDTH_P   ),
+    .AXI_ADDR_WIDTH_P ( VIP_AXI4_CFG_C.VIP_AXI4_ADDR_WIDTH_P ),
+    .AXI_DATA_WIDTH_P ( VIP_AXI4_CFG_C.VIP_AXI4_DATA_WIDTH_P ),
+    .NR_OF_MASTERS_P  ( NR_OF_MASTERS_C                      )
   ) axi4_read_arbiter_i0 (
 
     // Clock and reset
-    .clk                ( mem_vif.clk                   ), // input
-    .rst_n              ( mem_vif.rst_n                 ), // input
+    .clk              ( clk_rst_vif.clk                      ), // input
+    .rst_n            ( clk_rst_vif.rst_n                    ), // input
 
     // -------------------------------------------------------------------------
     // AXI4 Masters
     // -------------------------------------------------------------------------
 
     // Read Address Channel
-    .mst_arid           ( mst_arid                      ), // input
-    .mst_araddr         ( mst_araddr                    ), // input
-    .mst_arlen          ( mst_arlen                     ), // input
-    .mst_arvalid        ( mst_arvalid                   ), // input
-    .mst_arready        ( mst_arready                   ), // output
+    .mst_arid         ( mst_arid                             ), // input
+    .mst_araddr       ( mst_araddr                           ), // input
+    .mst_arlen        ( mst_arlen                            ), // input
+    .mst_arvalid      ( mst_arvalid                          ), // input
+    .mst_arready      ( mst_arready                          ), // output
 
     // Read Data Channel
-    .mst_rid            ( mst_rid                       ), // output
-    .mst_rdata          ( mst_rdata                     ), // output
-    .mst_rlast          ( mst_rlast                     ), // output
-    .mst_rvalid         ( mst_rvalid                    ), // output
-    .mst_rready         ( mst_rready                    ), // input
+    .mst_rid          ( mst_rid                              ), // output
+    .mst_rdata        ( mst_rdata                            ), // output
+    .mst_rlast        ( mst_rlast                            ), // output
+    .mst_rvalid       ( mst_rvalid                           ), // output
+    .mst_rready       ( mst_rready                           ), // input
 
     // -------------------------------------------------------------------------
     // AXI4 Slave
     // -------------------------------------------------------------------------
 
     // Read Address Channel
-    .slv_arid           ( mem_vif.arid                  ), // output
-    .slv_araddr         ( mem_vif.araddr                ), // output
-    .slv_arlen          ( mem_vif.arlen                 ), // output
-    .slv_arsize         (                               ), // output
-    .slv_arburst        (                               ), // output
-    .slv_arlock         ( mem_vif.arlock                ), // output
-    .slv_arcache        ( mem_vif.arcache               ), // output
-    .slv_arprot         ( mem_vif.arprot                ), // output
-    .slv_arqos          ( mem_vif.arqos                 ), // output
-    .slv_arvalid        ( mem_vif.arvalid               ), // output
-    .slv_arready        ( mem_vif.arready               ), // input
+    .slv_arid         ( mem_vif.arid                         ), // output
+    .slv_araddr       ( mem_vif.araddr                       ), // output
+    .slv_arlen        ( mem_vif.arlen                        ), // output
+    .slv_arsize       (                                      ), // output
+    .slv_arburst      (                                      ), // output
+    .slv_arlock       ( mem_vif.arlock                       ), // output
+    .slv_arcache      ( mem_vif.arcache                      ), // output
+    .slv_arprot       ( mem_vif.arprot                       ), // output
+    .slv_arqos        ( mem_vif.arqos                        ), // output
+    .slv_arvalid      ( mem_vif.arvalid                      ), // output
+    .slv_arready      ( mem_vif.arready                      ), // input
     // Read Data Channel
-    .slv_rid            ( mem_vif.rid                   ), // input
-    .slv_rresp          ( mem_vif.rresp                 ), // input
-    .slv_rdata          ( mem_vif.rdata                 ), // input
-    .slv_rlast          ( mem_vif.rlast                 ), // input
-    .slv_rvalid         ( mem_vif.rvalid                ), // input
-    .slv_rready         ( mem_vif.rready                )  // output
-
+    .slv_rid          ( mem_vif.rid                          ), // input
+    .slv_rresp        ( mem_vif.rresp                        ), // input
+    .slv_rdata        ( mem_vif.rdata                        ), // input
+    .slv_rlast        ( mem_vif.rlast                        ), // input
+    .slv_rvalid       ( mem_vif.rvalid                       ), // input
+    .slv_rready       ( mem_vif.rready                       )  // output
   );
 
 
   initial begin
-
-    uvm_config_db #(virtual axi4_read_if   #(vip_axi4_cfg))::set(uvm_root::get(), "uvm_test_top.tb_env.axi4_read_agent0*",   "vif", mst_vif0);
-    uvm_config_db #(virtual axi4_read_if   #(vip_axi4_cfg))::set(uvm_root::get(), "uvm_test_top.tb_env.axi4_read_agent1*",   "vif", mst_vif1);
-    uvm_config_db #(virtual axi4_read_if   #(vip_axi4_cfg))::set(uvm_root::get(), "uvm_test_top.tb_env.axi4_read_agent2*",   "vif", mst_vif2);
-    uvm_config_db #(virtual axi4_memory_if #(vip_axi4_cfg))::set(uvm_root::get(), "uvm_test_top.tb_env.axi4_memory_agent0*", "vif", mem_vif);
-
+    uvm_config_db #(virtual clk_rst_if)::set(uvm_root::get(),                    "uvm_test_top.tb_env*",                "vif", clk_rst_vif);
+    uvm_config_db #(virtual clk_rst_if)::set(uvm_root::get(),                    "uvm_test_top.tb_env.clk_rst_agent0*", "vif", clk_rst_vif);
+    uvm_config_db #(virtual vip_axi4_if #(VIP_AXI4_CFG_C))::set(uvm_root::get(), "uvm_test_top.tb_env.rd_agent0*",      "vif", mst_vif0);
+    uvm_config_db #(virtual vip_axi4_if #(VIP_AXI4_CFG_C))::set(uvm_root::get(), "uvm_test_top.tb_env.rd_agent1*",      "vif", mst_vif1);
+    uvm_config_db #(virtual vip_axi4_if #(VIP_AXI4_CFG_C))::set(uvm_root::get(), "uvm_test_top.tb_env.rd_agent2*",      "vif", mst_vif2);
+    uvm_config_db #(virtual vip_axi4_if #(VIP_AXI4_CFG_C))::set(uvm_root::get(), "uvm_test_top.tb_env.mem_agent0*",     "vif", mem_vif);
     run_test();
     $stop();
-
   end
 
 
-
   initial begin
-
-    // With recording detail you can switch on/off transaction recording.
+    $timeformat(-9, 0, "", 11);  // units, precision, suffix, min field width
     if ($test$plusargs("RECORD")) begin
       uvm_config_db #(uvm_verbosity)::set(null,"*", "recording_detail", UVM_FULL);
     end
@@ -198,28 +184,5 @@ module ara_tb_top;
       uvm_config_db #(uvm_verbosity)::set(null,"*", "recording_detail", UVM_NONE);
     end
   end
-
-
-  // Generate reset
-  initial begin
-
-    rst_n     <= 1'b1;
-
-    #(clk_period*5)
-
-    rst_n     <= 1'b0;
-
-    #rst_period;
-
-    rst_n     <= 1'b1;
-
-  end
-
-  // Generate clock
-  always begin
-    #(clk_period/2)
-    clk = ~clk;
-  end
-
 
 endmodule

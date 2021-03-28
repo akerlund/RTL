@@ -24,26 +24,26 @@ package ara_tb_pkg;
   import uvm_pkg::*;
   `include "uvm_macros.svh"
 
+  import bool_pkg::*;
+  import clk_rst_types_pkg::*;
+  import clk_rst_pkg::*;
   import vip_axi4_types_pkg::*;
+  import vip_axi4_agent_pkg::*;
 
   localparam int NR_OF_MASTERS_C = 3;
 
   // Configuration of the VIP
-  localparam vip_axi4_cfg_t vip_axi4_cfg = '{
-    AXI_ID_WIDTH_P   : 4,
-    AXI_ADDR_WIDTH_P : 32,
-    AXI_DATA_WIDTH_P : 32,
-    AXI_STRB_WIDTH_P : 16,
-    AXI_USER_WIDTH_P : 1
+  localparam vip_axi4_cfg_t VIP_AXI4_CFG_C = '{
+    VIP_AXI4_ID_WIDTH_P   : 4,
+    VIP_AXI4_ADDR_WIDTH_P : 32,
+    VIP_AXI4_DATA_WIDTH_P : 32,
+    VIP_AXI4_STRB_WIDTH_P : 16,
+    VIP_AXI4_USER_WIDTH_P : 1
   };
 
-  import axi4_read_pkg::*;
-  import axi4_memory_pkg::*;
-
-  `include "ara_config.sv"
   `include "ara_scoreboard.sv"
   `include "ara_virtual_sequencer.sv"
   `include "ara_env.sv"
-  `include "ara_vseq_lib.sv"
+  `include "vip_axi4_seq_lib.sv"
 
 endpackage

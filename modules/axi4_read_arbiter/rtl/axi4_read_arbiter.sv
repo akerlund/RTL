@@ -22,9 +22,6 @@
 //   When a Master is given access it is only allowed to send one "araddr"
 //   and the arbiter is hard coded to forward "arburst" as incremental mode.
 //
-//   Read Data Channel:
-//   TODO
-//
 ////////////////////////////////////////////////////////////////////////////////
 
 `default_nettype none
@@ -166,9 +163,7 @@ module axi4_read_arbiter #(
               mst_arready[rac_rotating_mst] <= '1;
               rac_select                    <= rac_rotating_mst;
               rac_mst_is_chosen             <= '1;
-
             end
-
           end
         end
 
@@ -183,9 +178,7 @@ module axi4_read_arbiter #(
           else begin
             mst_arready <= mst_arready;
           end
-
         end
-
       endcase
 
       // -----------------------------------------------------------------------
@@ -201,7 +194,6 @@ module axi4_read_arbiter #(
             rdc_state         <= WAIT_SLV_RLAST_E;
             rdc_select        <= slv_rid;
             rdc_mst_is_chosen <= '1;
-
           end
         end
 
@@ -212,11 +204,8 @@ module axi4_read_arbiter #(
             rdc_state         <= WAIT_SLV_RVALID_E;
             rdc_mst_is_chosen <= '0;
           end
-
         end
-
       endcase
-
     end
   end
 
@@ -236,14 +225,12 @@ module axi4_read_arbiter #(
       slv_arlen   = '0;
       slv_arvalid = '0;
 
-    end
-    else begin
+    end else begin
 
       slv_arid    = mst_arid    [rac_select];
       slv_araddr  = mst_araddr  [rac_select];
       slv_arlen   = mst_arlen   [rac_select];
       slv_arvalid = mst_arvalid [rac_select];
-
     end
   end
 
@@ -258,17 +245,12 @@ module axi4_read_arbiter #(
 
       mst_rvalid = '0;
       slv_rready = '0;
-
-    end
-    else begin
+    end else begin
 
       mst_rvalid[rdc_select] = slv_rvalid;
       slv_rready             = mst_rready[rdc_select];
-
     end
-
   end
-
 endmodule
 
 `default_nettype wire

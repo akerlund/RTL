@@ -21,31 +21,17 @@
 
 class tc_ara_basic_read extends ara_base_test;
 
-  ara_read_vseq #(vip_axi4_cfg) ara_read;
-
   `uvm_component_utils(tc_ara_basic_read)
 
 
-
   function new(string name = "tc_ara_basic_read", uvm_component parent = null);
-
     super.new(name, parent);
-
-    // Memory Agent configuration
-    memory_depth      = 16;
-    max_read_requests = 16;
-    max_ooo_bursts    = 0;
-
   endfunction
-
 
 
   function void build_phase(uvm_phase phase);
-
     super.build_phase(phase);
-
   endfunction
-
 
 
   task run_phase(uvm_phase phase);
@@ -53,12 +39,15 @@ class tc_ara_basic_read extends ara_base_test;
     super.run_phase(phase);
     phase.raise_objection(this);
 
-    ara_read = new();
-    ara_read.max_araddr              = 2**memory_depth-1;
-    ara_read.max_arid                = NR_OF_MASTERS_C-1;
-    ara_read.nr_of_bursts            = 5000;
-    ara_read.max_idle_between_bursts = 512;
-    ara_read.start(v_sqr);
+    vip_axi4_read_seq0.set_nr_of_requests(256);
+    vip_axi4_read_seq1.set_nr_of_requests(256);
+    vip_axi4_read_seq2.set_nr_of_requests(256);
+
+    fork
+      vip_axi4_read_seq0.start(v_sqr.rd_sequencer0);
+      vip_axi4_read_seq1.start(v_sqr.rd_sequencer1);
+      vip_axi4_read_seq2.start(v_sqr.rd_sequencer2);
+    join
 
     phase.drop_objection(this);
 

@@ -23,26 +23,41 @@ class ara_base_test extends uvm_test;
 
   `uvm_component_utils(ara_base_test)
 
+  // ---------------------------------------------------------------------------
+  // UVM variables
+  // ---------------------------------------------------------------------------
+
+  uvm_table_printer uvm_table_printer0;
+  report_server     report_server0;
+
+  // ---------------------------------------------------------------------------
+  // Testbench variables
+  // ---------------------------------------------------------------------------
+
   ara_env               tb_env;
   ara_virtual_sequencer v_sqr;
 
-  bit test_pass = 1;
+  // ---------------------------------------------------------------------------
+  // VIP Agent configurations
+  // ---------------------------------------------------------------------------
 
-  uvm_table_printer printer;
+  clk_rst_config  clk_rst_config0;
+  vip_axi4_config axi4_mem_cfg0;
+  vip_axi4_config axi4_rd_cfg0;
+  vip_axi4_config axi4_rd_cfg1;
+  vip_axi4_config axi4_rd_cfg2;
 
-  // Write Address Channel
-  int nr_of_araddr;
-  int nr_of_arid;
+  // ---------------------------------------------------------------------------
+  // Sequences
+  // ---------------------------------------------------------------------------
 
-  // Memory Agent configuration
-  int max_read_requests = 32;
-  int max_ooo_bursts    = 0;
-  int memory_depth      = 1;
+  reset_sequence    reset_seq0;
+  vip_axi4_read_seq vip_axi4_read_seq0;
+  vip_axi4_read_seq vip_axi4_read_seq1;
+  vip_axi4_read_seq vip_axi4_read_seq2;
 
   function new(string name = "ara_base_test", uvm_component parent = null);
-
     super.new(name, parent);
-
   endfunction
 
 
@@ -51,31 +66,67 @@ class ara_base_test extends uvm_test;
 
     super.build_phase(phase);
 
+    // UVM
     uvm_config_db #(uvm_verbosity)::set(this, "*", "recording_detail", UVM_FULL);
 
+    report_server0 = new("report_server0");
+    uvm_report_server::set_server(report_server0);
+
+    uvm_table_printer0                     = new();
+    uvm_table_printer0.knobs.depth         = 3;
+    uvm_table_printer0.knobs.default_radix = UVM_DEC;
+
+    // Environment
     tb_env = ara_env::type_id::create("tb_env", this);
 
-    printer = new();
-    printer.knobs.depth = 3;
+    // Configurations
+    clk_rst_config0 = clk_rst_config::type_id::create("clk_rst_config0", this);
+    axi4_mem_cfg0   = vip_axi4_config::type_id::create("axi4_mem_cfg0",  this);
+    axi4_rd_cfg0    = vip_axi4_config::type_id::create("axi4_rd_cfg0",   this);
+    axi4_rd_cfg1    = vip_axi4_config::type_id::create("axi4_rd_cfg1",   this);
+    axi4_rd_cfg2    = vip_axi4_config::type_id::create("axi4_rd_cfg2",   this);
 
+    axi4_mem_cfg0.vip_axi4_agent_type     = VIP_AXI4_SLAVE_AGENT_E;
+    axi4_mem_cfg0.mem_slave               = TRUE;
+    axi4_mem_cfg0.max_rready_delay_period = 8;
+
+    uvm_config_db #(clk_rst_config)::set(this,  {"tb_env.clk_rst_agent0", "*"}, "cfg", clk_rst_config0);
+    uvm_config_db #(vip_axi4_config)::set(this, {"tb_env.mem_agent0",     "*"}, "cfg", axi4_mem_cfg0);
+    uvm_config_db #(vip_axi4_config)::set(this, {"tb_env.rd_agent0",      "*"}, "cfg", axi4_rd_cfg0);
+    uvm_config_db #(vip_axi4_config)::set(this, {"tb_env.rd_agent1",      "*"}, "cfg", axi4_rd_cfg1);
+    uvm_config_db #(vip_axi4_config)::set(this, {"tb_env.rd_agent2",      "*"}, "cfg", axi4_rd_cfg2);
 
   endfunction
 
 
   function void end_of_elaboration_phase(uvm_phase phase);
-
-    // Configure the Memory Agent
-    tb_env.axi4_memory_agent0.cfg.configure_parameters(
-      max_read_requests,
-      max_ooo_bursts,
-      memory_depth
-    );
-
-    `uvm_info(get_name(), {"Configuration:\n", tb_env.axi4_memory_agent0.cfg.sprint()}, UVM_LOW)
-
-    `uvm_info(get_type_name(), $sformatf("Topology of the test:\n%s", this.sprint(printer)), UVM_LOW)
+    super.end_of_elaboration_phase(phase);
     v_sqr = tb_env.virtual_sequencer;
-
+    `uvm_info(get_name(), {"VIP AXI4 Agent (Read0):\n",  axi4_rd_cfg0.sprint()},  UVM_LOW)
+    `uvm_info(get_name(), {"VIP AXI4 Agent (Memory):\n", axi4_mem_cfg0.sprint()}, UVM_LOW)
   endfunction
+
+
+  function void start_of_simulation_phase(uvm_phase phase);
+    super.start_of_simulation_phase(phase);
+    reset_seq0         = reset_sequence::type_id::create("reset_seq0");
+    vip_axi4_read_seq0 = vip_axi4_read_seq::type_id::create("vip_axi4_read_seq0");
+    vip_axi4_read_seq1 = vip_axi4_read_seq::type_id::create("vip_axi4_read_seq1");
+    vip_axi4_read_seq2 = vip_axi4_read_seq::type_id::create("vip_axi4_read_seq2");
+  endfunction
+
+
+  task run_phase(uvm_phase phase);
+    super.run_phase(phase);
+    phase.raise_objection(this);
+    clk_delay(8);
+    reset_seq0.start(v_sqr.clk_rst_sequencer0);
+    phase.drop_objection(this);
+  endtask
+
+
+  task clk_delay(int delay);
+    #(delay*clk_rst_config0.clock_period);
+  endtask
 
 endclass
