@@ -38,6 +38,9 @@ module awa_tb_top;
   logic [0 : NR_OF_MASTERS_C-1]   [VIP_AXI4_CFG_C.VIP_AXI4_ID_WIDTH_P-1 : 0] mst_awid;
   logic [0 : NR_OF_MASTERS_C-1] [VIP_AXI4_CFG_C.VIP_AXI4_ADDR_WIDTH_P-1 : 0] mst_awaddr;
   logic [0 : NR_OF_MASTERS_C-1]                                      [7 : 0] mst_awlen;
+  logic [0 : NR_OF_MASTERS_C-1]                                      [2 : 0] mst_awsize;
+  logic [0 : NR_OF_MASTERS_C-1]                                      [1 : 0] mst_awburst;
+  logic [0 : NR_OF_MASTERS_C-1]                                      [3 : 0] mst_awregion;
   logic [0 : NR_OF_MASTERS_C-1]                                              mst_awvalid;
   logic [0 : NR_OF_MASTERS_C-1]                                              mst_awready;
 
@@ -47,11 +50,18 @@ module awa_tb_top;
   logic [0 : NR_OF_MASTERS_C-1]                                              mst_wlast;
   logic [0 : NR_OF_MASTERS_C-1]                                              mst_wvalid;
   logic [0 : NR_OF_MASTERS_C-1]                                              mst_wready;
+  logic                           [VIP_AXI4_CFG_C.VIP_AXI4_ID_WIDTH_P-1 : 0] mst_bid;
+  logic                                                              [1 : 0] mst_bresp;
+  logic [0 : NR_OF_MASTERS_C-1]                                              mst_bvalid;
+  logic [0 : NR_OF_MASTERS_C-1]                                              mst_bready;
 
   // Master 0
   assign mst_awid[0]      = mst_vif0.awid;
   assign mst_awaddr[0]    = mst_vif0.awaddr;
   assign mst_awlen[0]     = mst_vif0.awlen;
+  assign mst_awsize[0]    = mst_vif0.awsize;
+  assign mst_awburst[0]   = mst_vif0.awburst;
+  assign mst_awregion[0]  = mst_vif0.awregion;
   assign mst_awvalid[0]   = mst_vif0.awvalid;
   assign mst_vif0.awready = mst_awready[0];
 
@@ -61,10 +71,18 @@ module awa_tb_top;
   assign mst_wvalid[0]    = mst_vif0.wvalid;
   assign mst_vif0.wready  = mst_wready[0];
 
+  assign mst_vif0.bid     = mst_bid;
+  assign mst_vif0.bresp   = mst_bresp;
+  assign mst_vif0.bvalid  = mst_bvalid[0];
+  assign mst_bready[0]    = mst_vif0.bready;
+
   // Master 1
   assign mst_awid[1]      = mst_vif1.awid;
   assign mst_awaddr[1]    = mst_vif1.awaddr;
   assign mst_awlen[1]     = mst_vif1.awlen;
+  assign mst_awsize[1]    = mst_vif1.awsize;
+  assign mst_awburst[1]   = mst_vif1.awburst;
+  assign mst_awregion[1]  = mst_vif1.awregion;
   assign mst_awvalid[1]   = mst_vif1.awvalid;
   assign mst_vif1.awready = mst_awready[1];
 
@@ -74,10 +92,18 @@ module awa_tb_top;
   assign mst_wvalid[1]    = mst_vif1.wvalid;
   assign mst_vif1.wready  = mst_wready[1];
 
+  assign mst_vif1.bid     = mst_bid;
+  assign mst_vif1.bresp   = mst_bresp;
+  assign mst_vif1.bvalid  = mst_bvalid[1];
+  assign mst_bready[1]    = mst_vif1.bready;
+
   // Master 2
   assign mst_awid[2]      = mst_vif2.awid;
   assign mst_awaddr[2]    = mst_vif2.awaddr;
   assign mst_awlen[2]     = mst_vif2.awlen;
+  assign mst_awsize[2]    = mst_vif2.awsize;
+  assign mst_awburst[2]   = mst_vif2.awburst;
+  assign mst_awregion[2]  = mst_vif2.awregion;
   assign mst_awvalid[2]   = mst_vif2.awvalid;
   assign mst_vif2.awready = mst_awready[2];
 
@@ -86,6 +112,11 @@ module awa_tb_top;
   assign mst_wlast[2]     = mst_vif2.wlast;
   assign mst_wvalid[2]    = mst_vif2.wvalid;
   assign mst_vif2.wready  = mst_wready[2];
+
+  assign mst_vif2.bid     = mst_bid;
+  assign mst_vif2.bresp   = mst_bresp;
+  assign mst_vif2.bvalid  = mst_bvalid[2];
+  assign mst_bready[2]    = mst_vif2.bready;
 
 
   // DUT
@@ -111,6 +142,9 @@ module awa_tb_top;
     .mst_awid         ( mst_awid                             ), // input
     .mst_awaddr       ( mst_awaddr                           ), // input
     .mst_awlen        ( mst_awlen                            ), // input
+    .mst_awsize       ( mst_awsize                           ), // input
+    .mst_awburst      ( mst_awburst                          ), // input
+    .mst_awregion     ( mst_awregion                         ), // input
     .mst_awvalid      ( mst_awvalid                          ), // input
     .mst_awready      ( mst_awready                          ), // output
 
@@ -120,6 +154,12 @@ module awa_tb_top;
     .mst_wlast        ( mst_wlast                            ), // input
     .mst_wvalid       ( mst_wvalid                           ), // input
     .mst_wready       ( mst_wready                           ), // output
+
+    // Write Response Channel
+    .mst_bid          ( mst_bid                              ), // output
+    .mst_bresp        ( mst_bresp                            ), // output
+    .mst_bvalid       ( mst_bvalid                           ), // output
+    .mst_bready       ( mst_bready                           ), // input
 
     // -------------------------------------------------------------------------
     // AXI4 Slave
@@ -131,10 +171,7 @@ module awa_tb_top;
     .slv_awlen        ( mem_vif.awlen                        ), // output
     .slv_awsize       ( mem_vif.awsize                       ), // output
     .slv_awburst      ( mem_vif.awburst                      ), // output
-    .slv_awlock       ( mem_vif.awlock                       ), // output
-    .slv_awcache      ( mem_vif.awcache                      ), // output
-    .slv_awprot       ( mem_vif.awprot                       ), // output
-    .slv_awqos        ( mem_vif.awqos                        ), // output
+    .slv_awregion     ( mem_vif.awregion                     ), // output
     .slv_awvalid      ( mem_vif.awvalid                      ), // output
     .slv_awready      ( mem_vif.awready                      ), // input
 
@@ -156,28 +193,12 @@ module awa_tb_top;
   // Write Agents Constants (Unused)
   //---------------------------------------------------------------------------
 
-  // Write Response Channels
-  assign mst_vif0.bid    = '0;
-  assign mst_vif0.bresp  = '0;
-  assign mst_vif0.buser  = '0;
-  assign mst_vif0.bvalid = '0;
-
-  assign mst_vif1.bid    = '0;
-  assign mst_vif1.bresp  = '0;
-  assign mst_vif1.buser  = '0;
-  assign mst_vif1.bvalid = '0;
-
-  assign mst_vif2.bid    = '0;
-  assign mst_vif2.bresp  = '0;
-  assign mst_vif2.buser  = '0;
-  assign mst_vif2.bvalid = '0;
-
   //---------------------------------------------------------------------------
   // Memory Agent Constants (Unused)
   //---------------------------------------------------------------------------
 
-  assign mem_vif.awregion = '0;
-  assign mem_vif.awuser   = '0;
+  assign mem_vif.awlock = '0;
+  assign mem_vif.awuser = '0;
 
   // Write Data Channel
   assign mem_vif.wuser    = '0;
