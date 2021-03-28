@@ -1,9 +1,0 @@
-module_path=$git_root/vip/vip_math
-
-uvm_dirs+="
-  +incdir+$module_path
-"
-
-uvm_files+="
-  $module_path/vip_math_pkg.sv
-"
