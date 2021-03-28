@@ -24,11 +24,15 @@ package ara_tc_pkg;
   `include "uvm_macros.svh"
   import uvm_pkg::*;
 
-  // Import testbench and agent packages here
   import ara_tb_pkg::*;
-  import axi4_read_pkg::*;
 
-  // Include testcase files here
+  import bool_pkg::*;
+  import report_server_pkg::*;
+  import clk_rst_types_pkg::*;
+  import clk_rst_pkg::*;
+  import vip_axi4_types_pkg::*;
+  import vip_axi4_agent_pkg::*;
+
   `include "ara_base_test.sv"
   `include "tc_ara_basic_read.sv"
 
