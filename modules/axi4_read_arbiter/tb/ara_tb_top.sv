@@ -104,8 +104,8 @@ module ara_tb_top;
 
   assign mem_vif.arregion = '0;
   assign mem_vif.aruser   = '0;
-  assign mem_vif.arsize   = 3'b010;
-  assign mem_vif.arburst  = 2'b01;
+  assign mem_vif.arsize   = size_as_enum(VIP_AXI4_CFG_C.VIP_AXI4_STRB_WIDTH_P);
+  assign mem_vif.arburst  = VIP_AXI4_BURST_INCR_C;
 
   // DUT
   axi4_read_arbiter #(

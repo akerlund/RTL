@@ -39,9 +39,21 @@ class tc_ara_basic_read extends ara_base_test;
     super.run_phase(phase);
     phase.raise_objection(this);
 
+    vip_axi4_read_seq0.set_cfg_addr(2**VIP_AXI4_CFG_C.VIP_AXI4_ADDR_WIDTH_P-1, 0);
+    vip_axi4_read_seq1.set_cfg_addr(2**VIP_AXI4_CFG_C.VIP_AXI4_ADDR_WIDTH_P-1, 0);
+    vip_axi4_read_seq2.set_cfg_addr(2**VIP_AXI4_CFG_C.VIP_AXI4_ADDR_WIDTH_P-1, 0);
+
+    vip_axi4_read_seq0.set_cfg_id(0, 0);
+    vip_axi4_read_seq1.set_cfg_id(1, 1);
+    vip_axi4_read_seq2.set_cfg_id(2, 2);
+
     vip_axi4_read_seq0.set_nr_of_requests(256);
     vip_axi4_read_seq1.set_nr_of_requests(256);
     vip_axi4_read_seq2.set_nr_of_requests(256);
+
+    vip_axi4_read_seq0.set_len(15);
+    vip_axi4_read_seq1.set_len(15);
+    vip_axi4_read_seq2.set_len(15);
 
     fork
       vip_axi4_read_seq0.start(v_sqr.rd_sequencer0);
