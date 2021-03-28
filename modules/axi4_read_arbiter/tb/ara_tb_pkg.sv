@@ -38,7 +38,7 @@ package ara_tb_pkg;
     VIP_AXI4_ADDR_WIDTH_P : 13,
     VIP_AXI4_DATA_WIDTH_P : 32,
     VIP_AXI4_STRB_WIDTH_P : 4,
-    VIP_AXI4_USER_WIDTH_P : 1
+    VIP_AXI4_USER_WIDTH_P : 0
   };
 
   `include "ara_scoreboard.sv"
