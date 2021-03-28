@@ -88,7 +88,15 @@ class ara_base_test extends uvm_test;
 
     axi4_mem_cfg0.vip_axi4_agent_type     = VIP_AXI4_SLAVE_AGENT_E;
     axi4_mem_cfg0.mem_slave               = TRUE;
+    axi4_mem_cfg0.mem_addr_width          = VIP_AXI4_CFG_C.VIP_AXI4_ADDR_WIDTH_P;
     axi4_mem_cfg0.max_rready_delay_period = 8;
+
+    axi4_rd_cfg0.min_rready_delay_period = 10;
+    axi4_rd_cfg0.max_rready_delay_period = 10;
+    axi4_rd_cfg1.min_rready_delay_period = 10;
+    axi4_rd_cfg1.max_rready_delay_period = 10;
+    axi4_rd_cfg2.min_rready_delay_period = 10;
+    axi4_rd_cfg2.max_rready_delay_period = 10;
 
     uvm_config_db #(clk_rst_config)::set(this,  {"tb_env.clk_rst_agent0", "*"}, "cfg", clk_rst_config0);
     uvm_config_db #(vip_axi4_config)::set(this, {"tb_env.mem_agent0",     "*"}, "cfg", axi4_mem_cfg0);
@@ -119,6 +127,7 @@ class ara_base_test extends uvm_test;
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     phase.raise_objection(this);
+    tb_env.mem_agent0.driver.memory_randomize();
     clk_delay(8);
     reset_seq0.start(v_sqr.clk_rst_sequencer0);
     phase.drop_objection(this);

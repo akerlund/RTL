@@ -34,10 +34,10 @@ package ara_tb_pkg;
 
   // Configuration of the VIP
   localparam vip_axi4_cfg_t VIP_AXI4_CFG_C = '{
-    VIP_AXI4_ID_WIDTH_P   : 4,
-    VIP_AXI4_ADDR_WIDTH_P : 32,
+    VIP_AXI4_ID_WIDTH_P   : 2,
+    VIP_AXI4_ADDR_WIDTH_P : 13,
     VIP_AXI4_DATA_WIDTH_P : 32,
-    VIP_AXI4_STRB_WIDTH_P : 16,
+    VIP_AXI4_STRB_WIDTH_P : 4,
     VIP_AXI4_USER_WIDTH_P : 1
   };
 
