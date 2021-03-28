@@ -24,13 +24,15 @@ package awa_tc_pkg;
   `include "uvm_macros.svh"
   import uvm_pkg::*;
 
-  import axi4_types_pkg::*;
-
-  // Import testbench and agent packages here
   import awa_tb_pkg::*;
-  import axi4_write_pkg::*;
 
-  // Include testcase files here
+  import bool_pkg::*;
+  import report_server_pkg::*;
+  import clk_rst_types_pkg::*;
+  import clk_rst_pkg::*;
+  import vip_axi4_types_pkg::*;
+  import vip_axi4_agent_pkg::*;
+
   `include "awa_base_test.sv"
   `include "tc_awa_basic_write.sv"
 

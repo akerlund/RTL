@@ -21,33 +21,16 @@
 
 class tc_awa_basic_write extends awa_base_test;
 
-  awa_write_vseq #(vip_axi4_cfg) awa_write_all;
-
   `uvm_component_utils(tc_awa_basic_write)
 
-
-
   function new(string name = "tc_awa_basic_write", uvm_component parent = null);
-
     super.new(name, parent);
-
-    // Memory Agent configuration
-    use_response_channel         = 1;
-    wready_back_pressure_enabled = 1;
-
-    // Memory Agent configuration
-    memory_depth = 16;
-
   endfunction
-
 
 
   function void build_phase(uvm_phase phase);
-
     super.build_phase(phase);
-
   endfunction
-
 
 
   task run_phase(uvm_phase phase);
@@ -55,11 +38,27 @@ class tc_awa_basic_write extends awa_base_test;
     super.run_phase(phase);
     phase.raise_objection(this);
 
-    awa_write_all = new();
-    awa_write_all.max_awaddr              = 2**memory_depth-1;
-    awa_write_all.nr_of_bursts            = 5000;
-    awa_write_all.max_idle_between_bursts = 512;
-    awa_write_all.start(v_sqr);
+    vip_axi4_write_seq0.set_cfg_addr(2**VIP_AXI4_CFG_C.VIP_AXI4_ADDR_WIDTH_P-1, 0);
+    vip_axi4_write_seq1.set_cfg_addr(2**VIP_AXI4_CFG_C.VIP_AXI4_ADDR_WIDTH_P-1, 0);
+    vip_axi4_write_seq2.set_cfg_addr(2**VIP_AXI4_CFG_C.VIP_AXI4_ADDR_WIDTH_P-1, 0);
+
+    vip_axi4_write_seq0.set_cfg_id(0, 0);
+    vip_axi4_write_seq1.set_cfg_id(1, 1);
+    vip_axi4_write_seq2.set_cfg_id(2, 2);
+
+    vip_axi4_write_seq0.set_nr_of_requests(256);
+    vip_axi4_write_seq1.set_nr_of_requests(256);
+    vip_axi4_write_seq2.set_nr_of_requests(256);
+
+    vip_axi4_write_seq0.set_len(15);
+    vip_axi4_write_seq1.set_len(15);
+    vip_axi4_write_seq2.set_len(15);
+
+    fork
+      vip_axi4_write_seq0.start(v_sqr.wr_sequencer0);
+      vip_axi4_write_seq1.start(v_sqr.wr_sequencer1);
+      vip_axi4_write_seq2.start(v_sqr.wr_sequencer2);
+    join
 
     phase.drop_objection(this);
 

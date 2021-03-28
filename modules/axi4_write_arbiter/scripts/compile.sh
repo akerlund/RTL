@@ -6,9 +6,26 @@ git_root="$(git rev-parse --show-toplevel)"
 rtl_top=axi4_write_arbiter
 uvm_top="awa_tb_top"
 
-# Source the module's file lists
-source ./rtl/rtl_files.lst
-source ./tb/uvm_files.lst
+# ------------------------------------------------------------------------------
+# Source submodules
+# ------------------------------------------------------------------------------
+
+git_sub_root="$(git rev-parse --show-toplevel)"
+
+git_root="$(git rev-parse --show-toplevel)/submodules/VIP"
+source $git_sub_root/submodules/VIP/bool/files.lst
+source $git_sub_root/submodules/VIP/vip_axi4_agent/files.lst
+source $git_sub_root/submodules/VIP/vip_clk_rst_agent/files.lst
+source $git_sub_root/submodules/VIP/report_server/files.lst
+
+# ------------------------------------------------------------------------------
+# Source modules
+# ------------------------------------------------------------------------------
+
+# Restoring the git root
+git_root="$(git rev-parse --show-toplevel)"
+source ./rtl/files.lst
+source ./tb/files.lst
 
 # Parameters
 parameters+="AXI_ID_WIDTH_P=4 "

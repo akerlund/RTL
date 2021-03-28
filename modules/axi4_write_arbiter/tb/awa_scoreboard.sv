@@ -32,24 +32,24 @@ class awa_scoreboard extends uvm_scoreboard;
   `uvm_component_utils(awa_scoreboard)
 
   // Scoreboard ports
-  uvm_analysis_imp_address_port0 #(axi4_write_item #(vip_axi4_cfg), awa_scoreboard) address_port0;
-  uvm_analysis_imp_data_port0    #(axi4_write_item #(vip_axi4_cfg), awa_scoreboard) data_port0;
-  uvm_analysis_imp_address_port1 #(axi4_write_item #(vip_axi4_cfg), awa_scoreboard) address_port1;
-  uvm_analysis_imp_data_port1    #(axi4_write_item #(vip_axi4_cfg), awa_scoreboard) data_port1;
-  uvm_analysis_imp_address_port2 #(axi4_write_item #(vip_axi4_cfg), awa_scoreboard) address_port2;
-  uvm_analysis_imp_data_port2    #(axi4_write_item #(vip_axi4_cfg), awa_scoreboard) data_port2;
-  uvm_analysis_imp_mem_port      #(axi4_write_item #(vip_axi4_cfg), awa_scoreboard) mem_port;
+  uvm_analysis_imp_address_port0 #(vip_axi4_item #(VIP_AXI4_CFG_C), awa_scoreboard) address_port0;
+  uvm_analysis_imp_data_port0    #(vip_axi4_item #(VIP_AXI4_CFG_C), awa_scoreboard) data_port0;
+  uvm_analysis_imp_address_port1 #(vip_axi4_item #(VIP_AXI4_CFG_C), awa_scoreboard) address_port1;
+  uvm_analysis_imp_data_port1    #(vip_axi4_item #(VIP_AXI4_CFG_C), awa_scoreboard) data_port1;
+  uvm_analysis_imp_address_port2 #(vip_axi4_item #(VIP_AXI4_CFG_C), awa_scoreboard) address_port2;
+  uvm_analysis_imp_data_port2    #(vip_axi4_item #(VIP_AXI4_CFG_C), awa_scoreboard) data_port2;
+  uvm_analysis_imp_mem_port      #(vip_axi4_item #(VIP_AXI4_CFG_C), awa_scoreboard) mem_port;
 
   // Storage for comparison
-  axi4_write_item #(vip_axi4_cfg) write_address_items [$];
-  axi4_write_item #(vip_axi4_cfg) write_data_items    [$];
-  axi4_write_item #(vip_axi4_cfg) memory_write_items  [$];
+  vip_axi4_item #(VIP_AXI4_CFG_C) write_address_items [$];
+  vip_axi4_item #(VIP_AXI4_CFG_C) write_data_items    [$];
+  vip_axi4_item #(VIP_AXI4_CFG_C) memory_write_items  [$];
 
 
   // Debug storage
-  axi4_write_item #(vip_axi4_cfg) all_write_address_items [$];
-  axi4_write_item #(vip_axi4_cfg) all_write_data_items    [$];
-  axi4_write_item #(vip_axi4_cfg) all_memory_write_items  [$];
+  vip_axi4_item #(VIP_AXI4_CFG_C) all_write_address_items [$];
+  vip_axi4_item #(VIP_AXI4_CFG_C) all_write_data_items    [$];
+  vip_axi4_item #(VIP_AXI4_CFG_C) all_memory_write_items  [$];
 
 
   uvm_phase current_phase;
@@ -62,8 +62,8 @@ class awa_scoreboard extends uvm_scoreboard;
   int number_of_passed;
   int number_of_failed;
 
-  axi4_write_item #(vip_axi4_cfg) current_ingress_item;
-  axi4_write_item #(vip_axi4_cfg) current_egress_item;
+  vip_axi4_item #(VIP_AXI4_CFG_C) current_ingress_item;
+  vip_axi4_item #(VIP_AXI4_CFG_C) current_egress_item;
 
 
   function new(string name, uvm_component parent);
@@ -71,11 +71,8 @@ class awa_scoreboard extends uvm_scoreboard;
   endfunction
 
 
-
   virtual function void build_phase(uvm_phase phase);
-
     super.build_phase(phase);
-
     address_port0 = new("address_port0", this);
     data_port0    = new("data_port0", this);
     address_port1 = new("address_port1", this);
@@ -83,106 +80,85 @@ class awa_scoreboard extends uvm_scoreboard;
     address_port2 = new("address_port2", this);
     data_port2    = new("data_port2", this);
     mem_port      = new("mem_port", this);
-
   endfunction
-
 
 
   function void connect_phase(uvm_phase phase);
-
     current_phase = phase;
     super.connect_phase(current_phase);
-
   endfunction
 
 
-
   virtual task run_phase(uvm_phase phase);
-
     current_phase = phase;
     super.run_phase(current_phase);
-
   endtask
 
 
-
   function void check_phase(uvm_phase phase);
-
     current_phase = phase;
     super.check_phase(current_phase);
-
     if (number_of_failed != 0) begin
       `uvm_error(get_name(), $sformatf("Test failed! (%0d) mismatches", number_of_failed))
-    end
-    else begin
+    end else begin
       `uvm_info(get_name(), $sformatf("Test passed (%0d)/(%0d) finished transfers", number_of_passed, number_of_compared), UVM_LOW)
     end
-
   endfunction
 
 
   // Agent 0
-  virtual function void write_address_port0(axi4_write_item #(vip_axi4_cfg) trans);
+  virtual function void write_address_port0(vip_axi4_item #(VIP_AXI4_CFG_C) trans);
 
     number_of_write_address_items++;
     all_write_address_items.push_back(trans);
     write_address_items.push_back(trans);
     current_phase.raise_objection(this);
-
   endfunction
 
 
-  virtual function void write_data_port0(axi4_write_item #(vip_axi4_cfg) trans);
+  virtual function void write_data_port0(vip_axi4_item #(VIP_AXI4_CFG_C) trans);
 
     number_of_write_data_items++;
     all_write_data_items.push_back(trans);
     write_data_items.push_back(trans);
-
   endfunction
-
 
   // Agent 1
-  virtual function void write_address_port1(axi4_write_item #(vip_axi4_cfg) trans);
+  virtual function void write_address_port1(vip_axi4_item #(VIP_AXI4_CFG_C) trans);
 
     number_of_write_address_items++;
     all_write_address_items.push_back(trans);
     write_address_items.push_back(trans);
     current_phase.raise_objection(this);
-
   endfunction
 
 
-  virtual function void write_data_port1(axi4_write_item #(vip_axi4_cfg) trans);
+  virtual function void write_data_port1(vip_axi4_item #(VIP_AXI4_CFG_C) trans);
 
     number_of_write_data_items++;
     all_write_data_items.push_back(trans);
     write_data_items.push_back(trans);
-
   endfunction
-
 
   // Agent 2
-  virtual function void write_address_port2(axi4_write_item #(vip_axi4_cfg) trans);
+  virtual function void write_address_port2(vip_axi4_item #(VIP_AXI4_CFG_C) trans);
 
     number_of_write_address_items++;
     all_write_address_items.push_back(trans);
     write_address_items.push_back(trans);
     current_phase.raise_objection(this);
-
   endfunction
 
 
-  virtual function void write_data_port2(axi4_write_item #(vip_axi4_cfg) trans);
+  virtual function void write_data_port2(vip_axi4_item #(VIP_AXI4_CFG_C) trans);
 
     number_of_write_data_items++;
     all_write_data_items.push_back(trans);
     write_data_items.push_back(trans);
-
   endfunction
 
-
   // Memory Agent
-  virtual function void write_mem_port(axi4_write_item #(vip_axi4_cfg) trans);
+  virtual function void write_mem_port(vip_axi4_item #(VIP_AXI4_CFG_C) trans);
 
     number_of_memory_write_items++;
     all_memory_write_items.push_back(trans);
@@ -191,9 +167,7 @@ class awa_scoreboard extends uvm_scoreboard;
     compare();
 
     current_phase.drop_objection(this);
-
   endfunction
-
 
 
   virtual function void compare();
@@ -204,17 +178,10 @@ class awa_scoreboard extends uvm_scoreboard;
     number_of_compared++;
 
     if (!current_ingress_item.compare(current_egress_item)) begin
-
       `uvm_error(get_name(), $sformatf("Packet number (%0d) mismatches", number_of_compared))
       number_of_failed++;
-
-    end
-    else begin
-
+    end else begin
       number_of_passed++;
-
     end
-
   endfunction
-
 endclass

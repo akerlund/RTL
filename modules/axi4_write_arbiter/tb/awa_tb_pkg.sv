@@ -24,24 +24,24 @@ package awa_tb_pkg;
   import uvm_pkg::*;
   `include "uvm_macros.svh"
 
+  import bool_pkg::*;
+  import clk_rst_types_pkg::*;
+  import clk_rst_pkg::*;
   import vip_axi4_types_pkg::*;
+  import vip_axi4_agent_pkg::*;
 
   // Configuration of the VIP
-  localparam vip_axi4_cfg_t vip_axi4_cfg = '{
-    AXI_ID_WIDTH_P   : 4,
-    AXI_ADDR_WIDTH_P : 32,
-    AXI_DATA_WIDTH_P : 128,
-    AXI_STRB_WIDTH_P : 16,
-    AXI_USER_WIDTH_P : 1
+  localparam vip_axi4_cfg_t VIP_AXI4_CFG_C = '{
+    VIP_AXI4_ID_WIDTH_P   : 3,
+    VIP_AXI4_ADDR_WIDTH_P : 13,
+    VIP_AXI4_DATA_WIDTH_P : 32,
+    VIP_AXI4_STRB_WIDTH_P : 4,
+    VIP_AXI4_USER_WIDTH_P : 0
   };
 
-  import axi4_write_pkg::*;
-  import axi4_memory_pkg::*;
-
-  `include "awa_config.sv"
   `include "awa_scoreboard.sv"
   `include "awa_virtual_sequencer.sv"
   `include "awa_env.sv"
-  `include "awa_vseq_lib.sv"
+  `include "vip_axi4_seq_lib.sv"
 
 endpackage

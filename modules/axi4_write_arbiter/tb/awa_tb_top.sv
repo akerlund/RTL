@@ -19,43 +19,34 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+import uvm_pkg::*;
+import awa_tb_pkg::*;
+import awa_tc_pkg::*;
+
 module awa_tb_top;
 
-  import uvm_pkg::*;
-  import awa_tb_pkg::*;
-  import awa_tc_pkg::*;
-  import axi4_types_pkg::*;
-  import ip_top_pkg::*;
-
-  bit clk;
-  bit rst_n;
-  bit rst_axi_n;
-
-  time clk_period = 10ns;
-  time rst_period = 10*clk_period;
-
-
   // IF
-  axi4_write_if  #(vip_axi4_cfg) mst_vif0(clk, rst_n);
-  axi4_write_if  #(vip_axi4_cfg) mst_vif1(clk, rst_n);
-  axi4_write_if  #(vip_axi4_cfg) mst_vif2(clk, rst_n);
-  axi4_memory_if #(vip_axi4_cfg) mem_vif(clk, rst_n);
+  clk_rst_if                    clk_rst_vif();
+  vip_axi4_if #(VIP_AXI4_CFG_C) mst_vif0(clk_rst_vif.clk, clk_rst_vif.rst_n);
+  vip_axi4_if #(VIP_AXI4_CFG_C) mst_vif1(clk_rst_vif.clk, clk_rst_vif.rst_n);
+  vip_axi4_if #(VIP_AXI4_CFG_C) mst_vif2(clk_rst_vif.clk, clk_rst_vif.rst_n);
+  vip_axi4_if #(VIP_AXI4_CFG_C) mem_vif(clk_rst_vif.clk, clk_rst_vif.rst_n);
 
   localparam int NR_OF_MASTERS_C = 3;
 
   // Write Address Channel
-  logic [0 : NR_OF_MASTERS_C-1]   [vip_axi4_cfg.AXI_ID_WIDTH_P-1 : 0] mst_awid;
-  logic [0 : NR_OF_MASTERS_C-1] [vip_axi4_cfg.AXI_ADDR_WIDTH_P-1 : 0] mst_awaddr;
-  logic [0 : NR_OF_MASTERS_C-1]                               [7 : 0] mst_awlen;
-  logic [0 : NR_OF_MASTERS_C-1]                                       mst_awvalid;
-  logic [0 : NR_OF_MASTERS_C-1]                                       mst_awready;
+  logic [0 : NR_OF_MASTERS_C-1]   [VIP_AXI4_CFG_C.VIP_AXI4_ID_WIDTH_P-1 : 0] mst_awid;
+  logic [0 : NR_OF_MASTERS_C-1] [VIP_AXI4_CFG_C.VIP_AXI4_ADDR_WIDTH_P-1 : 0] mst_awaddr;
+  logic [0 : NR_OF_MASTERS_C-1]                                      [7 : 0] mst_awlen;
+  logic [0 : NR_OF_MASTERS_C-1]                                              mst_awvalid;
+  logic [0 : NR_OF_MASTERS_C-1]                                              mst_awready;
 
   // Write Data Channel
-  logic [0 : NR_OF_MASTERS_C-1] [vip_axi4_cfg.AXI_DATA_WIDTH_P-1 : 0] mst_wdata;
-  logic [0 : NR_OF_MASTERS_C-1] [vip_axi4_cfg.AXI_STRB_WIDTH_P-1 : 0] mst_wstrb;
-  logic [0 : NR_OF_MASTERS_C-1]                                       mst_wlast;
-  logic [0 : NR_OF_MASTERS_C-1]                                       mst_wvalid;
-  logic [0 : NR_OF_MASTERS_C-1]                                       mst_wready;
+  logic [0 : NR_OF_MASTERS_C-1] [VIP_AXI4_CFG_C.VIP_AXI4_DATA_WIDTH_P-1 : 0] mst_wdata;
+  logic [0 : NR_OF_MASTERS_C-1] [VIP_AXI4_CFG_C.VIP_AXI4_STRB_WIDTH_P-1 : 0] mst_wstrb;
+  logic [0 : NR_OF_MASTERS_C-1]                                              mst_wlast;
+  logic [0 : NR_OF_MASTERS_C-1]                                              mst_wvalid;
+  logic [0 : NR_OF_MASTERS_C-1]                                              mst_wready;
 
   // Master 0
   assign mst_awid[0]      = mst_vif0.awid;
@@ -98,67 +89,67 @@ module awa_tb_top;
 
 
   // DUT
-  axi4_m2s_arbiter #(
+  axi4_write_arbiter #(
 
-    .AXI_ID_WIDTH_P     ( vip_axi4_cfg.AXI_ID_WIDTH_P   ),
-    .AXI_ADDR_WIDTH_P   ( vip_axi4_cfg.AXI_ADDR_WIDTH_P ),
-    .AXI_DATA_WIDTH_P   ( vip_axi4_cfg.AXI_DATA_WIDTH_P ),
-    .AXI_STRB_WIDTH_P   ( vip_axi4_cfg.AXI_STRB_WIDTH_P ),
-    .NR_OF_MASTERS_P    ( NR_OF_MASTERS_C               )
+    .AXI_ID_WIDTH_P   ( VIP_AXI4_CFG_C.VIP_AXI4_ID_WIDTH_P   ),
+    .AXI_ADDR_WIDTH_P ( VIP_AXI4_CFG_C.VIP_AXI4_ADDR_WIDTH_P ),
+    .AXI_DATA_WIDTH_P ( VIP_AXI4_CFG_C.VIP_AXI4_DATA_WIDTH_P ),
+    .AXI_STRB_WIDTH_P ( VIP_AXI4_CFG_C.VIP_AXI4_STRB_WIDTH_P ),
+    .NR_OF_MASTERS_P  ( NR_OF_MASTERS_C                      )
 
-  ) axi4_m2s_arbiter_i0 (
+  ) axi4_write_arbiter_i0 (
 
     // Clock and reset
-    .clk                ( mem_vif.clk                   ), // input
-    .rst_n              ( mem_vif.rst_n                 ), // input
+    .clk              ( mem_vif.clk                          ), // input
+    .rst_n            ( mem_vif.rst_n                        ), // input
 
     // -------------------------------------------------------------------------
     // AXI4 Masters
     // -------------------------------------------------------------------------
 
     // Write Address Channel
-    .mst_awid           ( mst_awid                      ), // input
-    .mst_awaddr         ( mst_awaddr                    ), // input
-    .mst_awlen          ( mst_awlen                     ), // input
-    .mst_awvalid        ( mst_awvalid                   ), // input
-    .mst_awready        ( mst_awready                   ), // output
+    .mst_awid         ( mst_awid                             ), // input
+    .mst_awaddr       ( mst_awaddr                           ), // input
+    .mst_awlen        ( mst_awlen                            ), // input
+    .mst_awvalid      ( mst_awvalid                          ), // input
+    .mst_awready      ( mst_awready                          ), // output
 
     // Write Data Channel
-    .mst_wdata          ( mst_wdata                     ), // input
-    .mst_wstrb          ( mst_wstrb                     ), // input
-    .mst_wlast          ( mst_wlast                     ), // input
-    .mst_wvalid         ( mst_wvalid                    ), // input
-    .mst_wready         ( mst_wready                    ), // output
+    .mst_wdata        ( mst_wdata                            ), // input
+    .mst_wstrb        ( mst_wstrb                            ), // input
+    .mst_wlast        ( mst_wlast                            ), // input
+    .mst_wvalid       ( mst_wvalid                           ), // input
+    .mst_wready       ( mst_wready                           ), // output
 
     // -------------------------------------------------------------------------
     // AXI4 Slave
     // -------------------------------------------------------------------------
 
     // Write Address Channel
-    .slv_awid           ( mem_vif.awid                  ), // output
-    .slv_awaddr         ( mem_vif.awaddr                ), // output
-    .slv_awlen          ( mem_vif.awlen                 ), // output
-    .slv_awsize         ( mem_vif.awsize                ), // output
-    .slv_awburst        ( mem_vif.awburst               ), // output
-    .slv_awlock         ( mem_vif.awlock                ), // output
-    .slv_awcache        ( mem_vif.awcache               ), // output
-    .slv_awprot         ( mem_vif.awprot                ), // output
-    .slv_awqos          ( mem_vif.awqos                 ), // output
-    .slv_awvalid        ( mem_vif.awvalid               ), // output
-    .slv_awready        ( mem_vif.awready               ), // input
+    .slv_awid         ( mem_vif.awid                         ), // output
+    .slv_awaddr       ( mem_vif.awaddr                       ), // output
+    .slv_awlen        ( mem_vif.awlen                        ), // output
+    .slv_awsize       ( mem_vif.awsize                       ), // output
+    .slv_awburst      ( mem_vif.awburst                      ), // output
+    .slv_awlock       ( mem_vif.awlock                       ), // output
+    .slv_awcache      ( mem_vif.awcache                      ), // output
+    .slv_awprot       ( mem_vif.awprot                       ), // output
+    .slv_awqos        ( mem_vif.awqos                        ), // output
+    .slv_awvalid      ( mem_vif.awvalid                      ), // output
+    .slv_awready      ( mem_vif.awready                      ), // input
 
     // Write Data Channel
-    .slv_wdata          ( mem_vif.wdata                 ), // output
-    .slv_wstrb          ( mem_vif.wstrb                 ), // output
-    .slv_wlast          ( mem_vif.wlast                 ), // output
-    .slv_wvalid         ( mem_vif.wvalid                ), // output
-    .slv_wready         ( mem_vif.wready                ), // input
+    .slv_wdata        ( mem_vif.wdata                        ), // output
+    .slv_wstrb        ( mem_vif.wstrb                        ), // output
+    .slv_wlast        ( mem_vif.wlast                        ), // output
+    .slv_wvalid       ( mem_vif.wvalid                       ), // output
+    .slv_wready       ( mem_vif.wready                       ), // input
 
     // Write Response Channel
-    .slv_bid            ( mem_vif.bid                   ), // input
-    .slv_bresp          ( mem_vif.bresp                 ), // input
-    .slv_bvalid         ( mem_vif.bvalid                ), // input
-    .slv_bready         ( mem_vif.bready                )  // output
+    .slv_bid          ( mem_vif.bid                          ), // input
+    .slv_bresp        ( mem_vif.bresp                        ), // input
+    .slv_bvalid       ( mem_vif.bvalid                       ), // input
+    .slv_bready       ( mem_vif.bready                       )  // output
   );
 
   //---------------------------------------------------------------------------
@@ -193,22 +184,20 @@ module awa_tb_top;
 
 
   initial begin
-
-    uvm_config_db #(virtual axi4_write_if  #(vip_axi4_cfg))::set(uvm_root::get(), "uvm_test_top.tb_env.axi4_write_agent0*",  "vif", mst_vif0);
-    uvm_config_db #(virtual axi4_write_if  #(vip_axi4_cfg))::set(uvm_root::get(), "uvm_test_top.tb_env.axi4_write_agent1*",  "vif", mst_vif1);
-    uvm_config_db #(virtual axi4_write_if  #(vip_axi4_cfg))::set(uvm_root::get(), "uvm_test_top.tb_env.axi4_write_agent2*",  "vif", mst_vif2);
-    uvm_config_db #(virtual axi4_memory_if #(vip_axi4_cfg))::set(uvm_root::get(), "uvm_test_top.tb_env.axi4_memory_agent0*", "vif", mem_vif);
-
+    uvm_config_db #(virtual clk_rst_if)::set(uvm_root::get(),                    "uvm_test_top.tb_env*",                "vif", clk_rst_vif);
+    uvm_config_db #(virtual clk_rst_if)::set(uvm_root::get(),                    "uvm_test_top.tb_env.clk_rst_agent0*", "vif", clk_rst_vif);
+    uvm_config_db #(virtual vip_axi4_if #(VIP_AXI4_CFG_C))::set(uvm_root::get(), "uvm_test_top.tb_env.wr_agent0*",      "vif", mst_vif0);
+    uvm_config_db #(virtual vip_axi4_if #(VIP_AXI4_CFG_C))::set(uvm_root::get(), "uvm_test_top.tb_env.wr_agent1*",      "vif", mst_vif1);
+    uvm_config_db #(virtual vip_axi4_if #(VIP_AXI4_CFG_C))::set(uvm_root::get(), "uvm_test_top.tb_env.wr_agent2*",      "vif", mst_vif2);
+    uvm_config_db #(virtual vip_axi4_if #(VIP_AXI4_CFG_C))::set(uvm_root::get(), "uvm_test_top.tb_env.mem_agent0*",     "vif", mem_vif);
     run_test();
     $stop();
 
   end
 
 
-
   initial begin
-
-    // With recording detail you can switch on/off transaction recording.
+    $timeformat(-9, 0, "", 11);  // units, precision, suffix, min field width
     if ($test$plusargs("RECORD")) begin
       uvm_config_db #(uvm_verbosity)::set(null,"*", "recording_detail", UVM_FULL);
     end
@@ -216,28 +205,5 @@ module awa_tb_top;
       uvm_config_db #(uvm_verbosity)::set(null,"*", "recording_detail", UVM_NONE);
     end
   end
-
-
-  // Generate reset
-  initial begin
-
-    rst_n     <= 1'b1;
-
-    #(clk_period*5)
-
-    rst_n     <= 1'b0;
-
-    #rst_period;
-
-    rst_n     <= 1'b1;
-
-  end
-
-  // Generate clock
-  always begin
-    #(clk_period/2)
-    clk = ~clk;
-  end
-
 
 endmodule

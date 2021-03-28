@@ -23,9 +23,10 @@ class awa_virtual_sequencer extends uvm_virtual_sequencer;
 
   `uvm_component_utils(awa_virtual_sequencer)
 
-  axi4_write_sequencer #(vip_axi4_cfg) write_sequencer0;
-  axi4_write_sequencer #(vip_axi4_cfg) write_sequencer1;
-  axi4_write_sequencer #(vip_axi4_cfg) write_sequencer2;
+  clk_rst_sequencer                    clk_rst_sequencer0;
+  vip_axi4_sequencer #(VIP_AXI4_CFG_C) wr_sequencer0;
+  vip_axi4_sequencer #(VIP_AXI4_CFG_C) wr_sequencer1;
+  vip_axi4_sequencer #(VIP_AXI4_CFG_C) wr_sequencer2;
 
   function new(string name = "virtual_sequencer", uvm_component parent = null);
     super.new(name, parent);
