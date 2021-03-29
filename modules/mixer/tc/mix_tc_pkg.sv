@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -27,13 +28,13 @@ package mix_tc_pkg;
   `include "uvm_macros.svh"
   import uvm_pkg::*;
 
-  import vip_axi4s_types_pkg::*;
-  import vip_axi4s_pkg::*;
-
-  // Import testbench and agent packages here
   import mix_tb_pkg::*;
+  import bool_pkg::*;
+  import clk_rst_types_pkg::*;
+  import clk_rst_pkg::*;
+  import vip_axi4s_types_pkg::*;
+  import vip_axi4s_agent_pkg::*;
 
-  // Include testcase files here
   `include "mix_base_test.sv"
   `include "tc_positive_signals.sv"
   `include "tc_random_signals.sv"

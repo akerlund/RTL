@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -31,8 +32,8 @@ module mix_tb_top;
   time clk_period = 10ns;
 
   // IF
-  vip_axi4s_if #(vip_axi4s_cfg) mst0_vif(clk, rst_n);
-  vip_axi4s_if #(vip_axi4s_cfg) slv0_vif(clk, rst_n);
+  vip_axi4s_if #(VIP_AXI4S_CFG_C) mst0_vif(clk, rst_n);
+  vip_axi4s_if #(VIP_AXI4S_CFG_C) slv0_vif(clk, rst_n);
 
 
   logic [NR_OF_CHANNELS_C-1 : 0] [AUDIO_WIDTH_C-1 : 0] channel_data;
@@ -49,45 +50,47 @@ module mix_tb_top;
   genvar i;
   generate
     for (i = 0; i < NR_OF_CHANNELS_C; i++) begin
-
       assign channel_data[i]  = mst0_vif.tdata;
-      assign channel_valid    = mst0_vif.tvalid;
-
       assign cr_channel_gain[i] = (2 << Q_BITS_C);
       assign cr_channel_pan[i]  = i % 2;
-
     end
   endgenerate
 
 
+  assign channel_valid    = mst0_vif.tvalid;
   assign out_ready      = '1;
   assign cr_output_gain =  (1 << Q_BITS_C);
 
-  mixer #(
-    .AUDIO_WIDTH_P    ( AUDIO_WIDTH_C    ),
-    .GAIN_WIDTH_P     ( GAIN_WIDTH_C     ),
-    .NR_OF_CHANNELS_P ( NR_OF_CHANNELS_C ),
-    .Q_BITS_P         ( Q_BITS_C         )
-  ) mixer_i0 (
-    .clk              ( clk              ), // input
-    .rst_n            ( rst_n            ), // input
-    .channel_data     ( channel_data     ), // input
-    .channel_valid    ( channel_valid    ), // input
-    .out_left         ( out_left         ), // output
-    .out_right        ( out_right        ), // output
-    .out_clip         ( out_clip         ), // output
-    .out_valid        ( out_valid        ), // output
-    .out_ready        ( out_ready        ), // input
-    .cr_channel_gain  ( cr_channel_gain  ), // input
-    .cr_channel_pan   ( cr_channel_pan   ), // input
-    .cr_output_gain   ( cr_output_gain   )  // input
+  mixer_top #(
+    .AUDIO_WIDTH_P             ( AUDIO_WIDTH_C    ),
+    .GAIN_WIDTH_P              ( GAIN_WIDTH_C     ),
+    .NR_OF_CHANNELS_P          ( NR_OF_CHANNELS_C ),
+    .Q_BITS_P                  ( Q_BITS_C         )
+  ) mixer_top_i0 (
+    .clk                       ( clk              ), // input
+    .rst_n                     ( rst_n            ), // input
+    .clip_led                  (                  ), // output
+    .fs_strobe                 ( channel_valid    ), // input
+    .channel_data              ( channel_data     ), // input
+    .dac_data                  (                  ), // output
+    .dac_valid                 (                  ), // output
+    .dac_ready                 ( '1               ), // input
+    .dac_last                  (                  ), // output
+    .cmd_mix_clear_dac_min_max ( '1               ), // input
+    .cr_mix_channel_gain       ( '1               ), // input
+    .cr_mix_channel_pan        ( '1               ), // input
+    .cr_mix_output_gain        ( '1               ), // input
+    .sr_mix_out_clip           (                  ), // output
+    .sr_mix_channel_clip       (                  ), // output
+    .sr_mix_max_dac_amplitude  (                  ), // output
+    .sr_mix_min_dac_amplitude  (                  )  // output
   );
 
 
   initial begin
 
-    uvm_config_db #(virtual vip_axi4s_if #(vip_axi4s_cfg))::set(uvm_root::get(), "uvm_test_top.tb_env.vip_axi4s_agent_mst0*", "vif", mst0_vif);
-    uvm_config_db #(virtual vip_axi4s_if #(vip_axi4s_cfg))::set(uvm_root::get(), "uvm_test_top.tb_env.vip_axi4s_agent_slv0*", "vif", slv0_vif);
+    uvm_config_db #(virtual vip_axi4s_if #(VIP_AXI4S_CFG_C))::set(uvm_root::get(), "uvm_test_top.tb_env.vip_axi4s_agent_mst0*", "vif", mst0_vif);
+    uvm_config_db #(virtual vip_axi4s_if #(VIP_AXI4S_CFG_C))::set(uvm_root::get(), "uvm_test_top.tb_env.vip_axi4s_agent_slv0*", "vif", slv0_vif);
 
     run_test();
     $stop();
