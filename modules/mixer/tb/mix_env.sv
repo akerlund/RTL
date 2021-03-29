@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -25,15 +26,12 @@ class mix_env extends uvm_env;
   `uvm_component_utils_end
 
   // Agents
-  vip_axi4s_agent #(vip_axi4s_cfg) vip_axi4s_agent_mst0;
-  vip_axi4s_agent #(vip_axi4s_cfg) vip_axi4s_agent_slv0;
+  vip_axi4s_agent #(VIP_AXI4S_CFG_C) vip_axi4s_agent_mst0;
+  vip_axi4s_agent #(VIP_AXI4S_CFG_C) vip_axi4s_agent_slv0;
 
   // Agent configurations
   vip_axi4s_config vip_axi4s_config_mst;
   vip_axi4s_config vip_axi4s_config_slv;
-
-  // The block configuration, e.g., clk period, reset time
-  mix_config tb_cfg;
 
   // Scoreboard
   mix_scoreboard scoreboard0;
@@ -53,23 +51,14 @@ class mix_env extends uvm_env;
 
     super.build_phase(phase);
 
-
-    if (tb_cfg == null) begin
-      `uvm_info(get_type_name(), "No testbench configuration. Creating a new", UVM_LOW)
-      tb_cfg = mix_config::type_id::create("tb_cfg", this);
-      void'(uvm_config_db #(mix_config)::get(this, "", "tb_cfg", tb_cfg));
-    end
-
-    `uvm_info(get_type_name(), {"Configuration:\n", tb_cfg.sprint()}, UVM_LOW)
-
     // Configurations
     vip_axi4s_config_mst = vip_axi4s_config::type_id::create("vip_axi4s_config_mst", this);
     vip_axi4s_config_slv = vip_axi4s_config::type_id::create("vip_axi4s_config_slv", this);
     vip_axi4s_config_slv.vip_axi4s_agent_type = VIP_AXI4S_SLAVE_AGENT_E;
 
     // Create Agents
-    vip_axi4s_agent_mst0 = vip_axi4s_agent #(vip_axi4s_cfg)::type_id::create("vip_axi4s_agent_mst0", this);
-    vip_axi4s_agent_slv0 = vip_axi4s_agent #(vip_axi4s_cfg)::type_id::create("vip_axi4s_agent_slv0", this);
+    vip_axi4s_agent_mst0 = vip_axi4s_agent #(VIP_AXI4S_CFG_C)::type_id::create("vip_axi4s_agent_mst0", this);
+    vip_axi4s_agent_slv0 = vip_axi4s_agent #(VIP_AXI4S_CFG_C)::type_id::create("vip_axi4s_agent_slv0", this);
 
     uvm_config_db #(int)::set(this, {"vip_axi4s_agent_mst0", "*"}, "id", 0);
     uvm_config_db #(int)::set(this, {"vip_axi4s_agent_slv0", "*"}, "id", 1);

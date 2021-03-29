@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -27,8 +28,11 @@ package mix_tb_pkg;
   import uvm_pkg::*;
   `include "uvm_macros.svh"
 
+  import bool_pkg::*;
+  import clk_rst_types_pkg::*;
+  import clk_rst_pkg::*;
   import vip_axi4s_types_pkg::*;
-  import vip_axi4s_pkg::*;
+  import vip_axi4s_agent_pkg::*;
   import vip_fixed_point_pkg::*;
 
   localparam int AUDIO_WIDTH_C    = 24;
@@ -38,16 +42,15 @@ package mix_tb_pkg;
 
 
   // Configuration of the AXI4-S VIP
-  localparam vip_axi4s_cfg_t vip_axi4s_cfg = '{
-    AXI_DATA_WIDTH_P : AUDIO_WIDTH_C,
-    AXI_STRB_WIDTH_P : 0,
-    AXI_KEEP_WIDTH_P : 0,
-    AXI_ID_WIDTH_P   : 2,
-    AXI_DEST_WIDTH_P : 0,
-    AXI_USER_WIDTH_P : 1
+  localparam vip_axi4s_cfg_t VIP_AXI4S_CFG_C = '{
+    VIP_AXI4S_TDATA_WIDTH_P : AUDIO_WIDTH_C,
+    VIP_AXI4S_TSTRB_WIDTH_P : AUDIO_WIDTH_C/8,
+    VIP_AXI4S_TKEEP_WIDTH_P : 0,
+    VIP_AXI4S_TID_WIDTH_P   : 2,
+    VIP_AXI4S_TDEST_WIDTH_P : 0,
+    VIP_AXI4S_TUSER_WIDTH_P : 1
   };
 
-  `include "mix_config.sv"
   `include "mix_scoreboard.sv"
   `include "mix_virtual_sequencer.sv"
   `include "mix_env.sv"

@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -20,15 +21,15 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 class mix_positive_signals_seq #(
-  vip_axi4s_cfg_t vip_cfg = '{default: '0}
-  ) extends uvm_sequence #(vip_axi4s_item #(vip_cfg));
+  vip_axi4s_cfg_t VIP_CFG_P = '{default: '0}
+  ) extends uvm_sequence #(vip_axi4s_item #(VIP_CFG_P));
 
-  `uvm_object_param_utils(mix_positive_signals_seq #(vip_cfg))
+  `uvm_object_param_utils(mix_positive_signals_seq #(VIP_CFG_P))
 
   int nr_of_signals = 1;
 
-  logic [vip_cfg.AXI_DATA_WIDTH_P-1 : 0] ing_multiplicand;
-  logic [vip_cfg.AXI_DATA_WIDTH_P-1 : 0] ing_multiplier;
+  logic [VIP_CFG_P.VIP_AXI4S_TDATA_WIDTH_P-1 : 0] ing_multiplicand;
+  logic [VIP_CFG_P.VIP_AXI4S_TDATA_WIDTH_P-1 : 0] ing_multiplier;
 
 
   function new(string name = "mix_positive_signals_seq");
@@ -40,10 +41,9 @@ class mix_positive_signals_seq #(
 
   virtual task body();
 
-    vip_axi4s_item #(vip_cfg) axi4s_item;
+    vip_axi4s_item #(VIP_CFG_P) axi4s_item;
 
     axi4s_item = new();
-    axi4s_item.burst_size = 1;
     void'(axi4s_item.randomize());
 
     for (int i = 0; i < nr_of_signals; i++) begin
@@ -69,15 +69,15 @@ endclass
 
 
 class mix_random_signals_seq #(
-  vip_axi4s_cfg_t vip_cfg = '{default: '0}
-  ) extends uvm_sequence #(vip_axi4s_item #(vip_cfg));
+  vip_axi4s_cfg_t VIP_CFG_P = '{default: '0}
+  ) extends uvm_sequence #(vip_axi4s_item #(VIP_CFG_P));
 
-  `uvm_object_param_utils(mix_random_signals_seq #(vip_cfg))
+  `uvm_object_param_utils(mix_random_signals_seq #(VIP_CFG_P))
 
   int nr_of_signals = 1;
 
-  logic signed [vip_cfg.AXI_DATA_WIDTH_P-1 : 0] ing_multiplicand;
-  logic signed [vip_cfg.AXI_DATA_WIDTH_P-1 : 0] ing_multiplier;
+  logic signed [VIP_CFG_P.VIP_AXI4S_TDATA_WIDTH_P-1 : 0] ing_multiplicand;
+  logic signed [VIP_CFG_P.VIP_AXI4S_TDATA_WIDTH_P-1 : 0] ing_multiplier;
 
 
   function new(string name = "mix_random_signals_seq");
@@ -89,13 +89,12 @@ class mix_random_signals_seq #(
 
   virtual task body();
 
-    vip_axi4s_item #(vip_cfg) axi4s_item;
+    vip_axi4s_item #(VIP_CFG_P) axi4s_item;
 
 
     for (int i = 0; i < nr_of_signals; i++) begin
 
       axi4s_item = new();
-      axi4s_item.burst_size = 1;
       void'(axi4s_item.randomize());
 
       axi4s_item.tid      = i;
