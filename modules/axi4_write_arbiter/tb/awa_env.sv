@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -28,6 +29,7 @@ class awa_env extends uvm_env;
   vip_axi4_agent #(VIP_AXI4_CFG_C) wr_agent0;
   vip_axi4_agent #(VIP_AXI4_CFG_C) wr_agent1;
   vip_axi4_agent #(VIP_AXI4_CFG_C) wr_agent2;
+  vip_axi4_agent #(VIP_AXI4_CFG_C) wr_agent3;
   vip_axi4_agent #(VIP_AXI4_CFG_C) mem_agent0;
 
   awa_scoreboard        scoreboard0;
@@ -47,13 +49,15 @@ class awa_env extends uvm_env;
     wr_agent0      = vip_axi4_agent #(VIP_AXI4_CFG_C)::type_id::create("wr_agent0",  this);
     wr_agent1      = vip_axi4_agent #(VIP_AXI4_CFG_C)::type_id::create("wr_agent1",  this);
     wr_agent2      = vip_axi4_agent #(VIP_AXI4_CFG_C)::type_id::create("wr_agent2",  this);
+    wr_agent3      = vip_axi4_agent #(VIP_AXI4_CFG_C)::type_id::create("wr_agent3",  this);
     mem_agent0     = vip_axi4_agent #(VIP_AXI4_CFG_C)::type_id::create("mem_agent0", this);
 
     uvm_config_db #(int)::set(this, {"clk_rst_agent0", "*"}, "id", 0);
     uvm_config_db #(int)::set(this, {"wr_agent0",      "*"}, "id", 1);
     uvm_config_db #(int)::set(this, {"wr_agent1",      "*"}, "id", 2);
     uvm_config_db #(int)::set(this, {"wr_agent2",      "*"}, "id", 3);
-    uvm_config_db #(int)::set(this, {"mem_agent0",     "*"}, "id", 4);
+    uvm_config_db #(int)::set(this, {"wr_agent3",      "*"}, "id", 4);
+    uvm_config_db #(int)::set(this, {"mem_agent0",     "*"}, "id", 5);
 
     // Create Scoreboards
     scoreboard0 = awa_scoreboard::type_id::create("scoreboard0", this);
@@ -69,18 +73,21 @@ class awa_env extends uvm_env;
 
     super.connect_phase(phase);
 
-    wr_agent0.monitor.awaddr_port.connect(scoreboard0.address_port0);
-    wr_agent0.monitor.wdata_port.connect(scoreboard0.data_port0);
-    wr_agent1.monitor.awaddr_port.connect(scoreboard0.address_port1);
-    wr_agent1.monitor.wdata_port.connect(scoreboard0.data_port1);
-    wr_agent2.monitor.awaddr_port.connect(scoreboard0.address_port2);
-    wr_agent2.monitor.wdata_port.connect(scoreboard0.data_port2);
+    wr_agent0.monitor.awaddr_port.connect(scoreboard0.awaddr_port0);
+    wr_agent0.monitor.wdata_port.connect(scoreboard0.wdata_port0);
+    wr_agent1.monitor.awaddr_port.connect(scoreboard0.awaddr_port1);
+    wr_agent1.monitor.wdata_port.connect(scoreboard0.wdata_port1);
+    wr_agent2.monitor.awaddr_port.connect(scoreboard0.awaddr_port2);
+    wr_agent2.monitor.wdata_port.connect(scoreboard0.wdata_port2);
+    wr_agent3.monitor.awaddr_port.connect(scoreboard0.awaddr_port3);
+    wr_agent3.monitor.wdata_port.connect(scoreboard0.wdata_port3);
     mem_agent0.monitor.wdata_port.connect(scoreboard0.mem_port);
 
     virtual_sequencer.clk_rst_sequencer0 = clk_rst_agent0.sequencer;
     virtual_sequencer.wr_sequencer0      = wr_agent0.sequencer;
     virtual_sequencer.wr_sequencer1      = wr_agent1.sequencer;
     virtual_sequencer.wr_sequencer2      = wr_agent2.sequencer;
+    virtual_sequencer.wr_sequencer3      = wr_agent3.sequencer;
 
   endfunction
 

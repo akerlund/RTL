@@ -5,5 +5,7 @@ rtl_dirs+="
 "
 
 rtl_files+="
+  $module_path/rtl/axi4_write_arbiter_mst_2_slvs.sv
+  $module_path/rtl/axi4_write_arbiter_msts_2_slv.sv
   $module_path/rtl/axi4_write_arbiter.sv
 "
