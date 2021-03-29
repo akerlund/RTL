@@ -33,4 +33,5 @@ source ./tb/files.lst
 parameters+="AXI_ID_WIDTH_P=4 "
 parameters+="AXI_ADDR_WIDTH_P=32 "
 parameters+="AXI_DATA_WIDTH_P=16 "
-parameters+="NR_OF_MASTERS_P=3 "
+parameters+="NR_OF_MASTERS_P=1 "
+parameters+="NR_OF_SLAVES_P=2 "

@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,38 +20,26 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-`uvm_analysis_imp_decl(_ra_address_port0)
-`uvm_analysis_imp_decl(_ra_address_port1)
-`uvm_analysis_imp_decl(_ra_address_port2)
-`uvm_analysis_imp_decl(_ra_data_port0)
-`uvm_analysis_imp_decl(_ra_data_port1)
-`uvm_analysis_imp_decl(_ra_data_port2)
-`uvm_analysis_imp_decl(_ma_data_port)
+`uvm_analysis_imp_decl(_ing_araddr_port)
+`uvm_analysis_imp_decl(_ing_rdata_port)
+`uvm_analysis_imp_decl(_egr_rdata_port)
 
 class ara_scoreboard extends uvm_scoreboard;
 
   `uvm_component_utils(ara_scoreboard)
 
   // Scoreboard ports
-  uvm_analysis_imp_ra_address_port0 #(vip_axi4_item #(VIP_AXI4_CFG_C), ara_scoreboard) ra_address_port0;
-  uvm_analysis_imp_ra_address_port1 #(vip_axi4_item #(VIP_AXI4_CFG_C), ara_scoreboard) ra_address_port1;
-  uvm_analysis_imp_ra_address_port2 #(vip_axi4_item #(VIP_AXI4_CFG_C), ara_scoreboard) ra_address_port2;
-  uvm_analysis_imp_ra_data_port0    #(vip_axi4_item #(VIP_AXI4_CFG_C), ara_scoreboard) ra_data_port0;
-  uvm_analysis_imp_ra_data_port1    #(vip_axi4_item #(VIP_AXI4_CFG_C), ara_scoreboard) ra_data_port1;
-  uvm_analysis_imp_ra_data_port2    #(vip_axi4_item #(VIP_AXI4_CFG_C), ara_scoreboard) ra_data_port2;
-  uvm_analysis_imp_ma_data_port     #(vip_axi4_item #(VIP_AXI4_CFG_C), ara_scoreboard) ma_data_port;
+  uvm_analysis_imp_ing_araddr_port #(vip_axi4_item #(VIP_AXI4_CFG_C), ara_scoreboard) ing_araddr_port;
+  uvm_analysis_imp_ing_rdata_port  #(vip_axi4_item #(VIP_AXI4_CFG_C), ara_scoreboard) ing_rdata_port;
+  uvm_analysis_imp_egr_rdata_port  #(vip_axi4_item #(VIP_AXI4_CFG_C), ara_scoreboard) egr_rdata_port;
 
   // Storage for comparison
   vip_axi4_item #(VIP_AXI4_CFG_C) read_data_items0  [$];
-  vip_axi4_item #(VIP_AXI4_CFG_C) read_data_items1  [$];
-  vip_axi4_item #(VIP_AXI4_CFG_C) read_data_items2  [$];
   vip_axi4_item #(VIP_AXI4_CFG_C) memory_data_items [$];
 
   // Debug storage
   vip_axi4_item #(VIP_AXI4_CFG_C) all_read_address_items [$];
   vip_axi4_item #(VIP_AXI4_CFG_C) all_read_data_items0   [$];
-  vip_axi4_item #(VIP_AXI4_CFG_C) all_read_data_items1   [$];
-  vip_axi4_item #(VIP_AXI4_CFG_C) all_read_data_items2   [$];
   vip_axi4_item #(VIP_AXI4_CFG_C) all_memory_data_items  [$];
 
   int number_of_ma_data_misses;
@@ -76,13 +65,9 @@ class ara_scoreboard extends uvm_scoreboard;
 
   virtual function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    ra_address_port0 = new("ra_address_port0", this);
-    ra_address_port1 = new("ra_address_port1", this);
-    ra_address_port2 = new("ra_address_port2", this);
-    ra_data_port0    = new("ra_data_port0",    this);
-    ra_data_port1    = new("ra_data_port1",    this);
-    ra_data_port2    = new("ra_data_port2",    this);
-    ma_data_port     = new("ma_data_port",     this);
+    ing_araddr_port = new("ing_araddr_port", this);
+    ing_rdata_port  = new("ing_rdata_port",  this);
+    egr_rdata_port    = new("egr_rdata_port",    this);
   endfunction
 
 
@@ -112,16 +97,14 @@ class ara_scoreboard extends uvm_scoreboard;
   // ---------------------------------------------------------------------------
   // Agent 0
   // ---------------------------------------------------------------------------
-  virtual function void write_ra_address_port0(vip_axi4_item #(VIP_AXI4_CFG_C) trans);
-
+  virtual function void write_ing_araddr_port(vip_axi4_item #(VIP_AXI4_CFG_C) trans);
     number_of_read_address_items++;
     all_read_address_items.push_back(trans);
     current_phase.raise_objection(this);
   endfunction
 
 
-  virtual function void write_ra_data_port0(vip_axi4_item #(VIP_AXI4_CFG_C) trans);
-
+  virtual function void write_ing_rdata_port(vip_axi4_item #(VIP_AXI4_CFG_C) trans);
     number_of_read_data_items++;
     all_read_data_items0.push_back(trans);
     current_master_item = trans;
@@ -131,62 +114,14 @@ class ara_scoreboard extends uvm_scoreboard;
     end
   endfunction
 
-
-  // ---------------------------------------------------------------------------
-  // Agent 1
-  // ---------------------------------------------------------------------------
-  virtual function void write_ra_address_port1(vip_axi4_item #(VIP_AXI4_CFG_C) trans);
-
-    number_of_read_address_items++;
-    all_read_address_items.push_back(trans);
-    current_phase.raise_objection(this);
-  endfunction
-
-
-  virtual function void write_ra_data_port1(vip_axi4_item #(VIP_AXI4_CFG_C) trans);
-
-    number_of_read_data_items++;
-    all_read_data_items1.push_back(trans);
-    current_master_item = trans;
-
-    if (compare()) begin
-      current_phase.drop_objection(this);
-    end
-  endfunction
-
-
-  // ---------------------------------------------------------------------------
-  // Agent 2
-  // ---------------------------------------------------------------------------
-  virtual function void write_ra_address_port2(vip_axi4_item #(VIP_AXI4_CFG_C) trans);
-
-    number_of_read_address_items++;
-    all_read_address_items.push_back(trans);
-    current_phase.raise_objection(this);
-  endfunction
-
-
-  virtual function void write_ra_data_port2(vip_axi4_item #(VIP_AXI4_CFG_C) trans);
-
-    number_of_read_data_items++;
-    all_read_data_items2.push_back(trans);
-    current_master_item = trans;
-
-    if (compare()) begin
-      current_phase.drop_objection(this);
-    end
-  endfunction
-
-
   // ---------------------------------------------------------------------------
   // Memory Agent
   // ---------------------------------------------------------------------------
-  virtual function void write_ma_data_port(vip_axi4_item #(VIP_AXI4_CFG_C) trans);
+  virtual function void write_egr_rdata_port(vip_axi4_item #(VIP_AXI4_CFG_C) trans);
 
     number_of_memory_data_items++;
     all_memory_data_items.push_back(trans);
     memory_data_items.push_back(trans);
-
 
     if (current_master_item != null) begin
       compare();
@@ -196,31 +131,30 @@ class ara_scoreboard extends uvm_scoreboard;
 
 
 
-  virtual function int compare();
+  // ---------------------------------------------------------------------------
+  //
+  // ---------------------------------------------------------------------------
+  virtual function bool_t compare();
 
     current_slave_item = memory_data_items.pop_front();
 
     // There is a chance that this agent's monitor will write after this function call
     if (current_slave_item == null) begin
       number_of_ma_data_misses++;
-      return 0;
+      return FALSE;
     end
 
     number_of_compared++;
 
     if (!current_master_item.compare(current_slave_item)) begin
-
       `uvm_error(get_name(), $sformatf("Packet number (%0d) mismatches", number_of_compared))
       number_of_failed++;
-
-    end
-    else begin
-
+    end else begin
       number_of_passed++;
-
     end
 
     current_master_item = null;
-    return 1;
+    return TRUE;
   endfunction
+
 endclass

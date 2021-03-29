@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -23,7 +24,6 @@ class tc_ara_basic_read extends ara_base_test;
 
   `uvm_component_utils(tc_ara_basic_read)
 
-
   function new(string name = "tc_ara_basic_read", uvm_component parent = null);
     super.new(name, parent);
   endfunction
@@ -39,27 +39,14 @@ class tc_ara_basic_read extends ara_base_test;
     super.run_phase(phase);
     phase.raise_objection(this);
 
+    vip_axi4_read_seq0.set_id_type(VIP_AXI4_ID_COUNTER_E);
     vip_axi4_read_seq0.set_cfg_addr(2**VIP_AXI4_CFG_C.VIP_AXI4_ADDR_WIDTH_P-1, 0);
-    vip_axi4_read_seq1.set_cfg_addr(2**VIP_AXI4_CFG_C.VIP_AXI4_ADDR_WIDTH_P-1, 0);
-    vip_axi4_read_seq2.set_cfg_addr(2**VIP_AXI4_CFG_C.VIP_AXI4_ADDR_WIDTH_P-1, 0);
-
+    vip_axi4_read_seq0.set_log_denominator(128);
     vip_axi4_read_seq0.set_cfg_id(0, 0);
-    vip_axi4_read_seq1.set_cfg_id(1, 1);
-    vip_axi4_read_seq2.set_cfg_id(2, 2);
-
-    vip_axi4_read_seq0.set_nr_of_requests(256);
-    vip_axi4_read_seq1.set_nr_of_requests(256);
-    vip_axi4_read_seq2.set_nr_of_requests(256);
-
+    vip_axi4_read_seq0.set_nr_of_requests(4096);
     vip_axi4_read_seq0.set_len(15);
-    vip_axi4_read_seq1.set_len(15);
-    vip_axi4_read_seq2.set_len(15);
 
-    fork
-      vip_axi4_read_seq0.start(v_sqr.rd_sequencer0);
-      vip_axi4_read_seq1.start(v_sqr.rd_sequencer1);
-      vip_axi4_read_seq2.start(v_sqr.rd_sequencer2);
-    join
+    vip_axi4_read_seq0.start(v_sqr.rd_sequencer0);
 
     phase.drop_objection(this);
 
