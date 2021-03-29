@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -46,6 +47,7 @@ class awa_base_test extends uvm_test;
   vip_axi4_config axi4_wr_cfg0;
   vip_axi4_config axi4_wr_cfg1;
   vip_axi4_config axi4_wr_cfg2;
+  vip_axi4_config axi4_wr_cfg3;
 
   // ---------------------------------------------------------------------------
   // Sequences
@@ -55,6 +57,7 @@ class awa_base_test extends uvm_test;
   vip_axi4_write_seq vip_axi4_write_seq0;
   vip_axi4_write_seq vip_axi4_write_seq1;
   vip_axi4_write_seq vip_axi4_write_seq2;
+  vip_axi4_write_seq vip_axi4_write_seq3;
 
   function new(string name = "awa_base_test", uvm_component parent = null);
     super.new(name, parent);
@@ -84,12 +87,13 @@ class awa_base_test extends uvm_test;
     axi4_wr_cfg0    = vip_axi4_config::type_id::create("axi4_wr_cfg0",   this);
     axi4_wr_cfg1    = vip_axi4_config::type_id::create("axi4_wr_cfg1",   this);
     axi4_wr_cfg2    = vip_axi4_config::type_id::create("axi4_wr_cfg2",   this);
+    axi4_wr_cfg3    = vip_axi4_config::type_id::create("axi4_wr_cfg3",   this);
 
     axi4_mem_cfg0.vip_axi4_agent_type     = VIP_AXI4_SLAVE_AGENT_E;
     axi4_mem_cfg0.mem_slave               = TRUE;
     axi4_mem_cfg0.mem_addr_width          = VIP_AXI4_CFG_C.VIP_AXI4_ADDR_WIDTH_P;
     axi4_mem_cfg0.min_wready_delay_period = 10;
-    axi4_mem_cfg0.max_wready_delay_period = 256;
+    axi4_mem_cfg0.max_wready_delay_period = 10;
 
     axi4_wr_cfg0.min_wvalid_delay_period = 10;
     axi4_wr_cfg0.max_wvalid_delay_period = 10;
@@ -97,12 +101,15 @@ class awa_base_test extends uvm_test;
     axi4_wr_cfg1.max_wvalid_delay_period = 10;
     axi4_wr_cfg2.min_wvalid_delay_period = 10;
     axi4_wr_cfg2.max_wvalid_delay_period = 10;
+    axi4_wr_cfg3.min_wvalid_delay_period = 10;
+    axi4_wr_cfg3.max_wvalid_delay_period = 10;
 
     uvm_config_db #(clk_rst_config)::set(this,  {"tb_env.clk_rst_agent0", "*"}, "cfg", clk_rst_config0);
     uvm_config_db #(vip_axi4_config)::set(this, {"tb_env.mem_agent0",     "*"}, "cfg", axi4_mem_cfg0);
     uvm_config_db #(vip_axi4_config)::set(this, {"tb_env.wr_agent0",      "*"}, "cfg", axi4_wr_cfg0);
     uvm_config_db #(vip_axi4_config)::set(this, {"tb_env.wr_agent1",      "*"}, "cfg", axi4_wr_cfg1);
     uvm_config_db #(vip_axi4_config)::set(this, {"tb_env.wr_agent2",      "*"}, "cfg", axi4_wr_cfg2);
+    uvm_config_db #(vip_axi4_config)::set(this, {"tb_env.wr_agent3",      "*"}, "cfg", axi4_wr_cfg3);
 
   endfunction
 
@@ -121,6 +128,7 @@ class awa_base_test extends uvm_test;
     vip_axi4_write_seq0 = vip_axi4_write_seq::type_id::create("vip_axi4_write_seq0");
     vip_axi4_write_seq1 = vip_axi4_write_seq::type_id::create("vip_axi4_write_seq1");
     vip_axi4_write_seq2 = vip_axi4_write_seq::type_id::create("vip_axi4_write_seq2");
+    vip_axi4_write_seq3 = vip_axi4_write_seq::type_id::create("vip_axi4_write_seq3");
   endfunction
 
 

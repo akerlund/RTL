@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,7 +18,15 @@
 //
 // Description:
 //
-////////////////////////////////////////////////////////////////////////////////
+// If the parameter "NR_OF_MASTERS_P" is equal to one then an
+// "axi4_write_arbiter_mst_2_slvs" will be instantiated, i.e., one master
+// connected to (NR_OF_SLAVES_P) slaves.
+//
+// If the parameter "NR_OF_MASTERS_P" is NOT equal to one then a
+// "axi4_write_arbiter_msts_2_slv" will be instantiated, i.e.,
+// (NR_OF_MASTERS_P) masters is connected to one slave.
+//
+///////////////////////////////////////////////////////////////////////////////
 
 `default_nettype none
 
@@ -26,13 +35,13 @@ module axi4_write_arbiter #(
     parameter int AXI_ADDR_WIDTH_P = -1,
     parameter int AXI_DATA_WIDTH_P = -1,
     parameter int AXI_STRB_WIDTH_P = -1,
-    parameter int NR_OF_MASTERS_P  = -1
+    parameter int NR_OF_MASTERS_P  =  1,
+    parameter int NR_OF_SLAVES_P   = -1
   )(
 
     // Clock and reset
-    input  wire                                                   clk,
-    input  wire                                                   rst_n,
-
+    input  wire                                                  clk,
+    input  wire                                                  rst_n,
 
     // -------------------------------------------------------------------------
     // AXI4 Masters
@@ -58,8 +67,8 @@ module axi4_write_arbiter #(
     // Write Response Channel
     output logic                           [AXI_ID_WIDTH_P-1 : 0] mst_bid,
     output logic                                          [1 : 0] mst_bresp,
-    output logic                          [NR_OF_MASTERS_P-1 : 0] mst_bvalid,
-    input  wire                           [NR_OF_MASTERS_P-1 : 0] mst_bready,
+    output logic [NR_OF_MASTERS_P-1 : 0]                          mst_bvalid,
+    input  wire  [NR_OF_MASTERS_P-1 : 0]                          mst_bready,
 
     // -------------------------------------------------------------------------
     // AXI4 Slave
@@ -72,191 +81,166 @@ module axi4_write_arbiter #(
     output logic                                          [2 : 0] slv_awsize,
     output logic                                          [1 : 0] slv_awburst,
     output logic                                          [3 : 0] slv_awregion,
-    output logic                                                  slv_awvalid,
-    input  wire                                                   slv_awready,
+    output logic  [NR_OF_SLAVES_P-1 : 0]                          slv_awvalid,
+    input  wire   [NR_OF_SLAVES_P-1 : 0]                          slv_awready,
 
     // Write Data Channel
     output logic                         [AXI_DATA_WIDTH_P-1 : 0] slv_wdata,
     output logic                         [AXI_STRB_WIDTH_P-1 : 0] slv_wstrb,
     output logic                                                  slv_wlast,
-    output logic                                                  slv_wvalid,
-    input  wire                                                   slv_wready,
+    output logic  [NR_OF_SLAVES_P-1 : 0]                          slv_wvalid,
+    input  wire   [NR_OF_SLAVES_P-1 : 0]                          slv_wready,
 
     // Write Response Channel
-    input  wire                            [AXI_ID_WIDTH_P-1 : 0] slv_bid,
-    input  wire                                           [1 : 0] slv_bresp,
-    input  wire                                                   slv_bvalid,
-    output logic                                                  slv_bready
+    input  wire   [NR_OF_SLAVES_P-1 : 0]   [AXI_ID_WIDTH_P-1 : 0] slv_bid,
+    input  wire   [NR_OF_SLAVES_P-1 : 0]                  [1 : 0] slv_bresp,
+    input  wire   [NR_OF_SLAVES_P-1 : 0]                          slv_bvalid,
+    output logic                           [NR_OF_SLAVES_P-1 : 0] slv_bready
   );
 
 
-  localparam logic [$clog2(NR_OF_MASTERS_P)-1 : 0] NR_OF_MASTERS_C = NR_OF_MASTERS_P;
+  generate
+  if (NR_OF_MASTERS_P == 1) begin
 
-  // ---------------------------------------------------------------------------
-  // Write Channel signals
-  // ---------------------------------------------------------------------------
+    axi4_write_arbiter_mst_2_slvs #(
+      .AXI_ID_WIDTH_P   ( AXI_ID_WIDTH_P   ),
+      .AXI_ADDR_WIDTH_P ( AXI_ADDR_WIDTH_P ),
+      .AXI_DATA_WIDTH_P ( AXI_DATA_WIDTH_P ),
+      .AXI_STRB_WIDTH_P ( AXI_STRB_WIDTH_P ),
+      .NR_OF_SLAVES_P   ( NR_OF_SLAVES_P   )
+    ) axi4_write_arbiter_mst_2_slvs_i0 (
 
-  typedef enum {
-    FIND_MST_AWVALID_E,
-    WAIT_FOR_BVALID_E,
-    WAIT_MST_WLAST_E
-  } write_state_t;
+      // Clock and reset
+      .clk              ( clk              ), // input
+      .rst_n            ( rst_n            ), // input
 
-  write_state_t write_state;
-
-  logic [$clog2(NR_OF_MASTERS_P)-1 : 0] wr_rotating_mst;
-  logic [$clog2(NR_OF_MASTERS_P)-1 : 0] wr_selected_mst;
-  logic                                 wr_mst_is_chosen;
-
-  // ---------------------------------------------------------------------------
-  // Port assignments
-  // ---------------------------------------------------------------------------
-
-  assign mst_bid   = slv_bid;
-  assign mst_bresp = slv_bresp;
-
-  // ---------------------------------------------------------------------------
-  // Write processes
-  // ---------------------------------------------------------------------------
-
-  // FSM
-  always_ff @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
-      write_state      <= FIND_MST_AWVALID_E;
-      wr_rotating_mst  <= '0;                 // Round Robin counter
-      wr_selected_mst  <= '0;                 // MUX select
-      wr_mst_is_chosen <= '0;                 // Output enable
-      mst_awready      <= '0;
-    end
-    else begin
-
-      mst_awready <= '0;
-
-      case (write_state)
-
-        FIND_MST_AWVALID_E: begin
-
-          if (slv_awready) begin
-
-            if (wr_rotating_mst == NR_OF_MASTERS_C-1) begin
-              wr_rotating_mst <= '0;
-            end
-            else begin
-              wr_rotating_mst <= wr_rotating_mst + 1;
-            end
-
-            if (mst_awvalid[wr_rotating_mst]) begin
-              write_state                  <= WAIT_MST_WLAST_E;
-              mst_awready[wr_rotating_mst] <= '1;
-              wr_selected_mst              <= wr_rotating_mst;
-              wr_mst_is_chosen             <= '1;
-            end
-
-          end
-        end
-
-
-        WAIT_MST_WLAST_E: begin
-
-          if (slv_awready) begin
-            mst_awready <= '0;
-          end
-          else begin
-            mst_awready <= mst_awready;
-          end
-
-          if (slv_wlast && slv_wvalid && slv_wready) begin
-            write_state <= WAIT_FOR_BVALID_E;
-          end
-
-        end
-
-
-        WAIT_FOR_BVALID_E: begin
-
-
-          if (slv_bvalid && slv_bready) begin
-            write_state      <= FIND_MST_AWVALID_E;
-            wr_mst_is_chosen <= '0;
-          end
-
-        end
-
-      endcase
-    end
-  end
-
-
-  // MUX
-  always_comb begin
-
-    // Write Address Channel
-    slv_awid     = '0;
-    slv_awaddr   = '0;
-    slv_awlen    = '0;
-    slv_awvalid  = '0;
-    slv_awsize   = '0;
-    slv_awburst  = '0;
-    slv_awregion = '0;
-
-    // Write Data Channel
-    slv_wdata  = '0;
-    slv_wstrb  = '0;
-    slv_wlast  = '0;
-    slv_wvalid = '0;
-    mst_wready = '0;
-
-    // Write Response Channel
-    mst_bvalid = '0;
-    slv_bready = '0;
-
-    if (!wr_mst_is_chosen) begin
+      // -----------------------------------------------------------------------
+      // AXI4 Master
+      // -----------------------------------------------------------------------
 
       // Write Address Channel
-      slv_awid     = '0;
-      slv_awaddr   = '0;
-      slv_awlen    = '0;
-      slv_awvalid  = '0;
-      slv_awsize   = '0;
-      slv_awregion = '0;
+      .mst_awid         ( mst_awid         ), // input
+      .mst_awaddr       ( mst_awaddr       ), // input
+      .mst_awlen        ( mst_awlen        ), // input
+      .mst_awsize       ( mst_awsize       ), // input
+      .mst_awburst      ( mst_awburst      ), // input
+      .mst_awregion     ( mst_awregion     ), // input
+      .mst_awvalid      ( mst_awvalid      ), // input
+      .mst_awready      ( mst_awready      ), // output
 
       // Write Data Channel
-      slv_wdata  = '0;
-      slv_wstrb  = '0;
-      slv_wlast  = '0;
-      slv_wvalid = '0;
-      mst_wready = '0;
+      .mst_wdata        ( mst_wdata        ), // input
+      .mst_wstrb        ( mst_wstrb        ), // input
+      .mst_wlast        ( mst_wlast        ), // input
+      .mst_wvalid       ( mst_wvalid       ), // input
+      .mst_wready       ( mst_wready       ), // output
 
       // Write Response Channel
-      mst_bvalid = '0;
-      slv_bready = '0;
+      .mst_bid          ( mst_bid          ), // output
+      .mst_bresp        ( mst_bresp        ), // output
+      .mst_bvalid       ( mst_bvalid       ), // output
+      .mst_bready       ( mst_bready       ), // input
 
-    end
-    else begin
+      // -----------------------------------------------------------------------
+      // AXI4 Slaves
+      // -----------------------------------------------------------------------
 
       // Write Address Channel
-      slv_awid                     = mst_awid     [wr_selected_mst];
-      slv_awaddr                   = mst_awaddr   [wr_selected_mst];
-      slv_awlen                    = mst_awlen    [wr_selected_mst];
-      slv_awvalid                  = mst_awvalid  [wr_selected_mst];
-      slv_awsize                   = mst_awsize   [wr_selected_mst];
-      slv_awburst                  = mst_awburst  [wr_selected_mst];
-      slv_awregion                 = mst_awregion [wr_selected_mst];
+      .slv_awid         ( slv_awid         ), // output
+      .slv_awaddr       ( slv_awaddr       ), // output
+      .slv_awlen        ( slv_awlen        ), // output
+      .slv_awsize       ( slv_awsize       ), // output
+      .slv_awburst      ( slv_awburst      ), // output
+      .slv_awregion     ( slv_awregion     ), // output
+      .slv_awvalid      ( slv_awvalid      ), // output
+      .slv_awready      ( slv_awready      ), // input
 
       // Write Data Channel
-      slv_wdata                    = mst_wdata  [wr_selected_mst];
-      slv_wstrb                    = mst_wstrb  [wr_selected_mst];
-      slv_wlast                    = mst_wlast  [wr_selected_mst];
-      slv_wvalid                   = mst_wvalid [wr_selected_mst];
-      mst_wready[wr_selected_mst]  = slv_wready;
+      .slv_wdata        ( slv_wdata        ), // output
+      .slv_wstrb        ( slv_wstrb        ), // output
+      .slv_wlast        ( slv_wlast        ), // output
+      .slv_wvalid       ( slv_wvalid       ), // output
+      .slv_wready       ( slv_wready       ), // input
 
       // Write Response Channel
-      mst_bvalid[wr_selected_mst] = slv_bvalid;
-      slv_bready                  = mst_bready[wr_selected_mst];
-
-    end
+      .slv_bid          ( slv_bid          ), // input
+      .slv_bresp        ( slv_bresp        ), // input
+      .slv_bvalid       ( slv_bvalid       ), // input
+      .slv_bready       ( slv_bready       )  // output
+    );
 
   end
+  else begin
+
+    axi4_write_arbiter_msts_2_slv #(
+      .AXI_ID_WIDTH_P   ( AXI_ID_WIDTH_P   ),
+      .AXI_ADDR_WIDTH_P ( AXI_ADDR_WIDTH_P ),
+      .AXI_DATA_WIDTH_P ( AXI_DATA_WIDTH_P ),
+      .AXI_STRB_WIDTH_P ( AXI_STRB_WIDTH_P ),
+      .NR_OF_MASTERS_P  ( NR_OF_MASTERS_P  )
+    ) axi4_write_arbiter_msts_2_slv_i0 (
+
+      // Clock and reset
+      .clk              ( clk              ), // input
+      .rst_n            ( rst_n            ), // input
+
+      // -----------------------------------------------------------------------
+      // AXI4 Masters
+      // -----------------------------------------------------------------------
+
+      // Write Address Channel
+      .mst_awid         ( mst_awid         ), // input
+      .mst_awaddr       ( mst_awaddr       ), // input
+      .mst_awlen        ( mst_awlen        ), // input
+      .mst_awsize       ( mst_awsize       ), // input
+      .mst_awburst      ( mst_awburst      ), // input
+      .mst_awregion     ( mst_awregion     ), // input
+      .mst_awvalid      ( mst_awvalid      ), // input
+      .mst_awready      ( mst_awready      ), // output
+
+      // Write Data Channel
+      .mst_wdata        ( mst_wdata        ), // input
+      .mst_wstrb        ( mst_wstrb        ), // input
+      .mst_wlast        ( mst_wlast        ), // input
+      .mst_wvalid       ( mst_wvalid       ), // input
+      .mst_wready       ( mst_wready       ), // output
+
+      // Write Response Channel
+      .mst_bid          ( mst_bid          ), // output
+      .mst_bresp        ( mst_bresp        ), // output
+      .mst_bvalid       ( mst_bvalid       ), // output
+      .mst_bready       ( mst_bready       ), // input
+
+      // -----------------------------------------------------------------------
+      // AXI4 Slave
+      // -----------------------------------------------------------------------
+
+      // Write Address Channel
+      .slv_awid         ( slv_awid         ), // output
+      .slv_awaddr       ( slv_awaddr       ), // output
+      .slv_awlen        ( slv_awlen        ), // output
+      .slv_awsize       ( slv_awsize       ), // output
+      .slv_awburst      ( slv_awburst      ), // output
+      .slv_awregion     ( slv_awregion     ), // output
+      .slv_awvalid      ( slv_awvalid      ), // output
+      .slv_awready      ( slv_awready      ), // input
+
+      // Write Data Channel
+      .slv_wdata        ( slv_wdata        ), // output
+      .slv_wstrb        ( slv_wstrb        ), // output
+      .slv_wlast        ( slv_wlast        ), // output
+      .slv_wvalid       ( slv_wvalid       ), // output
+      .slv_wready       ( slv_wready       ), // input
+
+      // Write Response Channel
+      .slv_bid          ( slv_bid          ), // input
+      .slv_bresp        ( slv_bresp        ), // input
+      .slv_bvalid       ( slv_bvalid       ), // input
+      .slv_bready       ( slv_bready       )  // output
+    );
+
+  end
+  endgenerate
 
 endmodule
 

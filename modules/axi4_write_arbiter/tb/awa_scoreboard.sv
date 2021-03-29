@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,12 +20,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-`uvm_analysis_imp_decl(_address_port0)
-`uvm_analysis_imp_decl(_data_port0)
-`uvm_analysis_imp_decl(_address_port1)
-`uvm_analysis_imp_decl(_data_port1)
-`uvm_analysis_imp_decl(_address_port2)
-`uvm_analysis_imp_decl(_data_port2)
+`uvm_analysis_imp_decl(_awaddr_port0)
+`uvm_analysis_imp_decl(_wdata_port0)
+`uvm_analysis_imp_decl(_awaddr_port1)
+`uvm_analysis_imp_decl(_wdata_port1)
+`uvm_analysis_imp_decl(_awaddr_port2)
+`uvm_analysis_imp_decl(_wdata_port2)
+`uvm_analysis_imp_decl(_awaddr_port3)
+`uvm_analysis_imp_decl(_wdata_port3)
 `uvm_analysis_imp_decl(_mem_port)
 
 class awa_scoreboard extends uvm_scoreboard;
@@ -32,13 +35,15 @@ class awa_scoreboard extends uvm_scoreboard;
   `uvm_component_utils(awa_scoreboard)
 
   // Scoreboard ports
-  uvm_analysis_imp_address_port0 #(vip_axi4_item #(VIP_AXI4_CFG_C), awa_scoreboard) address_port0;
-  uvm_analysis_imp_data_port0    #(vip_axi4_item #(VIP_AXI4_CFG_C), awa_scoreboard) data_port0;
-  uvm_analysis_imp_address_port1 #(vip_axi4_item #(VIP_AXI4_CFG_C), awa_scoreboard) address_port1;
-  uvm_analysis_imp_data_port1    #(vip_axi4_item #(VIP_AXI4_CFG_C), awa_scoreboard) data_port1;
-  uvm_analysis_imp_address_port2 #(vip_axi4_item #(VIP_AXI4_CFG_C), awa_scoreboard) address_port2;
-  uvm_analysis_imp_data_port2    #(vip_axi4_item #(VIP_AXI4_CFG_C), awa_scoreboard) data_port2;
-  uvm_analysis_imp_mem_port      #(vip_axi4_item #(VIP_AXI4_CFG_C), awa_scoreboard) mem_port;
+  uvm_analysis_imp_awaddr_port0 #(vip_axi4_item #(VIP_AXI4_CFG_C), awa_scoreboard) awaddr_port0;
+  uvm_analysis_imp_wdata_port0  #(vip_axi4_item #(VIP_AXI4_CFG_C), awa_scoreboard) wdata_port0;
+  uvm_analysis_imp_awaddr_port1 #(vip_axi4_item #(VIP_AXI4_CFG_C), awa_scoreboard) awaddr_port1;
+  uvm_analysis_imp_wdata_port1  #(vip_axi4_item #(VIP_AXI4_CFG_C), awa_scoreboard) wdata_port1;
+  uvm_analysis_imp_awaddr_port2 #(vip_axi4_item #(VIP_AXI4_CFG_C), awa_scoreboard) awaddr_port2;
+  uvm_analysis_imp_wdata_port2  #(vip_axi4_item #(VIP_AXI4_CFG_C), awa_scoreboard) wdata_port2;
+  uvm_analysis_imp_awaddr_port3 #(vip_axi4_item #(VIP_AXI4_CFG_C), awa_scoreboard) awaddr_port3;
+  uvm_analysis_imp_wdata_port3  #(vip_axi4_item #(VIP_AXI4_CFG_C), awa_scoreboard) wdata_port3;
+  uvm_analysis_imp_mem_port     #(vip_axi4_item #(VIP_AXI4_CFG_C), awa_scoreboard) mem_port;
 
   // Storage for comparison
   vip_axi4_item #(VIP_AXI4_CFG_C) write_address_items [$];
@@ -73,13 +78,15 @@ class awa_scoreboard extends uvm_scoreboard;
 
   virtual function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    address_port0 = new("address_port0", this);
-    data_port0    = new("data_port0", this);
-    address_port1 = new("address_port1", this);
-    data_port1    = new("data_port1", this);
-    address_port2 = new("address_port2", this);
-    data_port2    = new("data_port2", this);
-    mem_port      = new("mem_port", this);
+    awaddr_port0 = new("awaddr_port0", this);
+    wdata_port0  = new("wdata_port0",  this);
+    awaddr_port1 = new("awaddr_port1", this);
+    wdata_port1  = new("wdata_port1",  this);
+    awaddr_port2 = new("awaddr_port2", this);
+    wdata_port2  = new("wdata_port2",  this);
+    awaddr_port3 = new("awaddr_port3", this);
+    wdata_port3  = new("wdata_port3",  this);
+    mem_port     = new("mem_port",     this);
   endfunction
 
 
@@ -107,7 +114,7 @@ class awa_scoreboard extends uvm_scoreboard;
 
 
   // Agent 0
-  virtual function void write_address_port0(vip_axi4_item #(VIP_AXI4_CFG_C) trans);
+  virtual function void write_awaddr_port0(vip_axi4_item #(VIP_AXI4_CFG_C) trans);
 
     number_of_write_address_items++;
     all_write_address_items.push_back(trans);
@@ -116,7 +123,7 @@ class awa_scoreboard extends uvm_scoreboard;
   endfunction
 
 
-  virtual function void write_data_port0(vip_axi4_item #(VIP_AXI4_CFG_C) trans);
+  virtual function void write_wdata_port0(vip_axi4_item #(VIP_AXI4_CFG_C) trans);
 
     number_of_write_data_items++;
     all_write_data_items.push_back(trans);
@@ -124,7 +131,7 @@ class awa_scoreboard extends uvm_scoreboard;
   endfunction
 
   // Agent 1
-  virtual function void write_address_port1(vip_axi4_item #(VIP_AXI4_CFG_C) trans);
+  virtual function void write_awaddr_port1(vip_axi4_item #(VIP_AXI4_CFG_C) trans);
 
     number_of_write_address_items++;
     all_write_address_items.push_back(trans);
@@ -133,7 +140,7 @@ class awa_scoreboard extends uvm_scoreboard;
   endfunction
 
 
-  virtual function void write_data_port1(vip_axi4_item #(VIP_AXI4_CFG_C) trans);
+  virtual function void write_wdata_port1(vip_axi4_item #(VIP_AXI4_CFG_C) trans);
 
     number_of_write_data_items++;
     all_write_data_items.push_back(trans);
@@ -141,7 +148,7 @@ class awa_scoreboard extends uvm_scoreboard;
   endfunction
 
   // Agent 2
-  virtual function void write_address_port2(vip_axi4_item #(VIP_AXI4_CFG_C) trans);
+  virtual function void write_awaddr_port2(vip_axi4_item #(VIP_AXI4_CFG_C) trans);
 
     number_of_write_address_items++;
     all_write_address_items.push_back(trans);
@@ -150,7 +157,24 @@ class awa_scoreboard extends uvm_scoreboard;
   endfunction
 
 
-  virtual function void write_data_port2(vip_axi4_item #(VIP_AXI4_CFG_C) trans);
+  virtual function void write_wdata_port2(vip_axi4_item #(VIP_AXI4_CFG_C) trans);
+
+    number_of_write_data_items++;
+    all_write_data_items.push_back(trans);
+    write_data_items.push_back(trans);
+  endfunction
+
+  // Agent 3
+  virtual function void write_awaddr_port3(vip_axi4_item #(VIP_AXI4_CFG_C) trans);
+
+    number_of_write_address_items++;
+    all_write_address_items.push_back(trans);
+    write_address_items.push_back(trans);
+    current_phase.raise_objection(this);
+  endfunction
+
+
+  virtual function void write_wdata_port3(vip_axi4_item #(VIP_AXI4_CFG_C) trans);
 
     number_of_write_data_items++;
     all_write_data_items.push_back(trans);

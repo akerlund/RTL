@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -30,9 +31,13 @@ package awa_tb_pkg;
   import vip_axi4_types_pkg::*;
   import vip_axi4_agent_pkg::*;
 
+  localparam int NR_OF_ARBITERS_C = 4;
+  localparam int NR_OF_SLAVES_C   = 4;
+  localparam int NR_OF_MASTERS_C  = NR_OF_SLAVES_C*4;
+
   // Configuration of the VIP
   localparam vip_axi4_cfg_t VIP_AXI4_CFG_C = '{
-    VIP_AXI4_ID_WIDTH_P   : 3,
+    VIP_AXI4_ID_WIDTH_P   : 16,
     VIP_AXI4_ADDR_WIDTH_P : 13,
     VIP_AXI4_DATA_WIDTH_P : 32,
     VIP_AXI4_STRB_WIDTH_P : 4,
