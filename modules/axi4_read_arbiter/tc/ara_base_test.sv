@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -44,8 +45,6 @@ class ara_base_test extends uvm_test;
   clk_rst_config  clk_rst_config0;
   vip_axi4_config axi4_mem_cfg0;
   vip_axi4_config axi4_rd_cfg0;
-  vip_axi4_config axi4_rd_cfg1;
-  vip_axi4_config axi4_rd_cfg2;
 
   // ---------------------------------------------------------------------------
   // Sequences
@@ -53,13 +52,11 @@ class ara_base_test extends uvm_test;
 
   reset_sequence    reset_seq0;
   vip_axi4_read_seq vip_axi4_read_seq0;
-  vip_axi4_read_seq vip_axi4_read_seq1;
-  vip_axi4_read_seq vip_axi4_read_seq2;
+
 
   function new(string name = "ara_base_test", uvm_component parent = null);
     super.new(name, parent);
   endfunction
-
 
 
   virtual function void build_phase(uvm_phase phase);
@@ -81,35 +78,26 @@ class ara_base_test extends uvm_test;
 
     // Configurations
     clk_rst_config0 = clk_rst_config::type_id::create("clk_rst_config0", this);
-    axi4_mem_cfg0   = vip_axi4_config::type_id::create("axi4_mem_cfg0",  this);
     axi4_rd_cfg0    = vip_axi4_config::type_id::create("axi4_rd_cfg0",   this);
-    axi4_rd_cfg1    = vip_axi4_config::type_id::create("axi4_rd_cfg1",   this);
-    axi4_rd_cfg2    = vip_axi4_config::type_id::create("axi4_rd_cfg2",   this);
+    axi4_mem_cfg0   = vip_axi4_config::type_id::create("axi4_mem_cfg0",  this);
 
-    axi4_mem_cfg0.vip_axi4_agent_type     = VIP_AXI4_SLAVE_AGENT_E;
-    axi4_mem_cfg0.mem_slave               = TRUE;
-    axi4_mem_cfg0.mem_addr_width          = VIP_AXI4_CFG_C.VIP_AXI4_ADDR_WIDTH_P;
+    axi4_mem_cfg0.vip_axi4_agent_type = VIP_AXI4_SLAVE_AGENT_E;
+    axi4_mem_cfg0.mem_slave           = TRUE;
+    axi4_mem_cfg0.mem_addr_width      = VIP_AXI4_CFG_C.VIP_AXI4_ADDR_WIDTH_P;
 
     axi4_rd_cfg0.min_rready_delay_period = 10;
     axi4_rd_cfg0.max_rready_delay_period = 10;
-    axi4_rd_cfg1.min_rready_delay_period = 10;
-    axi4_rd_cfg1.max_rready_delay_period = 10;
-    axi4_rd_cfg2.min_rready_delay_period = 10;
-    axi4_rd_cfg2.max_rready_delay_period = 10;
 
     uvm_config_db #(clk_rst_config)::set(this,  {"tb_env.clk_rst_agent0", "*"}, "cfg", clk_rst_config0);
     uvm_config_db #(vip_axi4_config)::set(this, {"tb_env.mem_agent0",     "*"}, "cfg", axi4_mem_cfg0);
     uvm_config_db #(vip_axi4_config)::set(this, {"tb_env.rd_agent0",      "*"}, "cfg", axi4_rd_cfg0);
-    uvm_config_db #(vip_axi4_config)::set(this, {"tb_env.rd_agent1",      "*"}, "cfg", axi4_rd_cfg1);
-    uvm_config_db #(vip_axi4_config)::set(this, {"tb_env.rd_agent2",      "*"}, "cfg", axi4_rd_cfg2);
-
   endfunction
 
 
   function void end_of_elaboration_phase(uvm_phase phase);
     super.end_of_elaboration_phase(phase);
     v_sqr = tb_env.virtual_sequencer;
-    `uvm_info(get_name(), {"VIP AXI4 Agent (Read0):\n",  axi4_rd_cfg0.sprint()},  UVM_LOW)
+    `uvm_info(get_name(), {"VIP AXI4 Agent (Read):\n",   axi4_rd_cfg0.sprint()},  UVM_LOW)
     `uvm_info(get_name(), {"VIP AXI4 Agent (Memory):\n", axi4_mem_cfg0.sprint()}, UVM_LOW)
   endfunction
 
@@ -118,8 +106,6 @@ class ara_base_test extends uvm_test;
     super.start_of_simulation_phase(phase);
     reset_seq0         = reset_sequence::type_id::create("reset_seq0");
     vip_axi4_read_seq0 = vip_axi4_read_seq::type_id::create("vip_axi4_read_seq0");
-    vip_axi4_read_seq1 = vip_axi4_read_seq::type_id::create("vip_axi4_read_seq1");
-    vip_axi4_read_seq2 = vip_axi4_read_seq::type_id::create("vip_axi4_read_seq2");
   endfunction
 
 

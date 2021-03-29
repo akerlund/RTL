@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -26,8 +27,6 @@ class ara_env extends uvm_env;
 
   clk_rst_agent                    clk_rst_agent0;
   vip_axi4_agent #(VIP_AXI4_CFG_C) rd_agent0;
-  vip_axi4_agent #(VIP_AXI4_CFG_C) rd_agent1;
-  vip_axi4_agent #(VIP_AXI4_CFG_C) rd_agent2;
   vip_axi4_agent #(VIP_AXI4_CFG_C) mem_agent0;
 
   ara_scoreboard        scoreboard0;
@@ -45,14 +44,10 @@ class ara_env extends uvm_env;
     // Create Agents
     clk_rst_agent0 = clk_rst_agent::type_id::create("clk_rst_agent0", this);
     rd_agent0      = vip_axi4_agent #(VIP_AXI4_CFG_C)::type_id::create("rd_agent0", this);
-    rd_agent1      = vip_axi4_agent #(VIP_AXI4_CFG_C)::type_id::create("rd_agent1", this);
-    rd_agent2      = vip_axi4_agent #(VIP_AXI4_CFG_C)::type_id::create("rd_agent2", this);
     mem_agent0     = vip_axi4_agent #(VIP_AXI4_CFG_C)::type_id::create("mem_agent0", this);
 
     uvm_config_db #(int)::set(this, {"clk_rst_agent0", "*"}, "id", 0);
     uvm_config_db #(int)::set(this, {"rd_agent0",      "*"}, "id", 1);
-    uvm_config_db #(int)::set(this, {"rd_agent1",      "*"}, "id", 2);
-    uvm_config_db #(int)::set(this, {"rd_agent2",      "*"}, "id", 3);
     uvm_config_db #(int)::set(this, {"mem_agent0",     "*"}, "id", 4);
 
     // Create Scoreboards
@@ -64,22 +59,15 @@ class ara_env extends uvm_env;
   endfunction
 
 
-
   function void connect_phase(uvm_phase phase);
 
     super.connect_phase(phase);
 
-    rd_agent0.monitor.araddr_port.connect(scoreboard0.ra_address_port0);
-    rd_agent1.monitor.araddr_port.connect(scoreboard0.ra_address_port1);
-    rd_agent2.monitor.araddr_port.connect(scoreboard0.ra_address_port2);
-    rd_agent0.monitor.rdata_port.connect(scoreboard0.ra_data_port0);
-    rd_agent1.monitor.rdata_port.connect(scoreboard0.ra_data_port1);
-    rd_agent2.monitor.rdata_port.connect(scoreboard0.ra_data_port2);
-    mem_agent0.monitor.rdata_port.connect(scoreboard0.ma_data_port);
+    rd_agent0.monitor.araddr_port.connect(scoreboard0.ing_araddr_port);
+    rd_agent0.monitor.rdata_port.connect(scoreboard0.ing_rdata_port);
+    mem_agent0.monitor.rdata_port.connect(scoreboard0.egr_rdata_port);
 
     virtual_sequencer.clk_rst_sequencer0 = clk_rst_agent0.sequencer;
     virtual_sequencer.rd_sequencer0      = rd_agent0.sequencer;
-    virtual_sequencer.rd_sequencer1      = rd_agent1.sequencer;
-    virtual_sequencer.rd_sequencer2      = rd_agent2.sequencer;
   endfunction
 endclass
