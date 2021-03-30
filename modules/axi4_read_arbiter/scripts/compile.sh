@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Specify the top files
-rtl_top=axi4_read_arbiter
+rtl_top="axi4_read_arbiter"
 uvm_top="ara_tb_top"
 
 # ------------------------------------------------------------------------------
@@ -29,7 +29,6 @@ source ./tb/files.lst
 # Parameter override
 # ------------------------------------------------------------------------------
 
-# Parameters
 parameters+="AXI_ID_WIDTH_P=4 "
 parameters+="AXI_ADDR_WIDTH_P=32 "
 parameters+="AXI_DATA_WIDTH_P=16 "
