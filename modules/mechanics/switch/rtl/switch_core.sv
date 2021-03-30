@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -50,7 +51,7 @@ module switch_core #(
     end
     else begin
       debounce_counter_v <= '0;
-     	if (synchronized_switch_d0 != synchronized_switch) begin
+       if (synchronized_switch_d0 != synchronized_switch) begin
         if (debounce_counter_v == NR_OF_DEBOUNCE_CLKS_P) begin
           synchronized_switch_d0 <= switch_out;
           debounce_counter_v     <= '0;

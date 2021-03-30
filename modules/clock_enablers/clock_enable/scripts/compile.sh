@@ -3,7 +3,7 @@
 git_root="$(git rev-parse --show-toplevel)"
 
 # Specify the top files
-rtl_top=clock_enable
+rtl_top="clock_enable"
 uvm_top=""
 
 # Source the module's file lists
