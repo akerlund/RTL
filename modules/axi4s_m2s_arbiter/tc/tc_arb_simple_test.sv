@@ -21,26 +21,16 @@
 
 class tc_arb_simple_test extends arb_base_test;
 
-  arb_vseq #(vip_axi4s_cfg) arb_vseq0;
-
   `uvm_component_utils(tc_arb_simple_test)
 
-
-
   function new(string name = "tc_arb_simple_test", uvm_component parent = null);
-
     super.new(name, parent);
-
   endfunction
-
 
 
   function void build_phase(uvm_phase phase);
-
     super.build_phase(phase);
-
   endfunction
-
 
 
   task run_phase(uvm_phase phase);
@@ -48,10 +38,32 @@ class tc_arb_simple_test extends arb_base_test;
     super.run_phase(phase);
     phase.raise_objection(this);
 
-    arb_vseq0 = new();
-    arb_vseq0.nr_of_bursts            = 10000;
-    arb_vseq0.max_idle_between_bursts = 100;
-    arb_vseq0.start(v_sqr);
+    vip_axi4s_seq0.set_data_type(VIP_AXI4S_TDATA_COUNTER_E);
+    vip_axi4s_seq0.set_cfg_burst_length(128, 1);
+    vip_axi4s_seq0.set_tstrb(VIP_AXI4S_TSTRB_ALL_E);
+    vip_axi4s_seq0.set_tid(0);
+    vip_axi4s_seq0.set_nr_of_bursts(1024);
+    vip_axi4s_seq0.set_log_denominator(4);
+
+    vip_axi4s_seq1.set_data_type(VIP_AXI4S_TDATA_COUNTER_E);
+    vip_axi4s_seq1.set_cfg_burst_length(128, 1);
+    vip_axi4s_seq1.set_tstrb(VIP_AXI4S_TSTRB_ALL_E);
+    vip_axi4s_seq1.set_tid(1);
+    vip_axi4s_seq1.set_nr_of_bursts(1024);
+    vip_axi4s_seq1.set_log_denominator(4);
+
+    vip_axi4s_seq2.set_data_type(VIP_AXI4S_TDATA_COUNTER_E);
+    vip_axi4s_seq2.set_cfg_burst_length(128, 1);
+    vip_axi4s_seq2.set_tstrb(VIP_AXI4S_TSTRB_ALL_E);
+    vip_axi4s_seq2.set_tid(2);
+    vip_axi4s_seq2.set_nr_of_bursts(1024);
+    vip_axi4s_seq2.set_log_denominator(4);
+
+    fork
+      vip_axi4s_seq0.start(v_sqr.mst0_sequencer);
+      vip_axi4s_seq1.start(v_sqr.mst1_sequencer);
+      vip_axi4s_seq2.start(v_sqr.mst2_sequencer);
+    join
 
     phase.drop_objection(this);
 

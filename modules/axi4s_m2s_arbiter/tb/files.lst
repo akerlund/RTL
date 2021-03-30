@@ -6,5 +6,7 @@ uvm_dirs+="
 "
 
 uvm_files+="
-  $module_path/tb/tb.svh
+  $module_path/tb/arb_tb_pkg.sv
+  $module_path/tc/arb_tc_pkg.sv
+  $module_path/tb/arb_tb_top.sv
 "

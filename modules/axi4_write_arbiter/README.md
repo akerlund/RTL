@@ -1,9 +1,14 @@
 # AXI4 Write Channel Arbiter
 
-![Build Status](https://img.shields.io/badge/build-passing-green)
-![Build Status](https://img.shields.io/badge/test-passing-green)
-![Build Status](https://img.shields.io/badge/synthesis-N/A-lightgrey)
-![Build Status](https://img.shields.io/badge/fpga-N/A-lightgrey)
+![Build Status](https://img.shields.io/badge/BUILD-PASSING-green)
+![Build Status](https://img.shields.io/badge/TEST-PASSING-green)
+![Build Status](https://img.shields.io/badge/SYNTHESIS-PASSING-green)
+![Build Status](https://img.shields.io/badge/FPGA-PASSING-green)
 
-Arbiter with parameterized number of AXI4 Masters which connects to one AXI4 Slave.
-The design's testbench is simulated with VCS and a proprietary AXI4 VIP thus the testbench cannot be run as it is.
+If the parameter "NR_OF_MASTERS_P" is equal to one then an
+"axi4_write_arbiter_mst_2_slvs" will be instantiated, i.e., one master
+connected to (NR_OF_SLAVES_P) slaves.
+
+If the parameter "NR_OF_MASTERS_P" is NOT equal to one then a
+"axi4_write_arbiter_msts_2_slv" will be instantiated, i.e.,
+(NR_OF_MASTERS_P) masters is connected to one slave.
