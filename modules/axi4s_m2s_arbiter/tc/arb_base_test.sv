@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -41,7 +42,7 @@ class arb_base_test extends uvm_test;
   // VIP Agent configurations
   // ---------------------------------------------------------------------------
 
-  clk_rst_config  clk_rst_config0;
+  clk_rst_config   clk_rst_config0;
   vip_axi4s_config axi4s_mst_cfg0;
   vip_axi4s_config axi4s_slv_cfg0;
 
