@@ -3,17 +3,34 @@
 git_root="$(git rev-parse --show-toplevel)"
 
 # Specify the top files
-rtl_top=axi4s_s2m_arbiter
-uvm_top=arb_tb_top
+rtl_top="axi4s_s2m_arbiter"
+uvm_top="arb_tb_top"
 
-# Source other modules file lists
-source $git_root/vip/vip_axi4s_agent/uvm_files.lst
+# ------------------------------------------------------------------------------
+# Source submodules
+# ------------------------------------------------------------------------------
 
-# Source the module's file lists
-source ./rtl/rtl_files.lst
-source ./tb/uvm_files.lst
+git_sub_root="$(git rev-parse --show-toplevel)"
 
+git_root="$(git rev-parse --show-toplevel)/submodules/VIP"
+source $git_sub_root/submodules/VIP/bool/files.lst
+source $git_sub_root/submodules/VIP/vip_axi4s_agent/files.lst
+source $git_sub_root/submodules/VIP/vip_clk_rst_agent/files.lst
+source $git_sub_root/submodules/VIP/report_server/files.lst
+
+# ------------------------------------------------------------------------------
+# Source modules
+# ------------------------------------------------------------------------------
+
+# Restoring the git root
+git_root="$(git rev-parse --show-toplevel)"
+source ./rtl/files.lst
+source ./tb/files.lst
+
+# ------------------------------------------------------------------------------
 # Parameter override
+# ------------------------------------------------------------------------------
+
 parameters+=("NR_OF_MASTERS_P=3 ")
 parameters+=("AXI_DATA_WIDTH_P=32 ")
 parameters+=("AXI_STRB_WIDTH_P=4 ")

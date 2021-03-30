@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -25,24 +26,19 @@ import arb_tc_pkg::*;
 
 module arb_tb_top;
 
-  bit clk;
-  bit rst_n;
-
-  time clk_period = 10ns;
-
   // IF
-  vip_axi4s_if #(vip_axi4s_cfg) mst0_vif(clk, rst_n);
-  vip_axi4s_if #(vip_axi4s_cfg) mst1_vif(clk, rst_n);
-  vip_axi4s_if #(vip_axi4s_cfg) mst2_vif(clk, rst_n);
-  vip_axi4s_if #(vip_axi4s_cfg) slv_vif(clk, rst_n);
+  clk_rst_if                      clk_rst_vif();
+  vip_axi4s_if #(VIP_AXI4S_CFG_C) mst0_vif(clk_rst_vif.clk, clk_rst_vif.rst_n);
+  vip_axi4s_if #(VIP_AXI4S_CFG_C) mst1_vif(clk_rst_vif.clk, clk_rst_vif.rst_n);
+  vip_axi4s_if #(VIP_AXI4S_CFG_C) mst2_vif(clk_rst_vif.clk, clk_rst_vif.rst_n);
+  vip_axi4s_if #(VIP_AXI4S_CFG_C) slv0_vif(clk_rst_vif.clk, clk_rst_vif.rst_n);
 
-  localparam int NR_OF_MASTERS_C  = 3;
-  localparam int AXI_DATA_WIDTH_C = vip_axi4s_cfg.AXI_DATA_WIDTH_P;
-  localparam int AXI_STRB_WIDTH_C = vip_axi4s_cfg.AXI_STRB_WIDTH_P;
-  localparam int AXI_KEEP_WIDTH_C = vip_axi4s_cfg.AXI_KEEP_WIDTH_P;
-  localparam int AXI_ID_WIDTH_C   = vip_axi4s_cfg.AXI_ID_WIDTH_P;
-  localparam int AXI_DEST_WIDTH_C = vip_axi4s_cfg.AXI_DEST_WIDTH_P;
-  localparam int AXI_USER_WIDTH_C = vip_axi4s_cfg.AXI_USER_WIDTH_P;
+  localparam int AXI_DATA_WIDTH_C = VIP_AXI4S_CFG_C.VIP_AXI4S_TDATA_WIDTH_P;
+  localparam int AXI_STRB_WIDTH_C = VIP_AXI4S_CFG_C.VIP_AXI4S_TSTRB_WIDTH_P;
+  localparam int AXI_KEEP_WIDTH_C = VIP_AXI4S_CFG_C.VIP_AXI4S_TKEEP_WIDTH_P;
+  localparam int AXI_ID_WIDTH_C   = VIP_AXI4S_CFG_C.VIP_AXI4S_TID_WIDTH_P;
+  localparam int AXI_DEST_WIDTH_C = VIP_AXI4S_CFG_C.VIP_AXI4S_TDEST_WIDTH_P;
+  localparam int AXI_USER_WIDTH_C = VIP_AXI4S_CFG_C.VIP_AXI4S_TUSER_WIDTH_P;
 
   logic [NR_OF_MASTERS_C-1 : 0]                          mst_tvalid;
   logic [NR_OF_MASTERS_C-1 : 0]                          mst_tready;
@@ -86,89 +82,62 @@ module arb_tb_top;
 
 
   axi4s_s2m_arbiter #(
-    .NR_OF_MASTERS_P  ( NR_OF_MASTERS_C  ),
-    .AXI_DATA_WIDTH_P ( AXI_DATA_WIDTH_C ),
-    .AXI_STRB_WIDTH_P ( AXI_STRB_WIDTH_C ),
-    .AXI_KEEP_WIDTH_P ( AXI_KEEP_WIDTH_C ),
-    .AXI_ID_WIDTH_P   ( AXI_ID_WIDTH_C   ),
-    .AXI_DEST_WIDTH_P ( AXI_DEST_WIDTH_C ),
-    .AXI_USER_WIDTH_P ( AXI_USER_WIDTH_C )
+    .NR_OF_MASTERS_P  ( NR_OF_MASTERS_C   ),
+    .AXI_DATA_WIDTH_P ( AXI_DATA_WIDTH_C  ),
+    .AXI_STRB_WIDTH_P ( AXI_STRB_WIDTH_C  ),
+    .AXI_KEEP_WIDTH_P ( AXI_KEEP_WIDTH_C  ),
+    .AXI_ID_WIDTH_P   ( AXI_ID_WIDTH_C    ),
+    .AXI_DEST_WIDTH_P ( AXI_DEST_WIDTH_C  ),
+    .AXI_USER_WIDTH_P ( AXI_USER_WIDTH_C  )
   ) axi4s_s2m_2m_arbiter_i0 (
 
     // Clock and reset
-    .clk              ( clk              ), // input
-    .rst_n            ( rst_n            ), // input
+    .clk              ( clk_rst_vif.clk   ), // input
+    .rst_n            ( clk_rst_vif.rst_n ), // input
 
     // AXI4-S Slave
-    .slv_tvalid       ( slv_vif.tvalid   ), // input
-    .slv_tready       ( slv_vif.tready   ), // output
-    .slv_tdata        ( slv_vif.tdata    ), // input
-    .slv_tstrb        ( slv_vif.tstrb    ), // input
-    .slv_tkeep        ( slv_vif.tkeep    ), // input
-    .slv_tlast        ( slv_vif.tlast    ), // input
-    .slv_tid          ( slv_vif.tid      ), // input
-    .slv_tdest        ( slv_vif.tdest    ), // input
-    .slv_tuser        ( slv_vif.tuser    ), // input
+    .slv_tvalid       ( slv0_vif.tvalid   ), // input
+    .slv_tready       ( slv0_vif.tready   ), // output
+    .slv_tdata        ( slv0_vif.tdata    ), // input
+    .slv_tstrb        ( slv0_vif.tstrb    ), // input
+    .slv_tkeep        ( slv0_vif.tkeep    ), // input
+    .slv_tlast        ( slv0_vif.tlast    ), // input
+    .slv_tid          ( slv0_vif.tid      ), // input
+    .slv_tdest        ( slv0_vif.tdest    ), // input
+    .slv_tuser        ( slv0_vif.tuser    ), // input
 
     // AXI4-S Masters
-    .mst_tvalid       ( mst_tvalid       ), // output
-    .mst_tready       ( mst_tready       ), // input
-    .mst_tdata        ( mst_tdata        ), // output
-    .mst_tstrb        ( mst_tstrb        ), // output
-    .mst_tkeep        ( mst_tkeep        ), // output
-    .mst_tlast        ( mst_tlast        ), // output
-    .mst_tid          ( mst_tid          ), // output
-    .mst_tdest        ( mst_tdest        ), // output
-    .mst_tuser        ( mst_tuser        )  // output
+    .mst_tvalid       ( mst_tvalid        ), // output
+    .mst_tready       ( mst_tready        ), // input
+    .mst_tdata        ( mst_tdata         ), // output
+    .mst_tstrb        ( mst_tstrb         ), // output
+    .mst_tkeep        ( mst_tkeep         ), // output
+    .mst_tlast        ( mst_tlast         ), // output
+    .mst_tid          ( mst_tid           ), // output
+    .mst_tdest        ( mst_tdest         ), // output
+    .mst_tuser        ( mst_tuser         )  // output
   );
 
+
   initial begin
-
-    uvm_config_db #(virtual vip_axi4s_if #(vip_axi4s_cfg))::set(uvm_root::get(), "uvm_test_top.tb_env.vip_axi4s_agent_mst0*", "vif", mst0_vif);
-    uvm_config_db #(virtual vip_axi4s_if #(vip_axi4s_cfg))::set(uvm_root::get(), "uvm_test_top.tb_env.vip_axi4s_agent_mst1*", "vif", mst1_vif);
-    uvm_config_db #(virtual vip_axi4s_if #(vip_axi4s_cfg))::set(uvm_root::get(), "uvm_test_top.tb_env.vip_axi4s_agent_mst2*", "vif", mst2_vif);
-    uvm_config_db #(virtual vip_axi4s_if #(vip_axi4s_cfg))::set(uvm_root::get(), "uvm_test_top.tb_env.vip_axi4s_agent_slv0*", "vif", slv_vif);
-
+    uvm_config_db #(virtual clk_rst_if)::set(uvm_root::get(),                      "uvm_test_top.tb_env*",                "vif", clk_rst_vif);
+    uvm_config_db #(virtual clk_rst_if)::set(uvm_root::get(),                      "uvm_test_top.tb_env.clk_rst_agent0*", "vif", clk_rst_vif);
+    uvm_config_db #(virtual vip_axi4s_if #(VIP_AXI4S_CFG_C))::set(uvm_root::get(), "uvm_test_top.tb_env.mst_agent0*",     "vif", mst0_vif);
+    uvm_config_db #(virtual vip_axi4s_if #(VIP_AXI4S_CFG_C))::set(uvm_root::get(), "uvm_test_top.tb_env.mst_agent1*",     "vif", mst1_vif);
+    uvm_config_db #(virtual vip_axi4s_if #(VIP_AXI4S_CFG_C))::set(uvm_root::get(), "uvm_test_top.tb_env.mst_agent2*",     "vif", mst2_vif);
+    uvm_config_db #(virtual vip_axi4s_if #(VIP_AXI4S_CFG_C))::set(uvm_root::get(), "uvm_test_top.tb_env.slv_agent0*",     "vif", slv0_vif);
     run_test();
     $stop();
-
   end
 
 
-
   initial begin
-
-    // With recording detail you can switch on/off transaction recording.
+    $timeformat(-9, 0, "", 11);  // units, precision, suffix, min field width
     if ($test$plusargs("RECORD")) begin
       uvm_config_db #(uvm_verbosity)::set(null,"*", "recording_detail", UVM_FULL);
-    end
-    else begin
+    end else begin
       uvm_config_db #(uvm_verbosity)::set(null,"*", "recording_detail", UVM_NONE);
     end
-  end
-
-
-  // Generate reset
-  initial begin
-
-    rst_n = 1'b1;
-
-    #(clk_period*5)
-
-    rst_n = 1'b0;
-
-    #(clk_period*5)
-
-    @(posedge clk);
-
-    rst_n = 1'b1;
-
-  end
-
-  // Generate clock
-  always begin
-    #(clk_period/2)
-    clk = ~clk;
   end
 
 endmodule

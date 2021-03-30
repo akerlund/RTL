@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -21,29 +22,16 @@
 
 class tc_arb_simple_test extends arb_base_test;
 
-  axi4s_random_seq #(vip_axi4s_cfg) random_seq0;
-
   `uvm_component_utils(tc_arb_simple_test)
 
-
-  int nr_of_bursts            = 100;
-  int max_idle_between_bursts = 0;
-
-
   function new(string name = "tc_arb_simple_test", uvm_component parent = null);
-
     super.new(name, parent);
-
   endfunction
-
 
 
   function void build_phase(uvm_phase phase);
-
     super.build_phase(phase);
-
   endfunction
-
 
 
   task run_phase(uvm_phase phase);
@@ -51,13 +39,16 @@ class tc_arb_simple_test extends arb_base_test;
     super.run_phase(phase);
     phase.raise_objection(this);
 
-    random_seq0 = axi4s_random_seq #(vip_axi4s_cfg)::type_id::create("random_seq0");
-    random_seq0.nr_of_bursts            = nr_of_bursts;
-    random_seq0.max_idle_between_bursts = max_idle_between_bursts;
+    vip_axi4s_seq0.set_data_type(VIP_AXI4S_TDATA_COUNTER_E);
+    vip_axi4s_seq0.set_cfg_burst_length(128, 1);
+    vip_axi4s_seq0.set_tstrb(VIP_AXI4S_TSTRB_ALL_E);
+    vip_axi4s_seq0.set_tid(0);
+    vip_axi4s_seq0.set_nr_of_bursts(1024);
+    vip_axi4s_seq0.set_log_denominator(4);
+    vip_axi4s_seq0.set_enable_tdest_increment(FALSE);
+    vip_axi4s_seq0.set_cfg_tdest(NR_OF_MASTERS_C-1, 0);
 
-    `uvm_info(get_name(), $sformatf("Starting one sequence"), UVM_LOW);
-
-    random_seq0.start(v_sqr.slv0_sequencer);
+    vip_axi4s_seq0.start(v_sqr.slv0_sequencer);
 
     phase.drop_objection(this);
 

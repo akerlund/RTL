@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -23,10 +24,11 @@ class arb_virtual_sequencer extends uvm_virtual_sequencer;
 
   `uvm_component_utils(arb_virtual_sequencer)
 
-  vip_axi4s_sequencer #(vip_axi4s_cfg) mst0_sequencer;
-  vip_axi4s_sequencer #(vip_axi4s_cfg) mst1_sequencer;
-  vip_axi4s_sequencer #(vip_axi4s_cfg) mst2_sequencer;
-  vip_axi4s_sequencer #(vip_axi4s_cfg) slv0_sequencer;
+  clk_rst_sequencer                      clk_rst_sequencer0;
+  vip_axi4s_sequencer #(VIP_AXI4S_CFG_C) mst0_sequencer;
+  vip_axi4s_sequencer #(VIP_AXI4S_CFG_C) mst1_sequencer;
+  vip_axi4s_sequencer #(VIP_AXI4S_CFG_C) mst2_sequencer;
+  vip_axi4s_sequencer #(VIP_AXI4S_CFG_C) slv0_sequencer;
 
   function new(string name = "virtual_sequencer", uvm_component parent = null);
     super.new(name, parent);
