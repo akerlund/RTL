@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -36,9 +37,9 @@ package arb_tb_pkg;
   // Configuration of the AXI4-S VIP
   localparam vip_axi4s_cfg_t VIP_AXI4S_CFG_C = '{
     VIP_AXI4S_TDATA_WIDTH_P : 16,
-    VIP_AXI4S_TSTRB_WIDTH_P : 1,
+    VIP_AXI4S_TSTRB_WIDTH_P : 2,
     VIP_AXI4S_TKEEP_WIDTH_P : 2,
-    VIP_AXI4S_TID_WIDTH_P   : 1,
+    VIP_AXI4S_TID_WIDTH_P   : 2,
     VIP_AXI4S_TDEST_WIDTH_P : 1,
     VIP_AXI4S_TUSER_WIDTH_P : 0
   };
