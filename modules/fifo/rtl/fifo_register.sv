@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -21,7 +22,7 @@
 
 `default_nettype none
 
-module synchronous_fifo_register #(
+module fifo_register #(
     parameter int DATA_WIDTH_P = -1,
     parameter int ADDR_WIDTH_P = -1
   )(

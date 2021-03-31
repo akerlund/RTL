@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -21,7 +22,7 @@
 
 `default_nettype none
 
-module axi4s_sync_fifo #(
+module axi4s_fifo #(
     parameter int TUSER_WIDTH_P = -1,
     parameter int ADDR_WIDTH_P  = -1
   )(
@@ -52,10 +53,10 @@ module axi4s_sync_fifo #(
   assign ing_transaction = ing_tready && ing_tvalid;
   assign egr_transaction = egr_tready && egr_tvalid;
 
-  synchronous_fifo #(
+  fifo #(
     .DATA_WIDTH_P         ( TUSER_WIDTH_P        ),
     .ADDR_WIDTH_P         ( ADDR_WIDTH_P         )
-  ) synchronous_fifo_i0 (
+  ) fifo_i0 (
     .clk                  ( clk                  ), // input
     .rst_n                ( rst_n                ), // input
     .ing_enable           ( ing_transaction      ), // input

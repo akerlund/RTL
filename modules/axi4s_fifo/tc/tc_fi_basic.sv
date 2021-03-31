@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,31 +20,18 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-class tc_syfi_back_pressure extends syfi_base_test;
+class tc_fi_basic extends fi_base_test;
 
-  `uvm_component_utils(tc_syfi_back_pressure)
+  `uvm_component_utils(tc_fi_basic)
 
-  axi4s_counting_seq #(vip_axi4s_cfg) counting_seq0;
-
-  int nr_of_bursts            = 2048;
-  int max_idle_between_bursts = 0;
-
-  function new(string name = "tc_syfi_back_pressure", uvm_component parent = null);
-
+  function new(string name = "tc_fi_basic", uvm_component parent = null);
     super.new(name, parent);
-
-    vip_axi4s_config_slv.tready_back_pressure_enabled = 1;
-
   endfunction
-
 
 
   function void build_phase(uvm_phase phase);
-
     super.build_phase(phase);
-
   endfunction
-
 
 
   task run_phase(uvm_phase phase);
@@ -51,10 +39,12 @@ class tc_syfi_back_pressure extends syfi_base_test;
     super.run_phase(phase);
     phase.raise_objection(this);
 
-    counting_seq0 = axi4s_counting_seq #(vip_axi4s_cfg)::type_id::create("counting_seq0");
-    counting_seq0.nr_of_bursts            = nr_of_bursts;
-    counting_seq0.max_idle_between_bursts = max_idle_between_bursts;
-    counting_seq0.start(v_sqr.mst0_sequencer);
+    vip_axi4s_seq0.set_data_type(VIP_AXI4S_TDATA_COUNTER_E);
+    vip_axi4s_seq0.set_cfg_burst_length(128, 1);
+    vip_axi4s_seq0.set_nr_of_bursts(1024);
+    vip_axi4s_seq0.set_tstrb(VIP_AXI4S_TSTRB_ALL_E);
+    vip_axi4s_seq0.set_log_denominator(4);
+    vip_axi4s_seq0.start(v_sqr.mst_sequencer);
 
     phase.drop_objection(this);
 

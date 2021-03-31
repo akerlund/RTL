@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,9 +20,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-class tc_syfi_fill_up_read_out extends syfi_base_test;
+class tc_fi_fill_up_read_out extends fi_base_test;
 
-  `uvm_component_utils(tc_syfi_fill_up_read_out)
+  `uvm_component_utils(tc_fi_fill_up_read_out)
 
   axi4s_single_transaction_seq      #(vip_axi4s_cfg) axi4s_single_transaction_seq0;
   axi4s_slave_sequential_tready_seq #(vip_axi4s_cfg) axi4s_slave_sequential_tready_seq0;
@@ -29,7 +30,7 @@ class tc_syfi_fill_up_read_out extends syfi_base_test;
   int nr_of_bursts = 2048;
 
 
-  function new(string name = "tc_syfi_fill_up_read_out", uvm_component parent = null);
+  function new(string name = "tc_fi_fill_up_read_out", uvm_component parent = null);
 
     super.new(name, parent);
     tready_back_pressure_enabled = 1;

@@ -1,0 +1,9 @@
+module_path=$git_root/modules/axi4s_fifo
+
+rtl_dirs+="
+  +incdir+$module_path/rtl
+"
+
+rtl_files+="
+  $module_path/rtl/axi4s_fifo.sv
+"

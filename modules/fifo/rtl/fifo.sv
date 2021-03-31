@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -21,7 +22,7 @@
 
 `default_nettype none
 
-module synchronous_fifo #(
+module fifo #(
     parameter int DATA_WIDTH_P = -1,
     parameter int ADDR_WIDTH_P = -1
   )(
@@ -63,10 +64,10 @@ module synchronous_fifo #(
     if (GENERATE_FIFO_REG_C) begin : gen_sync_reg
 
       // Generate with registers
-      synchronous_fifo_register #(
+      fifo_register #(
         .DATA_WIDTH_P  ( DATA_WIDTH_P  ),
         .ADDR_WIDTH_P  ( ADDR_WIDTH_P  )
-      ) synchronous_fifo_register_i0 (
+      ) fifo_register_i0 (
 
         // Clock and reset
         .clk           ( clk           ), // input
@@ -110,11 +111,9 @@ module synchronous_fifo #(
       // RAM read and write process
       always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-
           ram_write_address <='0;
           ram_read_address  <='0;
           reg_write_enable  <='0;
-
         end
         else begin
 
@@ -124,15 +123,10 @@ module synchronous_fifo #(
 
           // Reading from the RAM to the register FIFO
           if (ram_fill_level > 0 && (!reg_full || read_enable)) begin
-
             ram_read_address <= ram_read_address + 1;
             reg_write_enable <= '1;
-
-          end
-          else begin
-
+          end else begin
             reg_write_enable <= '0;
-
           end
         end
       end
@@ -160,10 +154,10 @@ module synchronous_fifo #(
 
       // Register at the output removes the delay of 1 clk period
       // it takes for RAM memories to output data
-      synchronous_fifo_register #(
+      fifo_register #(
         .DATA_WIDTH_P    ( DATA_WIDTH_P     ),
         .ADDR_WIDTH_P    ( REG_ADDR_WIDTH_C )
-      ) synchronous_fifo_register_i0 (
+      ) fifo_register_i0 (
 
         // Clock and reset
         .clk             ( clk              ), // input
@@ -187,20 +181,15 @@ module synchronous_fifo #(
       // Status process
       always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-
-          ing_full          <= '0;
-          ing_almost_full   <= '0;
           sr_fill_level     <= '0;
           sr_max_fill_level <= '0;
-
         end
         else begin
 
           // Update the FIFO's fill level
           if (read_enable && !write_enable) begin
             sr_fill_level <= sr_fill_level - 1;
-          end
-          else if (write_enable && !read_enable) begin
+          end else if (write_enable && !read_enable) begin
             sr_fill_level <= sr_fill_level + 1;
           end
 
@@ -208,13 +197,10 @@ module synchronous_fifo #(
           if (sr_fill_level >= sr_max_fill_level) begin
             sr_max_fill_level <= sr_fill_level;
           end
-
         end
       end
-
     end
   endgenerate
-
 
 endmodule
 

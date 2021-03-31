@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -22,34 +23,41 @@
 `ifndef SYFI_TB_PKG
 `define SYFI_TB_PKG
 
-package syfi_tb_pkg;
+package fi_tb_pkg;
 
   import uvm_pkg::*;
   `include "uvm_macros.svh"
 
-  import vip_axi4s_types_pkg::*;
-  import vip_axi4s_pkg::*;
-
+  import bool_pkg::*;
   import clk_rst_types_pkg::*;
   import clk_rst_pkg::*;
+  import vip_axi4s_types_pkg::*;
+  import vip_axi4s_agent_pkg::*;
 
-  // Configuration of the AXI4-S VIP
-  localparam vip_axi4s_cfg_t vip_axi4s_cfg = '{
-    AXI_DATA_WIDTH_P : 32,
-    AXI_STRB_WIDTH_P : 0,
-    AXI_KEEP_WIDTH_P : 0,
-    AXI_ID_WIDTH_P   : 0,
-    AXI_DEST_WIDTH_P : 0,
-    AXI_USER_WIDTH_P : 0
+  localparam int VIP_AXI4S_TDATA_WIDTH_C = 32;
+  localparam int VIP_AXI4S_TSTRB_WIDTH_C = VIP_AXI4S_TDATA_WIDTH_C/8;
+  localparam int VIP_AXI4S_TKEEP_WIDTH_C = 0;
+  localparam int VIP_AXI4S_TID_WIDTH_C   = 11;
+  localparam int VIP_AXI4S_TDEST_WIDTH_C = 0;
+  localparam int VIP_AXI4S_TUSER_WIDTH_C = 0;
+
+  // Configuration of the VIP (Data)
+  localparam vip_axi4s_cfg_t VIP_AXI4S_CFG_C = '{
+    VIP_AXI4S_TDATA_WIDTH_P : VIP_AXI4S_TDATA_WIDTH_C,
+    VIP_AXI4S_TSTRB_WIDTH_P : VIP_AXI4S_TSTRB_WIDTH_C,
+    VIP_AXI4S_TKEEP_WIDTH_P : 0,
+    VIP_AXI4S_TID_WIDTH_P   : 0,
+    VIP_AXI4S_TDEST_WIDTH_P : 0,
+    VIP_AXI4S_TUSER_WIDTH_P : 0
   };
 
   localparam int FIFO_ADDR_WIDTH_C = 6; // Minimum width is (1)
-  localparam int FIFO_USER_WIDTH_C = vip_axi4s_cfg.AXI_DATA_WIDTH_P + 1;
+  localparam int FIFO_USER_WIDTH_C = VIP_AXI4S_TDATA_WIDTH_C + 1;
 
-  `include "syfi_config.sv"
-  `include "syfi_scoreboard.sv"
-  `include "syfi_virtual_sequencer.sv"
-  `include "syfi_env.sv"
+  `include "fi_scoreboard.sv"
+  `include "fi_virtual_sequencer.sv"
+  `include "fi_env.sv"
+  `include "vip_axi4s_seq_lib.sv"
 
 endpackage
 
