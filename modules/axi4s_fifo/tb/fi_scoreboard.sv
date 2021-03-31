@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,23 +20,23 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-`uvm_analysis_imp_decl(_collected_port_mst0)
-`uvm_analysis_imp_decl(_collected_port_slv0)
+`uvm_analysis_imp_decl(_mst_port)
+`uvm_analysis_imp_decl(_slv_port)
 
-class syfi_scoreboard extends uvm_scoreboard;
+class fi_scoreboard extends uvm_scoreboard;
 
-  `uvm_component_utils(syfi_scoreboard)
+  `uvm_component_utils(fi_scoreboard)
 
-  uvm_analysis_imp_collected_port_mst0 #(vip_axi4s_item #(vip_axi4s_cfg), syfi_scoreboard) collected_port_mst0;
-  uvm_analysis_imp_collected_port_slv0 #(vip_axi4s_item #(vip_axi4s_cfg), syfi_scoreboard) collected_port_slv0;
+  uvm_analysis_imp_mst_port #(vip_axi4s_item #(VIP_AXI4S_CFG_C), fi_scoreboard) mst_port;
+  uvm_analysis_imp_slv_port #(vip_axi4s_item #(VIP_AXI4S_CFG_C), fi_scoreboard) slv_port;
 
   // Storage for comparison
-  vip_axi4s_item #(vip_axi4s_cfg) master_items [$];
-  vip_axi4s_item #(vip_axi4s_cfg) slave_items  [$];
+  vip_axi4s_item #(VIP_AXI4S_CFG_C) master_items [$];
+  vip_axi4s_item #(VIP_AXI4S_CFG_C) slave_items  [$];
 
   // Debug storage
-  vip_axi4s_item #(vip_axi4s_cfg) all_master_items [$];
-  vip_axi4s_item #(vip_axi4s_cfg) all_slave_items  [$];
+  vip_axi4s_item #(VIP_AXI4S_CFG_C) all_master_items [$];
+  vip_axi4s_item #(VIP_AXI4S_CFG_C) all_slave_items  [$];
 
   // For raising objections
   uvm_phase current_phase;
@@ -54,69 +55,50 @@ class syfi_scoreboard extends uvm_scoreboard;
   endfunction
 
 
-
   virtual function void build_phase(uvm_phase phase);
-
     super.build_phase(phase);
-
-    collected_port_mst0 = new("collected_port_mst0", this);
-    collected_port_slv0 = new("collected_port_slv0", this);
-
+    mst_port = new("mst_port", this);
+    slv_port = new("slv_port", this);
   endfunction
-
 
 
   function void connect_phase(uvm_phase phase);
-
     current_phase = phase;
     super.connect_phase(current_phase);
-
   endfunction
 
 
-
   virtual task run_phase(uvm_phase phase);
-
     current_phase = phase;
     super.run_phase(current_phase);
-
   endtask
 
 
-
   function void check_phase(uvm_phase phase);
-
     current_phase = phase;
     super.check_phase(current_phase);
-
     if (master_items.size() > 0) begin
       `uvm_error(get_name(), $sformatf("There are still items in the Master queue"))
     end
-
     if (slave_items.size() > 0) begin
       `uvm_error(get_name(), $sformatf("There are still items in the Slave queue"))
     end
-
     if (number_of_failed != 0) begin
-      `uvm_error(get_name(), $sformatf("Test failed! (%0d) mismatches", number_of_failed))
+      `uvm_error(get_name(), $sformatf("Test failed! (%0d/%0d) mismatches", number_of_failed, number_of_compared))
+    end else begin
+      `uvm_info(get_name(), $sformatf("Test passed (%0d/%0d) finished transfers", number_of_passed, number_of_compared), UVM_LOW)
     end
-    else begin
-      `uvm_info(get_name(), $sformatf("Test passed (%0d)/(%0d) finished transfers", number_of_passed, number_of_compared), UVM_LOW)
-    end
-
   endfunction
 
   //----------------------------------------------------------------------------
   // Master Agents
   //----------------------------------------------------------------------------
 
-  virtual function void write_collected_port_mst0(vip_axi4s_item #(vip_axi4s_cfg) trans);
-
+  virtual function void write_mst_port(vip_axi4s_item #(VIP_AXI4S_CFG_C) trans);
     number_of_master_items++;
     master_items.push_back(trans);
     all_master_items.push_back(trans);
     current_phase.raise_objection(this);
-
   endfunction
 
 
@@ -124,21 +106,19 @@ class syfi_scoreboard extends uvm_scoreboard;
   // Slave Agent
   //----------------------------------------------------------------------------
 
-  virtual function void write_collected_port_slv0(vip_axi4s_item #(vip_axi4s_cfg) trans);
-
+  virtual function void write_slv_port(vip_axi4s_item #(VIP_AXI4S_CFG_C) trans);
     number_of_slave_items++;
     slave_items.push_back(trans);
     all_slave_items.push_back(trans);
     compare();
     current_phase.drop_objection(this);
-
   endfunction
 
 
   virtual function void compare();
 
-    vip_axi4s_item #(vip_axi4s_cfg) current_master_item;
-    vip_axi4s_item #(vip_axi4s_cfg) current_slave_item;
+    vip_axi4s_item #(VIP_AXI4S_CFG_C) current_master_item;
+    vip_axi4s_item #(VIP_AXI4S_CFG_C) current_slave_item;
 
     int compare_ok = 1;
 
@@ -147,6 +127,7 @@ class syfi_scoreboard extends uvm_scoreboard;
 
     foreach (current_master_item.tdata[i]) begin
       if (current_master_item.tdata[i] != current_slave_item.tdata[i]) begin
+        `uvm_info(get_name(), $sformatf("mst(%0d) != slv(%0d)", current_master_item.tdata[i], current_slave_item.tdata[i]), UVM_LOW)
         `uvm_error(get_name(), $sformatf("Packet number (%0d) mismatches", number_of_compared))
         compare_ok = 0;
         break;
@@ -156,13 +137,11 @@ class syfi_scoreboard extends uvm_scoreboard;
 
     if (compare_ok) begin
       number_of_passed++;
-    end
-    else begin
+    end else begin
       number_of_failed++;
     end
 
     number_of_compared++;
 
   endfunction
-
 endclass

@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,13 +20,16 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-`include "uvm_macros.svh"
-import uvm_pkg::*;
+class fi_virtual_sequencer extends uvm_virtual_sequencer;
 
-// Include RTL files here
-`include "reg_sp_rf.sv"
-`include "ram_sdp.sv"
-`include "synchronous_fifo_register.sv"
-`include "synchronous_fifo.sv"
-`include "axi4s_sync_fifo.sv"
-`include "clk_rst_if.sv"
+  `uvm_component_utils(fi_virtual_sequencer)
+
+  clk_rst_sequencer                      clk_rst_sequencer0;
+  vip_axi4s_sequencer #(VIP_AXI4S_CFG_C) mst_sequencer;
+  vip_axi4s_sequencer #(VIP_AXI4S_CFG_C) slv_sequencer;
+
+  function new(string name = "virtual_sequencer", uvm_component parent = null);
+    super.new(name, parent);
+  endfunction
+
+endclass

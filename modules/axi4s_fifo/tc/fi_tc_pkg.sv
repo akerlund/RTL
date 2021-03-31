@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,16 +20,30 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-class syfi_virtual_sequencer extends uvm_virtual_sequencer;
+`ifndef SYFI_TC_PKG
+`define SYFI_TC_PKG
 
-  `uvm_component_utils(syfi_virtual_sequencer)
+package fi_tc_pkg;
 
-  vip_axi4s_sequencer #(vip_axi4s_cfg) mst0_sequencer;
-  vip_axi4s_sequencer #(vip_axi4s_cfg) slv0_sequencer;
-  clk_rst_sequencer                    clk_rst_sequencer0;
+  `include "uvm_macros.svh"
+  import uvm_pkg::*;
 
-  function new(string name = "virtual_sequencer", uvm_component parent = null);
-    super.new(name, parent);
-  endfunction
+  import fi_tb_pkg::*;
 
-endclass
+  // Import testbench and agent packages here
+  import bool_pkg::*;
+  import report_server_pkg::*;
+  import vip_axi4s_types_pkg::*;
+  import vip_axi4s_agent_pkg::*;
+  import clk_rst_types_pkg::*;
+  import clk_rst_pkg::*;
+
+  // Include testcase files here
+  `include "fi_base_test.sv"
+  `include "tc_fi_basic.sv"
+  //`include "tc_fi_back_pressure.sv"
+  //`include "tc_fi_fill_up_read_out.sv"
+
+endpackage
+
+`endif

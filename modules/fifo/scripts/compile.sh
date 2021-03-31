@@ -3,7 +3,7 @@
 git_root="$(git rev-parse --show-toplevel)"
 
 # Specify the top files
-rtl_top=synchronous_fifo
+rtl_top="fifo"
 uvm_top=""
 
 # Specify other file lists
