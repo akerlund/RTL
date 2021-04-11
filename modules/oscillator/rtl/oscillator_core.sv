@@ -37,6 +37,9 @@ module oscillator_core #(
     // Clock and reset
     input  wire                                    clk,
     input  wire                                    rst_n,
+    input  wire                                    update_frequency,
+    input  wire                                    update_duty_cycle,
+    output logic                                   ready,
 
     // Waveform output
     output logic signed       [WAVE_WIDTH_P-1 : 0] wave_square,
@@ -112,7 +115,6 @@ module oscillator_core #(
 
   // Internal registers
   logic                [N_BITS_P-1 : 0] cr_frequency_r0;         // Copy of cr_frequency, used to re-calculate when new input
-  logic signed         [N_BITS_P-1 : 0] cr_duty_cycle_r0;        // Copy of cr_duty_cycle
   logic signed [AXI_DATA_WIDTH_P-1 : 0] cr_duty_cycle_q_shifted; // Copy of cr_duty_cycle
   logic signed       [2*N_BITS_P-1 : 0] multiplication_product;
 
@@ -124,6 +126,8 @@ module oscillator_core #(
   logic   [N_BITS_P-1 : 0] tri_enable_period;
   logic   [N_BITS_P-1 : 0] sqr_enable_period;
   logic   [N_BITS_P-1 : 0] sqr_duty_cycle;
+
+  assign ready = osc_core_state == WAIT_FOR_CONFIGURATIONS_E;
 
 
   // FSM for interfacing with the divider and calculate for the
@@ -141,7 +145,6 @@ module oscillator_core #(
 
       // Registers
       cr_frequency_r0         <= '0;
-      cr_duty_cycle_r0        <= '0;
       cr_duty_cycle_q_shifted <= '0;
       enable_period           <= '0;
       duty_cycle              <= '0;
@@ -162,11 +165,9 @@ module oscillator_core #(
 
         WAIT_FOR_CONFIGURATIONS_E: begin
 
-          if (cr_frequency != cr_frequency_r0) begin             // New frequency
-            cr_frequency_r0 <= cr_frequency;
+          if (update_frequency) begin
             osc_core_state  <= SEND_DIVIDEND_PRIME_FREQUENCY_E;
-          end else if (cr_duty_cycle != cr_duty_cycle_r0) begin  // New duty cycle
-            cr_duty_cycle_r0        <= cr_duty_cycle;
+          end else if (update_duty_cycle) begin
             cr_duty_cycle_q_shifted <= cr_duty_cycle <<< Q_BITS_P;
             osc_core_state          <= SEND_DIVIDEND_DUTY_CYCLE_STEP_E;
           end
