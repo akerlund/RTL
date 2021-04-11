@@ -45,10 +45,10 @@ module fifo_register #(
   logic                      read_enable;
   logic [ADDR_WIDTH_P-1 : 0] read_address;
 
-  assign write_enable = ing_enable && !ing_full;
+  assign write_enable = ing_enable;// && !ing_full;
   assign read_enable  = egr_enable && !egr_empty;
 
-  assign ing_full = sr_fill_level[ADDR_WIDTH_P] && !egr_enable;
+  assign ing_full = sr_fill_level[ADDR_WIDTH_P];
 
   always_ff @ (posedge clk or negedge rst_n) begin
     if (!rst_n) begin
