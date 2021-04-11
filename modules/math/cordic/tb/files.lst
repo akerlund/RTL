@@ -6,6 +6,7 @@ uvm_dirs+="
 "
 
 uvm_files+="
+  $module_path/tb/cordic_test_angles_pkg.sv
   $module_path/tb/cor_tb_pkg.sv
   $module_path/tc/cor_tc_pkg.sv
   $module_path/tb/cor_tb_top.sv

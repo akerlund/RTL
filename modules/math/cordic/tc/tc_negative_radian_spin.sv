@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -21,26 +22,18 @@
 
 class tc_negative_radian_spin extends cor_base_test;
 
-  cordic_negative_radians_seq #(vip_axi4s_cfg) cordic_negative_radians_seq0;
-
   `uvm_component_utils(tc_negative_radian_spin)
 
-
+  protected logic [TDATA_WIDTH_C-1 : 0] _custom_data [$];
 
   function new(string name = "tc_negative_radian_spin", uvm_component parent = null);
-
     super.new(name, parent);
-
   endfunction
-
 
 
   function void build_phase(uvm_phase phase);
-
     super.build_phase(phase);
-
   endfunction
-
 
 
   task run_phase(uvm_phase phase);
@@ -48,11 +41,13 @@ class tc_negative_radian_spin extends cor_base_test;
     super.run_phase(phase);
     phase.raise_objection(this);
 
-    cordic_negative_radians_seq0 = new();
-    cordic_negative_radians_seq0.start(v_sqr.axi4s_sequencer);
+    for (int i = 0; i < 360; i++) begin
+      _custom_data.push_back(neg_radians[i]);
+    end
+    vip_axi4s_seq0.set_data_type(VIP_AXI4S_TDATA_CUSTOM_E);
+    vip_axi4s_seq0.set_custom_data(_custom_data);
+    vip_axi4s_seq0.start(v_sqr.mst_sequencer);
 
     phase.drop_objection(this);
-
   endtask
-
 endclass
