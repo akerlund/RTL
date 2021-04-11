@@ -77,29 +77,58 @@ module oscillator_top #(
   logic signed [WAVE_WIDTH_P-1 : 0] wave_saw;
   logic signed     [N_BITS_P-1 : 0] wave_sin;
 
+  // Internal registers
+  logic                         ready;
+  logic                         update_frequency;
+  logic                         update_duty_cycle;
+  logic        [N_BITS_P-1 : 0] cr_frequency_r0;
+  logic signed [N_BITS_P-1 : 0] cr_duty_cycle_r0;
 
-    always_comb begin
-      case (osc_waveform_type_t'(cr_waveform_select))
+  always_comb begin
+    case (osc_waveform_type_t'(cr_waveform_select))
 
-        OSC_SQUARE_E: begin
-          waveform = wave_square;
-        end
+      OSC_SQUARE_E: begin
+        waveform = wave_square;
+      end
 
-        OSC_TRIANGLE_E: begin
-          waveform = wave_triangle;
-        end
+      OSC_TRIANGLE_E: begin
+        waveform = wave_triangle;
+      end
 
-        OSC_SAW_E: begin
-          waveform = wave_saw;
-        end
+      OSC_SAW_E: begin
+        waveform = wave_saw;
+      end
 
-        OSC_SINE_E: begin
-          waveform = wave_sin <<< (Q_BITS_P+1);
-        end
+      OSC_SINE_E: begin
+        waveform = wave_sin <<< (Q_BITS_P+1);
+      end
 
-      endcase
+    endcase
+  end
+
+
+  always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      cr_frequency_r0   <= '0;
+      cr_duty_cycle_r0  <= '0;
+      update_frequency  <= '0;
+      update_duty_cycle <= '0;
     end
+    else begin
 
+      update_frequency  <= '0;
+      update_duty_cycle <= '0;
+      if (ready) begin
+        if (cr_frequency != cr_frequency_r0) begin
+          cr_frequency_r0  <= cr_frequency;
+          update_frequency <= '1;
+        end else if (cr_duty_cycle != cr_duty_cycle_r0 && !update_frequency) begin
+          cr_duty_cycle_r0  <= cr_duty_cycle;
+          update_duty_cycle <= '1;
+        end
+      end
+    end
+  end
 
   oscillator_core #(
     .SYS_CLK_FREQUENCY_P  ( SYS_CLK_FREQUENCY_P  ),
@@ -114,6 +143,9 @@ module oscillator_top #(
   ) oscillator_core_i0 (
     .clk                  ( clk                  ), // input
     .rst_n                ( rst_n                ), // input
+    .update_frequency     ( update_frequency     ), // input
+    .update_duty_cycle    ( update_duty_cycle    ), // input
+    .ready                ( ready                ), // output
     .wave_square          ( wave_square          ), // output
     .wave_triangle        ( wave_triangle        ), // output
     .wave_saw             ( wave_saw             ), // output
