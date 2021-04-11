@@ -77,6 +77,8 @@ class cor_base_test extends uvm_test;
     // Configurations
     clk_rst_config0 = clk_rst_config::type_id::create("clk_rst_config0",  this);
     axi4s_mst_cfg0  = vip_axi4s_config::type_id::create("axi4s_mst_cfg0", this);
+    axi4s_mst_cfg0.tvalid_delay_enabled = FALSE;
+    axi4s_mst_cfg0.tready_delay_enabled = FALSE;
 
     uvm_config_db #(clk_rst_config)::set(this,   {"tb_env.clk_rst_agent0", "*"}, "cfg", clk_rst_config0);
     uvm_config_db #(vip_axi4s_config)::set(this, {"tb_env.mst_agent0",     "*"}, "cfg", axi4s_mst_cfg0);
