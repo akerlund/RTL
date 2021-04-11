@@ -127,8 +127,6 @@ module oscillator_core #(
   logic   [N_BITS_P-1 : 0] sqr_enable_period;
   logic   [N_BITS_P-1 : 0] sqr_duty_cycle;
 
-  assign ready = osc_core_state == WAIT_FOR_CONFIGURATIONS_E;
-
 
   // FSM for interfacing with the divider and calculate for the
   // Triangle: PRIME_FREQUENCY_P   / cr_frequency
@@ -138,6 +136,7 @@ module oscillator_core #(
 
       // Internal signals
       osc_core_state          <= WAIT_FOR_CONFIGURATIONS_E;
+      ready                   <= '0;
       tri_enable_period       <= '0;
       sqr_enable_period       <= '0;
       sqr_duty_cycle          <= '0;
@@ -160,14 +159,19 @@ module oscillator_core #(
     else begin
 
       div_egr_tid <= AXI_ID_P;
+      ready <= '0;
 
       case (osc_core_state)
 
         WAIT_FOR_CONFIGURATIONS_E: begin
+          ready <= '1;
 
           if (update_frequency) begin
+            ready                   <= '0;
+            cr_frequency_r0         <= cr_frequency;
             osc_core_state  <= SEND_DIVIDEND_PRIME_FREQUENCY_E;
           end else if (update_duty_cycle) begin
+            ready                   <= '0;
             cr_duty_cycle_q_shifted <= cr_duty_cycle <<< Q_BITS_P;
             osc_core_state          <= SEND_DIVIDEND_DUTY_CYCLE_STEP_E;
           end

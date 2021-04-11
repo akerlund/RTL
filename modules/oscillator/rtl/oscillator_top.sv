@@ -122,7 +122,7 @@ module oscillator_top #(
         if (cr_frequency != cr_frequency_r0) begin
           cr_frequency_r0  <= cr_frequency;
           update_frequency <= '1;
-        end else if (cr_duty_cycle != cr_duty_cycle_r0) begin
+        end else if (cr_duty_cycle != cr_duty_cycle_r0 && !update_frequency) begin
           cr_duty_cycle_r0  <= cr_duty_cycle;
           update_duty_cycle <= '1;
         end
