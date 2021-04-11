@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -27,28 +28,29 @@ package cor_tb_pkg;
   import uvm_pkg::*;
   `include "uvm_macros.svh"
 
+  import bool_pkg::*;
+  import clk_rst_types_pkg::*;
+  import clk_rst_pkg::*;
   import vip_axi4s_types_pkg::*;
-  import vip_axi4s_pkg::*;
+  import vip_axi4s_agent_pkg::*;
 
-  import cordic_atan_table_pkg::*;
-  import cordic_pkg::*;
-  import cordic_test_angles_pkg::*;
+  localparam int TDATA_WIDTH_C = 32;
+  localparam int TID_WIDTH_C   = 2;
 
   // Configuration of the AXI4-S VIP
-  localparam vip_axi4s_cfg_t vip_axi4s_cfg = '{
-    AXI_DATA_WIDTH_P : 32,
-    AXI_STRB_WIDTH_P : 0,
-    AXI_KEEP_WIDTH_P : 0,
-    AXI_ID_WIDTH_P   : 1,
-    AXI_DEST_WIDTH_P : 0,
-    AXI_USER_WIDTH_P : 1
+  localparam vip_axi4s_cfg_t VIP_AXI4S_CFG_C = '{
+    VIP_AXI4S_TDATA_WIDTH_P : TDATA_WIDTH_C,
+    VIP_AXI4S_TSTRB_WIDTH_P : TDATA_WIDTH_C/8,
+    VIP_AXI4S_TKEEP_WIDTH_P : 0,
+    VIP_AXI4S_TID_WIDTH_P   : TID_WIDTH_C,
+    VIP_AXI4S_TDEST_WIDTH_P : 0,
+    VIP_AXI4S_TUSER_WIDTH_P : 0
   };
 
-  `include "cor_config.sv"
+  `include "vip_axi4s_seq_lib.sv"
   `include "cor_scoreboard.sv"
   `include "cor_virtual_sequencer.sv"
   `include "cor_env.sv"
-  `include "cor_seq_lib.sv"
 
 endpackage
 
