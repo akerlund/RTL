@@ -19,42 +19,40 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-class tc_random_divisions extends div_base_test;
+`ifndef DIV_TB_PKG
+`define DIV_TB_PKG
 
-  div_random_divisions_seq #(vip_axi4s_cfg) div_random_divisions_seq0;
+package div_tb_pkg;
 
-  `uvm_component_utils(tc_random_divisions)
+  import uvm_pkg::*;
+  `include "uvm_macros.svh"
 
-  int nr_of_random_divisions = 100000;
+  import bool_pkg::*;
+  import clk_rst_types_pkg::*;
+  import clk_rst_pkg::*;
+  import vip_axi4s_types_pkg::*;
+  import vip_axi4s_agent_pkg::*;
+  import vip_fixed_point_pkg::*;
 
+  localparam int N_BITS_C    = 24;
+  localparam int Q_BITS_C    = 15;
+  localparam int TID_WIDTH_C = 11;
 
-  function new(string name = "tc_random_divisions", uvm_component parent = null);
+  // Configuration of the AXI4-S VIP
+  localparam vip_axi4s_cfg_t VIP_AXI4S_CFG_C = '{
+    VIP_AXI4S_TDATA_WIDTH_P : N_BITS_C,
+    VIP_AXI4S_TSTRB_WIDTH_P : N_BITS_C/8,
+    VIP_AXI4S_TKEEP_WIDTH_P : 0,
+    VIP_AXI4S_TID_WIDTH_P   : TID_WIDTH_C,
+    VIP_AXI4S_TDEST_WIDTH_P : 0,
+    VIP_AXI4S_TUSER_WIDTH_P : 1
+  };
 
-    super.new(name, parent);
+  `include "div_scoreboard.sv"
+  `include "div_virtual_sequencer.sv"
+  `include "div_env.sv"
+  `include "vip_axi4s_seq_lib.sv"
 
-  endfunction
+endpackage
 
-
-
-  function void build_phase(uvm_phase phase);
-
-    super.build_phase(phase);
-
-  endfunction
-
-
-
-  task run_phase(uvm_phase phase);
-
-    super.run_phase(phase);
-    phase.raise_objection(this);
-
-    div_random_divisions_seq0 = new();
-    div_random_divisions_seq0.nr_of_random_divisions = nr_of_random_divisions;
-    div_random_divisions_seq0.start(v_sqr.mst0_sequencer);
-
-    phase.drop_objection(this);
-
-  endtask
-
-endclass
+`endif

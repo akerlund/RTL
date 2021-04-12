@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -21,7 +22,6 @@
 
 import vip_fixed_point_pkg::*;
 import vip_math_pkg::*;
-//import div_tb_pkg::*;
 
 `uvm_analysis_imp_decl(_collected_port_mst0)
 `uvm_analysis_imp_decl(_collected_port_slv0)
@@ -30,16 +30,16 @@ class div_scoreboard extends uvm_scoreboard;
 
   `uvm_component_utils(div_scoreboard)
 
-  uvm_analysis_imp_collected_port_mst0 #(vip_axi4s_item #(vip_axi4s_cfg), div_scoreboard) collected_port_mst0;
-  uvm_analysis_imp_collected_port_slv0 #(vip_axi4s_item #(vip_axi4s_cfg), div_scoreboard) collected_port_slv0;
+  uvm_analysis_imp_collected_port_mst0 #(vip_axi4s_item #(VIP_AXI4S_CFG_C), div_scoreboard) collected_port_mst0;
+  uvm_analysis_imp_collected_port_slv0 #(vip_axi4s_item #(VIP_AXI4S_CFG_C), div_scoreboard) collected_port_slv0;
 
   // Storage for comparison
-  vip_axi4s_item #(vip_axi4s_cfg) master_items [$];
-  vip_axi4s_item #(vip_axi4s_cfg) slave_items  [$];
+  vip_axi4s_item #(VIP_AXI4S_CFG_C) master_items [$];
+  vip_axi4s_item #(VIP_AXI4S_CFG_C) slave_items  [$];
 
   // Debug storage
-  vip_axi4s_item #(vip_axi4s_cfg) all_master_items [$];
-  vip_axi4s_item #(vip_axi4s_cfg) all_slave_items  [$];
+  vip_axi4s_item #(VIP_AXI4S_CFG_C) all_master_items [$];
+  vip_axi4s_item #(VIP_AXI4S_CFG_C) all_slave_items  [$];
 
   // For raising objections
   uvm_phase current_phase;
@@ -74,21 +74,16 @@ class div_scoreboard extends uvm_scoreboard;
 
 
   virtual function void build_phase(uvm_phase phase);
-
     super.build_phase(phase);
-
     collected_port_mst0 = new("collected_port_mst0", this);
     collected_port_slv0 = new("collected_port_slv0", this);
-
   endfunction
 
 
 
   function void connect_phase(uvm_phase phase);
-
     current_phase = phase;
     super.connect_phase(current_phase);
-
   endfunction
 
 
@@ -100,7 +95,6 @@ class div_scoreboard extends uvm_scoreboard;
 
     `uvm_info(get_name(), $sformatf("N_BITS_C: (%0d)", N_BITS_C), UVM_LOW)
     `uvm_info(get_name(), $sformatf("Q_BITS_C: (%0d)", Q_BITS_C), UVM_LOW)
-
   endtask
 
 
@@ -125,21 +119,19 @@ class div_scoreboard extends uvm_scoreboard;
       `uvm_info(get_name(), $sformatf("Test passed (%0d)/(%0d) finished transfers", number_of_passed, number_of_compared), UVM_LOW)
       `uvm_info(get_name(), $sformatf("Overflows: (%0d)", nr_of_overflows), UVM_LOW)
     end
-
   endfunction
 
   //----------------------------------------------------------------------------
   // Master Agents
   //----------------------------------------------------------------------------
 
-  virtual function void write_collected_port_mst0(vip_axi4s_item #(vip_axi4s_cfg) trans);
+  virtual function void write_collected_port_mst0(vip_axi4s_item #(VIP_AXI4S_CFG_C) trans);
 
     number_of_master_items++;
     master_items.push_back(trans);
     all_master_items.push_back(trans);
 
     current_phase.raise_objection(this);
-
   endfunction
 
 
@@ -147,7 +139,7 @@ class div_scoreboard extends uvm_scoreboard;
   // Slave Agent
   //----------------------------------------------------------------------------
 
-  virtual function void write_collected_port_slv0(vip_axi4s_item #(vip_axi4s_cfg) trans);
+  virtual function void write_collected_port_slv0(vip_axi4s_item #(VIP_AXI4S_CFG_C) trans);
 
     number_of_slave_items++;
     slave_items.push_back(trans);
@@ -155,14 +147,13 @@ class div_scoreboard extends uvm_scoreboard;
 
     compare();
     current_phase.drop_objection(this);
-
   endfunction
 
 
   virtual function void compare();
 
-    vip_axi4s_item #(vip_axi4s_cfg) current_master_item;
-    vip_axi4s_item #(vip_axi4s_cfg) current_slave_item;
+    vip_axi4s_item #(VIP_AXI4S_CFG_C) current_master_item;
+    vip_axi4s_item #(VIP_AXI4S_CFG_C) current_slave_item;
 
     current_master_item = master_items.pop_front();
     current_slave_item  = slave_items.pop_front();
@@ -200,14 +191,9 @@ class div_scoreboard extends uvm_scoreboard;
       else begin
         number_of_passed++;
       end
-
-    end
-    else begin
-
+    end else begin
       number_of_passed++;
-
     end
-
     number_of_compared++;
 
   endfunction

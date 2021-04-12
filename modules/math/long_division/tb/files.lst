@@ -1,4 +1,4 @@
-module_path=$git_root/modules/math/division/long_division
+module_path=$git_root/modules/math/long_division
 
 uvm_dirs+="
   +incdir+$module_path/tb/

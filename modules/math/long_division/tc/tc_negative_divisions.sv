@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,14 +20,37 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-class div_virtual_sequencer extends uvm_virtual_sequencer;
+class tc_negative_divisions extends div_base_test;
 
-  `uvm_component_utils(div_virtual_sequencer)
+  `uvm_component_utils(tc_negative_divisions)
 
-  vip_axi4s_sequencer #(vip_axi4s_cfg) mst0_sequencer;
-
-  function new(string name = "virtual_sequencer", uvm_component parent = null);
+  function new(string name = "tc_negative_divisions", uvm_component parent = null);
     super.new(name, parent);
   endfunction
+
+
+  function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
+    nr_of_divisions = 10000;
+  endfunction
+
+
+  task run_phase(uvm_phase phase);
+
+    super.run_phase(phase);
+    phase.raise_objection(this);
+
+    for (int i = 0; i < nr_of_divisions; i++) begin
+      dividend = $urandom_range(2**(N_BITS_C-1), 0);
+      divisor  = $urandom_range(2**(N_BITS_C-1), 0);
+      custom_data.push_back(dividend);
+      custom_data.push_back(divisor);
+      vip_axi4s_seq0.set_custom_data(custom_data);
+      vip_axi4s_seq0.start(v_sqr.mst_sequencer);
+      custom_data.delete();
+    end
+
+    phase.drop_objection(this);
+  endtask
 
 endclass

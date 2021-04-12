@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,29 +20,19 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-class tc_positive_divisions extends div_base_test;
+class tc_overflow_divisions extends div_base_test;
 
-  div_positive_divisions_seq #(vip_axi4s_cfg) div_positive_divisions_seq0;
+  `uvm_component_utils(tc_overflow_divisions)
 
-  `uvm_component_utils(tc_positive_divisions)
-
-  int nr_of_random_divisions = 10000;
-
-
-  function new(string name = "tc_positive_divisions", uvm_component parent = null);
-
+  function new(string name = "tc_overflow_divisions", uvm_component parent = null);
     super.new(name, parent);
-
   endfunction
-
 
 
   function void build_phase(uvm_phase phase);
-
     super.build_phase(phase);
-
+    nr_of_divisions = 100;
   endfunction
-
 
 
   task run_phase(uvm_phase phase);
@@ -49,12 +40,17 @@ class tc_positive_divisions extends div_base_test;
     super.run_phase(phase);
     phase.raise_objection(this);
 
-    div_positive_divisions_seq0 = new();
-    div_positive_divisions_seq0.nr_of_random_divisions = nr_of_random_divisions;
-    div_positive_divisions_seq0.start(v_sqr.mst0_sequencer);
+    for (int i = 0; i < nr_of_divisions; i++) begin
+      dividend = $urandom();
+      divisor  = 1; // Small divisior guarantees overflow
+      custom_data.push_back(dividend);
+      custom_data.push_back(divisor);
+      vip_axi4s_seq0.set_custom_data(custom_data);
+      vip_axi4s_seq0.start(v_sqr.mst_sequencer);
+      custom_data.delete();
+    end
 
     phase.drop_objection(this);
-
   endtask
 
 endclass
