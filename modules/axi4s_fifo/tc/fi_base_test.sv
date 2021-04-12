@@ -50,8 +50,8 @@ class fi_base_test extends uvm_test;
   // Sequences
   // ---------------------------------------------------------------------------
 
-  reset_sequence reset_seq0;
-  vip_axi4s_seq  vip_axi4s_seq0;
+  reset_sequence                    reset_seq0;
+  vip_axi4s_seq  #(VIP_AXI4S_CFG_C) vip_axi4s_seq0;
 
   function new(string name = "fi_base_test", uvm_component parent = null);
     super.new(name, parent);
@@ -109,7 +109,7 @@ class fi_base_test extends uvm_test;
   function void start_of_simulation_phase(uvm_phase phase);
     super.start_of_simulation_phase(phase);
     reset_seq0     = reset_sequence::type_id::create("reset_seq0");
-    vip_axi4s_seq0 = vip_axi4s_seq::type_id::create("vip_axi4s_seq0");
+    vip_axi4s_seq0 = vip_axi4s_seq #(VIP_AXI4S_CFG_C)::type_id::create("vip_axi4s_seq0");
   endfunction
 
 
