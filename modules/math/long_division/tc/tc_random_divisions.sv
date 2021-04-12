@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,38 +20,37 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-`ifndef DIV_TB_PKG
-`define DIV_TB_PKG
+class tc_random_divisions extends div_base_test;
 
-package div_tb_pkg;
+  `uvm_component_utils(tc_random_divisions)
 
-  import uvm_pkg::*;
-  `include "uvm_macros.svh"
-
-  import vip_axi4s_types_pkg::*;
-  import vip_axi4s_pkg::*;
-  import vip_fixed_point_pkg::*;
-
-  localparam int N_BITS_C = 24;
-  localparam int Q_BITS_C = 15;
+  function new(string name = "tc_random_divisions", uvm_component parent = null);
+    super.new(name, parent);
+  endfunction
 
 
-  // Configuration of the AXI4-S VIP
-  localparam vip_axi4s_cfg_t vip_axi4s_cfg = '{
-    AXI_DATA_WIDTH_P : N_BITS_C,
-    AXI_STRB_WIDTH_P : 0,
-    AXI_KEEP_WIDTH_P : 0,
-    AXI_ID_WIDTH_P   : 32,
-    AXI_DEST_WIDTH_P : 0,
-    AXI_USER_WIDTH_P : 1
-  };
+  function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
+    nr_of_divisions = 100;
+  endfunction
 
-  `include "div_config.sv"
-  `include "div_scoreboard.sv"
-  `include "div_virtual_sequencer.sv"
-  `include "div_env.sv"
-  `include "div_seq_lib.sv"
 
-endpackage
+  task run_phase(uvm_phase phase);
 
-`endif
+    super.run_phase(phase);
+    phase.raise_objection(this);
+
+    for (int i = 0; i < nr_of_divisions; i++) begin
+      dividend = $urandom;
+      divisor  = $urandom_range(2**(N_BITS_C-3), -2**(N_BITS_C-3));
+      custom_data.push_back(dividend);
+      custom_data.push_back(divisor);
+      vip_axi4s_seq0.set_custom_data(custom_data);
+      vip_axi4s_seq0.start(v_sqr.mst_sequencer);
+      custom_data.delete();
+    end
+
+    phase.drop_objection(this);
+  endtask
+
+endclass

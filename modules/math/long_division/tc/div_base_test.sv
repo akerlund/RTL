@@ -20,9 +20,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-class fi_base_test extends uvm_test;
+class div_base_test extends uvm_test;
 
-  `uvm_component_utils(fi_base_test)
+  `uvm_component_utils(div_base_test)
 
   // ---------------------------------------------------------------------------
   // UVM variables
@@ -35,8 +35,8 @@ class fi_base_test extends uvm_test;
   // Testbench variables
   // ---------------------------------------------------------------------------
 
-  fi_env               tb_env;
-  fi_virtual_sequencer v_sqr;
+  div_env               tb_env;
+  div_virtual_sequencer v_sqr;
 
   // ---------------------------------------------------------------------------
   // VIP Agent configurations
@@ -50,10 +50,19 @@ class fi_base_test extends uvm_test;
   // Sequences
   // ---------------------------------------------------------------------------
 
-  reset_sequence reset_seq0;
-  vip_axi4s_seq  vip_axi4s_seq0;
+  reset_sequence                    reset_seq0;
+  vip_axi4s_seq  #(VIP_AXI4S_CFG_C) vip_axi4s_seq0;
 
-  function new(string name = "fi_base_test", uvm_component parent = null);
+  // ---------------------------------------------------------------------------
+  // Testbench variables
+  // ---------------------------------------------------------------------------
+
+  int                    nr_of_divisions;
+  logic [N_BITS_C-1 : 0] custom_data [$];
+  logic [N_BITS_C-1 : 0] dividend;
+  logic [N_BITS_C-1 : 0] divisor;
+
+  function new(string name = "div_base_test", uvm_component parent = null);
     super.new(name, parent);
   endfunction
 
@@ -73,18 +82,18 @@ class fi_base_test extends uvm_test;
     uvm_table_printer0.knobs.default_radix = UVM_DEC;
 
     // Environment
-    tb_env = fi_env::type_id::create("tb_env", this);
+    tb_env = div_env::type_id::create("tb_env", this);
 
     // Configurations
     clk_rst_config0 = clk_rst_config::type_id::create("clk_rst_config0",  this);
     axi4s_mst_cfg0  = vip_axi4s_config::type_id::create("axi4s_mst_cfg0", this);
     axi4s_slv_cfg0  = vip_axi4s_config::type_id::create("axi4s_slv_cfg0", this);
 
-    axi4s_mst_cfg0.min_tvalid_delay_period = 2;
-    axi4s_mst_cfg0.max_tvalid_delay_period = 10;
-    axi4s_slv_cfg0.min_tready_delay_period = 2;
-    axi4s_slv_cfg0.max_tready_delay_period = 10;
-    axi4s_slv_cfg0.vip_axi4s_agent_type    = VIP_AXI4S_SLAVE_AGENT_E;
+    axi4s_mst_cfg0.tvalid_delay_enabled = FALSE;
+    axi4s_mst_cfg0.tready_delay_enabled = FALSE;
+    axi4s_slv_cfg0.tvalid_delay_enabled = FALSE;
+    axi4s_slv_cfg0.tready_delay_enabled = FALSE;
+    axi4s_slv_cfg0.vip_axi4s_agent_type = VIP_AXI4S_SLAVE_AGENT_E;
 
     uvm_config_db #(clk_rst_config)::set(this,   {"tb_env.clk_rst_agent0", "*"}, "cfg", clk_rst_config0);
     uvm_config_db #(vip_axi4s_config)::set(this, {"tb_env.mst_agent0",     "*"}, "cfg", axi4s_mst_cfg0);
@@ -109,7 +118,9 @@ class fi_base_test extends uvm_test;
   function void start_of_simulation_phase(uvm_phase phase);
     super.start_of_simulation_phase(phase);
     reset_seq0     = reset_sequence::type_id::create("reset_seq0");
-    vip_axi4s_seq0 = vip_axi4s_seq::type_id::create("vip_axi4s_seq0");
+    vip_axi4s_seq0 = vip_axi4s_seq#(VIP_AXI4S_CFG_C)::type_id::create("vip_axi4s_seq0");
+    vip_axi4s_seq0.set_verbose(FALSE);
+    vip_axi4s_seq0.set_data_type(VIP_AXI4S_TDATA_CUSTOM_E);
   endfunction
 
 

@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -27,14 +28,16 @@ package div_tc_pkg;
   `include "uvm_macros.svh"
   import uvm_pkg::*;
 
-  import vip_axi4s_types_pkg::*;
-  import vip_axi4s_pkg::*;
-  import vip_fixed_point_pkg::*;
-
-  // Import testbench and agent packages here
   import div_tb_pkg::*;
 
-  // Include testcase files here
+  import bool_pkg::*;
+  import vip_fixed_point_pkg::*;
+  import report_server_pkg::*;
+  import vip_axi4s_types_pkg::*;
+  import vip_axi4s_agent_pkg::*;
+  import clk_rst_types_pkg::*;
+  import clk_rst_pkg::*;
+
   `include "div_base_test.sv"
   `include "tc_positive_divisions.sv"
   `include "tc_negative_divisions.sv"

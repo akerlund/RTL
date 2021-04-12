@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,47 +20,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-class div_base_test extends uvm_test;
+class div_virtual_sequencer extends uvm_virtual_sequencer;
 
-  `uvm_component_utils(div_base_test)
+  `uvm_component_utils(div_virtual_sequencer)
 
-  div_env               tb_env;
-  div_config            tb_cfg;
-  div_virtual_sequencer v_sqr;
+  clk_rst_sequencer                      clk_rst_sequencer0;
+  vip_axi4s_sequencer #(VIP_AXI4S_CFG_C) mst_sequencer;
 
-  uvm_table_printer printer;
-
-  function new(string name = "div_base_test", uvm_component parent = null);
-
+  function new(string name = "virtual_sequencer", uvm_component parent = null);
     super.new(name, parent);
-
-  endfunction
-
-
-
-  virtual function void build_phase(uvm_phase phase);
-
-    super.build_phase(phase);
-
-    printer = new();
-    printer.knobs.depth = 3;
-
-    uvm_config_db #(uvm_verbosity)::set(this, "*", "recording_detail", UVM_FULL);
-
-    tb_env = div_env::type_id::create("tb_env", this);
-    tb_cfg = div_config::type_id::create("tb_cfg", this);
-
-  endfunction
-
-
-
-  function void end_of_elaboration_phase(uvm_phase phase);
-
-    `uvm_info(get_type_name(), $sformatf("Topology of the test:\n%s", this.sprint(printer)), UVM_LOW)
-    v_sqr = tb_env.virtual_sequencer;
-
-    tb_env.tb_cfg = tb_cfg;
-
   endfunction
 
 endclass
