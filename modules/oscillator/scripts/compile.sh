@@ -9,7 +9,7 @@ uvm_top="osc_tb_top"
 # Specify other file lists
 source $git_root/vip/vip_fixed_point/uvm_files.lst
 source $git_root/vip/vip_apb3_agent/uvm_files.lst
-source $git_root/modules/math/division/long_division/rtl/rtl_files.lst
+source $git_root/modules/math/long_division/rtl/rtl_files.lst
 source $git_root/modules/math/cordic/rtl/rtl_files.lst
 source $git_root/modules/clock_enablers/clock_enable/rtl/rtl_files.lst
 source $git_root/modules/clock_enablers/clock_enable_scaler/rtl/rtl_files.lst
