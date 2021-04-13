@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -20,15 +21,15 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 class mul_positive_multiplications_seq #(
-  vip_axi4s_cfg_t vip_cfg = '{default: '0}
-  ) extends uvm_sequence #(vip_axi4s_item #(vip_cfg));
+  vip_axi4s_cfg_t CFG_P = '{default: '0}
+  ) extends uvm_sequence #(vip_axi4s_item #(CFG_P));
 
-  `uvm_object_param_utils(mul_positive_multiplications_seq #(vip_cfg))
+  `uvm_object_param_utils(mul_positive_multiplications_seq #(CFG_P))
 
   int nr_of_random_multiplications = 1;
 
-  logic [vip_cfg.AXI_DATA_WIDTH_P-1 : 0] ing_multiplicand;
-  logic [vip_cfg.AXI_DATA_WIDTH_P-1 : 0] ing_multiplier;
+  logic [CFG_P.AXI_DATA_WIDTH_P-1 : 0] ing_multiplicand;
+  logic [CFG_P.AXI_DATA_WIDTH_P-1 : 0] ing_multiplier;
 
 
   function new(string name = "mul_positive_multiplications_seq");
@@ -40,7 +41,7 @@ class mul_positive_multiplications_seq #(
 
   virtual task body();
 
-    vip_axi4s_item #(vip_cfg) axi4s_item;
+    vip_axi4s_item #(CFG_P) axi4s_item;
 
     axi4s_item = new();
     axi4s_item.burst_size = 2;
@@ -69,10 +70,10 @@ endclass
 
 
 class mul_random_multiplications_seq #(
-  vip_axi4s_cfg_t vip_cfg = '{default: '0}
-  ) extends uvm_sequence #(vip_axi4s_item #(vip_cfg));
+  vip_axi4s_cfg_t CFG_P = '{default: '0}
+  ) extends uvm_sequence #(vip_axi4s_item #(CFG_P));
 
-  `uvm_object_param_utils(mul_random_multiplications_seq #(vip_cfg))
+  `uvm_object_param_utils(mul_random_multiplications_seq #(CFG_P))
 
   int nr_of_random_multiplications;
   int nr_of_random_multiplications_over_100;
@@ -90,7 +91,7 @@ class mul_random_multiplications_seq #(
 
   virtual task body();
 
-    vip_axi4s_item #(vip_cfg) axi4s_item;
+    vip_axi4s_item #(CFG_P) axi4s_item;
 
     nr_of_random_multiplications_over_100 = nr_of_random_multiplications / 100;
     pp_multiplications = 0;
@@ -142,10 +143,10 @@ endclass
 
 
 class mul_corner_multiplications_seq #(
-  vip_axi4s_cfg_t vip_cfg = '{default: '0}
-  ) extends uvm_sequence #(vip_axi4s_item #(vip_cfg));
+  vip_axi4s_cfg_t CFG_P = '{default: '0}
+  ) extends uvm_sequence #(vip_axi4s_item #(CFG_P));
 
-  `uvm_object_param_utils(mul_corner_multiplications_seq #(vip_cfg))
+  `uvm_object_param_utils(mul_corner_multiplications_seq #(CFG_P))
 
   function new(string name = "mul_corner_multiplications_seq");
     super.new(name);

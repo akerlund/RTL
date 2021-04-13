@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -38,17 +39,17 @@ module nq_multiplier #(
     output logic                  egr_overflow
   );
 
-  logic       [2*N_BITS_P-2 : 0] multiplier_d0;
-  logic         [N_BITS_P-1 : 0] multiplicand_d0;
-  logic       [2*N_BITS_P-2 : 0] product_d0;
+  logic       [2*N_BITS_P-2 : 0] multiplier_r0;
+  logic         [N_BITS_P-1 : 0] multiplicand_r0;
+  logic       [2*N_BITS_P-2 : 0] product_r0;
   logic   [$clog2(N_BITS_P) : 0] counter;
 
   logic                          sign_bit;
   logic                          is_multiplying;
 
 
-  assign egr_product[N_BITS_P-2:0] = egr_valid ? product_d0[(N_BITS_P + Q_BITS_P)-2 : Q_BITS_P] : egr_product[N_BITS_P-2 : 0];
-  assign egr_product[N_BITS_P-1]   = egr_valid ? sign_bit : egr_product[N_BITS_P-1];
+  assign egr_product[N_BITS_P-2:0] = product_r0[(N_BITS_P + Q_BITS_P)-2 : Q_BITS_P];
+  assign egr_product[N_BITS_P-1]   = sign_bit;
 
 
   always_ff @(posedge clk or negedge rst_n) begin
@@ -60,9 +61,9 @@ module nq_multiplier #(
       egr_overflow    <= '0;
 
       // Registers
-      multiplier_d0   <= '0;
-      multiplicand_d0 <= '0;
-      product_d0      <= '0;
+      multiplier_r0   <= '0;
+      multiplicand_r0 <= '0;
+      product_r0      <= '0;
       counter         <= '0;
       sign_bit        <= '0;
       ing_ready       <= '0;
@@ -71,30 +72,37 @@ module nq_multiplier #(
     end
     else begin
 
-      ing_ready  <= '1;
+      ing_ready <= '1;
+      egr_valid <= '0;
 
       if (!is_multiplying && ing_valid) begin
 
-        egr_valid      <= '0;
-        ing_ready      <= '0;
-        counter        <= '0;
-        product_d0     <= '0;
-        is_multiplying <= '1;
+        egr_valid  <= '0;
+        ing_ready  <= '0;
+        counter    <= '0;
+        product_r0 <= '0;
 
         // Remove sign bit
-        multiplicand_d0 <= ing_multiplicand[N_BITS_P-2 : 0];
-        multiplier_d0   <= ing_multiplier[N_BITS_P-2 : 0];
-        sign_bit        <= ing_multiplicand[N_BITS_P-1] ^ ing_multiplier[N_BITS_P-1];
+        multiplicand_r0 <= ing_multiplicand[N_BITS_P-2 : 0];
+        multiplier_r0   <= ing_multiplier[N_BITS_P-2 : 0];
+
+        if (!(|ing_multiplicand) || !(|ing_multiplier)) begin // Approximately 19 LUT logic
+          egr_valid <= '1;
+          sign_bit  <= '0;
+        end else begin
+          is_multiplying <= '1;
+          sign_bit       <= ing_multiplicand[N_BITS_P-1] ^ ing_multiplier[N_BITS_P-1];
+        end
       end
       else if (is_multiplying) begin
 
         ing_ready  <= '0;
 
-        if (multiplicand_d0[counter]) begin
-          product_d0 <= product_d0 + multiplier_d0;
+        if (multiplicand_r0[counter]) begin
+          product_r0 <= product_r0 + multiplier_r0;
         end
 
-        multiplier_d0 <= multiplier_d0 << 1;
+        multiplier_r0 <= multiplier_r0 << 1;
         counter       <= counter + 1;
 
         if (counter == N_BITS_P-1) begin
@@ -103,7 +111,7 @@ module nq_multiplier #(
           ing_ready      <= '1;
           is_multiplying <= '0;
 
-          if (product_d0[2*N_BITS_P-2 : N_BITS_P-1 + Q_BITS_P] > 0) begin
+          if (product_r0[2*N_BITS_P-2 : N_BITS_P-1 + Q_BITS_P] > 0) begin
             egr_overflow <= 1'b1;
           end
 

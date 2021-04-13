@@ -6,14 +6,28 @@ git_root="$(git rev-parse --show-toplevel)"
 rtl_top=nq_multiplier_axi4s_if
 uvm_top="mul_tb_top"
 
-# Source other modules file lists
-source $git_root/vip/vip_fixed_point/uvm_files.lst
-source $git_root/vip/vip_math/uvm_files.lst
-source $git_root/vip/vip_axi4s_agent/uvm_files.lst
+# ------------------------------------------------------------------------------
+# Source submodules
+# ------------------------------------------------------------------------------
 
-# Source the module's file lists
-source ./rtl/rtl_files.lst
-source ./tb/uvm_files.lst
+git_sub_root="$(git rev-parse --show-toplevel)"
+
+git_root="$(git rev-parse --show-toplevel)/submodules/VIP"
+source $git_sub_root/submodules/VIP/bool/files.lst
+source $git_sub_root/submodules/VIP/vip_axi4s_agent/files.lst
+source $git_sub_root/submodules/VIP/vip_clk_rst_agent/files.lst
+source $git_sub_root/submodules/VIP/report_server/files.lst
+source $git_sub_root/submodules/VIP/vip_fixed_point/files.lst
+source $git_sub_root/submodules/VIP/vip_math/files.lst
+
+# ------------------------------------------------------------------------------
+# Source modules
+# ------------------------------------------------------------------------------
+
+# Restoring the git root
+git_root="$(git rev-parse --show-toplevel)"
+source ./rtl/files.lst
+source ./tb/files.lst
 
 # Parameter override
 parameters+=("AXI_DATA_WIDTH_P=32 ")
