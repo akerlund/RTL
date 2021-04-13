@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -24,14 +25,16 @@ package osc_tc_pkg;
   `include "uvm_macros.svh"
   import uvm_pkg::*;
 
-  import vip_apb3_types_pkg::*;
-  import vip_apb3_pkg::*;
+  import osc_tb_pkg::*;
   import oscillator_types_pkg::*;
 
-  // Import testbench and agent packages here
-  import osc_tb_pkg::*;
+  import bool_pkg::*;
+  import report_server_pkg::*;
+  import vip_axi4_types_pkg::*;
+  import vip_axi4_agent_pkg::*;
+  import clk_rst_types_pkg::*;
+  import clk_rst_pkg::*;
 
-  // Include testcase files here
   `include "osc_base_test.sv"
   `include "tc_osc_frequency_test.sv"
   `include "tc_osc_duty_cycle_sweep.sv"

@@ -1,6 +1,7 @@
 module_path=$git_root/modules/oscillator
 
 uvm_dirs+="
+  +incdir+$module_path/tb/uvm_reg
   +incdir+$module_path/tb/
   +incdir+$module_path/tc/
 "
