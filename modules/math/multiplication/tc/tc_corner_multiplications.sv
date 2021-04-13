@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -21,27 +22,16 @@
 
 class tc_corner_multiplications extends mul_base_test;
 
-  mul_corner_multiplications_seq #(vip_axi4s_cfg) mul_corner_multiplications_seq0;
-
   `uvm_component_utils(tc_corner_multiplications)
 
-  int nr_of_random_multiplications = 1000;
-
-
   function new(string name = "tc_corner_multiplications", uvm_component parent = null);
-
     super.new(name, parent);
-
   endfunction
-
 
 
   function void build_phase(uvm_phase phase);
-
     super.build_phase(phase);
-
   endfunction
-
 
 
   task run_phase(uvm_phase phase);
@@ -49,9 +39,104 @@ class tc_corner_multiplications extends mul_base_test;
     super.run_phase(phase);
     phase.raise_objection(this);
 
-    mul_corner_multiplications_seq0 = new();
-    mul_corner_multiplications_seq0.start(v_sqr.mst0_sequencer);
+    `uvm_info(get_name(), $sformatf("Multiplicand is zero"), UVM_LOW)
+    custom_data.push_back('1);
+    custom_data.push_back('0);
+    vip_axi4s_seq0.set_custom_data(custom_data);
+    vip_axi4s_seq0.start(v_sqr.mst_sequencer);
+    custom_data.delete();
 
+    clk_delay(10);
+
+    `uvm_info(get_name(), $sformatf("Multiplier is zero"), UVM_LOW)
+    custom_data.push_back('1);
+    custom_data.push_back(0);
+    vip_axi4s_seq0.set_custom_data(custom_data);
+    vip_axi4s_seq0.start(v_sqr.mst_sequencer);
+    custom_data.delete();
+
+    clk_delay(10);
+
+    `uvm_info(get_name(), $sformatf("Largest possible values"), UVM_LOW)
+    custom_data.push_back(2**(N_BITS_C-Q_BITS_C)-1);
+    custom_data.push_back(2**(N_BITS_C-Q_BITS_C)-1);
+    vip_axi4s_seq0.set_custom_data(custom_data);
+    vip_axi4s_seq0.start(v_sqr.mst_sequencer);
+    custom_data.delete();
+
+    clk_delay(10);
+
+    `uvm_info(get_name(), $sformatf("Lowest possible values"), UVM_LOW)
+    custom_data.push_back(-2**(N_BITS_C-Q_BITS_C));
+    custom_data.push_back(-2**(N_BITS_C-Q_BITS_C));
+    vip_axi4s_seq0.set_custom_data(custom_data);
+    vip_axi4s_seq0.start(v_sqr.mst_sequencer);
+    custom_data.delete();
+
+    clk_delay(10);
+
+    `uvm_info(get_name(), $sformatf("Largest fractional parts"), UVM_LOW)
+    custom_data.push_back({'0, {Q_BITS_C{1'b1}}});
+    custom_data.push_back({'0, {Q_BITS_C{1'b1}}});
+    vip_axi4s_seq0.set_custom_data(custom_data);
+    vip_axi4s_seq0.start(v_sqr.mst_sequencer);
+    custom_data.delete();
+
+    clk_delay(10);
+
+    `uvm_info(get_name(), $sformatf("Largest fractional part * largest possible value"), UVM_LOW)
+    custom_data.push_back({'0, {Q_BITS_C{1'b1}}});
+    custom_data.push_back(2**(N_BITS_C-Q_BITS_C)-1);
+    vip_axi4s_seq0.set_custom_data(custom_data);
+    vip_axi4s_seq0.start(v_sqr.mst_sequencer);
+    custom_data.delete();
+
+    clk_delay(10);
+
+    `uvm_info(get_name(), $sformatf("Largest fractional part * lowest possible value"), UVM_LOW)
+    custom_data.push_back({'0, {Q_BITS_C{1'b1}}});
+    custom_data.push_back(-2**(N_BITS_C-Q_BITS_C));
+    vip_axi4s_seq0.set_custom_data(custom_data);
+    vip_axi4s_seq0.start(v_sqr.mst_sequencer);
+    custom_data.delete();
+
+    clk_delay(10);
+
+    `uvm_info(get_name(), $sformatf("Largest fractional part * lowest fractional part"), UVM_LOW)
+    custom_data.push_back({'0, {Q_BITS_C{1'b1}}});
+    custom_data.push_back(-2**(N_BITS_C-Q_BITS_C));
+    vip_axi4s_seq0.set_custom_data(custom_data);
+    vip_axi4s_seq0.start(v_sqr.mst_sequencer);
+    custom_data.delete();
+
+    clk_delay(10);
+
+    `uvm_info(get_name(), $sformatf("Lowest fractional parts"), UVM_LOW)
+    custom_data.push_back({'0, 1'b1});
+    custom_data.push_back({'0, 1'b1});
+    vip_axi4s_seq0.set_custom_data(custom_data);
+    vip_axi4s_seq0.start(v_sqr.mst_sequencer);
+    custom_data.delete();
+
+    clk_delay(10);
+
+    `uvm_info(get_name(), $sformatf("Lowest fractional part * largest possible value"), UVM_LOW)
+    custom_data.push_back({'0, 1'b1});
+    custom_data.push_back(2**(N_BITS_C-Q_BITS_C)-1);
+    vip_axi4s_seq0.set_custom_data(custom_data);
+    vip_axi4s_seq0.start(v_sqr.mst_sequencer);
+    custom_data.delete();
+
+    clk_delay(10);
+
+    `uvm_info(get_name(), $sformatf("Lowest fractional part * lowest possible value"), UVM_LOW)
+    custom_data.push_back({'0, 1'b1});
+    custom_data.push_back(-2**(N_BITS_C-Q_BITS_C));
+    vip_axi4s_seq0.set_custom_data(custom_data);
+    vip_axi4s_seq0.start(v_sqr.mst_sequencer);
+    custom_data.delete();
+
+    clk_delay(10);
     phase.drop_objection(this);
 
   endtask

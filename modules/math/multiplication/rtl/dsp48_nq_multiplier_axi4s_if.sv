@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -54,7 +55,8 @@ module dsp48_multiplier_axi4s_if #(
 
   typedef enum {
     MUL_RECEIVE,
-    MUL_MULTIPLY
+    MUL_MULTIPLY,
+    MUL_REGISTER
   } mul_state_t;
 
   mul_state_t mul_state;
@@ -97,6 +99,10 @@ module dsp48_multiplier_axi4s_if #(
         end
 
         MUL_MULTIPLY: begin
+          mul_state   <= MUL_REGISTER;
+        end
+
+        MUL_REGISTER: begin
           mul_state   <= MUL_RECEIVE;
           ing_tready  <= '1;
           egr_tvalid  <= '1;
