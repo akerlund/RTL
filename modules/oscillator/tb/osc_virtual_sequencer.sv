@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -23,7 +24,8 @@ class osc_virtual_sequencer extends uvm_virtual_sequencer;
 
   `uvm_component_utils(osc_virtual_sequencer)
 
-  vip_apb3_sequencer #(vip_apb3_cfg) apb3_sequencer;
+  clk_rst_sequencer                    clk_rst_sequencer0;
+  vip_axi4_sequencer  #(VIP_REG_CFG_C) reg_sequencer;
 
   function new(string name = "virtual_sequencer", uvm_component parent = null);
     super.new(name, parent);

@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/PYRG
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,42 +20,16 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-class osc_scoreboard extends uvm_scoreboard;
+`ifndef OSC_ADDRESS_PKG
+`define OSC_ADDRESS_PKG
 
-  `uvm_component_utils(osc_scoreboard)
+package osc_address_pkg;
 
-  // For raising objections
-  uvm_phase current_phase;
+  localparam logic [15 : 0] OSC_HIGH_ADDRESS         = 16'h0018;
+  localparam logic [15 : 0] OSC_WAVEFORM_SELECT_ADDR = 16'h0000;
+  localparam logic [15 : 0] OSC_FREQUENCY_ADDR       = 16'h0008;
+  localparam logic [15 : 0] OSC_DUTY_CYCLE_ADDR      = 16'h0010;
 
-  function new(string name, uvm_component parent);
-    super.new(name, parent);
-  endfunction
+endpackage
 
-  virtual function void build_phase(uvm_phase phase);
-
-    super.build_phase(phase);
-
-  endfunction
-
-  function void connect_phase(uvm_phase phase);
-
-    current_phase = phase;
-    super.connect_phase(current_phase);
-
-  endfunction
-
-  virtual task run_phase(uvm_phase phase);
-
-    current_phase = phase;
-    super.run_phase(current_phase);
-
-  endtask
-
-  function void check_phase(uvm_phase phase);
-
-    current_phase = phase;
-    super.check_phase(current_phase);
-
-  endfunction
-
-endclass
+`endif

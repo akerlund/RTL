@@ -1,0 +1,52 @@
+---
+osc:
+
+  bus_width: 64
+
+  rtl_path: "$GIT_ROOT/modules/oscillator/rtl"
+  uvm_path: "$GIT_ROOT/modules/oscillator/tb/uvm_reg"
+  sw_path:  "$GIT_ROOT/modules/oscillator/sw"
+
+  parameters:
+    - GAIN_WIDTH_C
+    - N_BITS_C
+    - Q_BITS_C
+    - AUDIO_WIDTH_C
+
+  registers:
+
+    - name:   osc_waveform_select
+      desc:   Sets the waveform output
+      access: RW
+      bit_fields:
+        - field: {
+          name:        cr_osc_waveform_select,
+          description: Sets the waveform output,
+          size:        2,
+          lsb_pos:     0,
+          reset_value: 0x0
+        }
+
+    - name:   osc_frequency
+      desc:   Sets the frequency
+      access: RW
+      bit_fields:
+        - field: {
+          name:        cr_osc_frequency,
+          description: Sets the frequency,
+          size:        N_BITS_C,
+          lsb_pos:     0,
+          reset_value: 500<<Q_BITS_C
+        }
+
+    - name:   osc_duty_cycle
+      desc:   Sets the duty cycle of the square wave
+      access: RW
+      bit_fields:
+        - field: {
+          name:        cr_osc_duty_cycle,
+          description: Sets the duty cycle of the square wave,
+          size:        N_BITS_C,
+          lsb_pos:     0,
+          reset_value: 500
+        }

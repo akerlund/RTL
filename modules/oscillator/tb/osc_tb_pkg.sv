@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -27,10 +28,14 @@ package osc_tb_pkg;
   import uvm_pkg::*;
   `include "uvm_macros.svh"
 
-  import vip_apb3_types_pkg::*;
-  import vip_apb3_pkg::*;
   import oscillator_types_pkg::*;
-  import osc_apb_slave_addr_pkg::*;
+  import osc_address_pkg::*;
+
+  import bool_pkg::*;
+  import clk_rst_types_pkg::*;
+  import clk_rst_pkg::*;
+  import vip_axi4_types_pkg::*;
+  import vip_axi4_agent_pkg::*;
 
   // DUT constants
   localparam int SYS_CLK_FREQUENCY_C  = 125000000;
@@ -43,26 +48,26 @@ package osc_tb_pkg;
   localparam int AXI_DATA_WIDTH_C     = 32;
   localparam int AXI_ID_WIDTH_C       = 32;
   localparam int AXI_ID_C             = 32'hDEADBEA7;
-  localparam int NR_OF_CHANNELS_C = 2;
-  localparam int COUNTER_WIDTH_C  = $clog2(SYS_CLK_FREQUENCY_C / SAMPLING_FREQUENCY_C);
+  localparam int NR_OF_CHANNELS_C     = 2;
+  localparam int COUNTER_WIDTH_C      = $clog2(SYS_CLK_FREQUENCY_C / SAMPLING_FREQUENCY_C);
 
-  // APB
-  localparam int OSC_BASE_ADDR_C  = 0;
-  localparam int OSC_PSEL_BIT_C   = 0;
-
-  // Configuration of the APB3 VIP
-  localparam vip_apb3_cfg_t vip_apb3_cfg = '{
-    APB_ADDR_WIDTH_P   : 8,
-    APB_DATA_WIDTH_P   : 32,
-    APB_NR_OF_SLAVES_P : 1
+  // Configuration of the VIP (Registers)
+  localparam vip_axi4_cfg_t VIP_REG_CFG_C = '{
+    VIP_AXI4_ID_WIDTH_P   : 2,
+    VIP_AXI4_ADDR_WIDTH_P : 16,
+    VIP_AXI4_DATA_WIDTH_P : 64,
+    VIP_AXI4_STRB_WIDTH_P : 8,
+    VIP_AXI4_USER_WIDTH_P : 0
   };
 
+  // Register model
+  `include "osc_reg.sv"
+  `include "osc_block.sv"
+  `include "register_model.sv"
+  `include "vip_axi4_adapter.sv"
 
-  `include "osc_config.sv"
-  `include "osc_scoreboard.sv"
   `include "osc_virtual_sequencer.sv"
   `include "osc_env.sv"
-  `include "osc_seq_lib.sv"
 
 endpackage
 

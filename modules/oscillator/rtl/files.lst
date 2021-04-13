@@ -6,8 +6,8 @@ rtl_dirs+="
 
 rtl_files+="
   $module_path/rtl/oscillator_types_pkg.sv
-  $module_path/rtl/osc_apb_slave_addr_pkg.sv
-  $module_path/rtl/oscillator_apb_slave.sv
+  $module_path/rtl/osc_address_pkg.sv
+  $module_path/rtl/osc_axi_slave.sv
   $module_path/rtl/osc_sin_top.sv
   $module_path/rtl/osc_saw_core.sv
   $module_path/rtl/osc_saw_top.sv
