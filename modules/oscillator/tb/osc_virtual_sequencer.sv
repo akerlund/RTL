@@ -24,8 +24,8 @@ class osc_virtual_sequencer extends uvm_virtual_sequencer;
 
   `uvm_component_utils(osc_virtual_sequencer)
 
-  clk_rst_sequencer                    clk_rst_sequencer0;
-  vip_axi4_sequencer  #(VIP_REG_CFG_C) reg_sequencer;
+  clk_rst_sequencer                   clk_rst_sequencer0;
+  vip_axi4_sequencer #(VIP_REG_CFG_C) reg_sequencer;
 
   function new(string name = "virtual_sequencer", uvm_component parent = null);
     super.new(name, parent);
