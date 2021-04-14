@@ -22,8 +22,6 @@
 
 class tc_osc_frequency_test extends osc_base_test;
 
-  //osc_frequency_seq #(vip_apb3_cfg) osc_frequency_seq0;
-
   `uvm_component_utils(tc_osc_frequency_test)
 
   function new(string name = "tc_osc_frequency_test", uvm_component parent = null);
@@ -41,50 +39,30 @@ class tc_osc_frequency_test extends osc_base_test;
     super.run_phase(phase);
     phase.raise_objection(this);
 
-    // osc_f             = 5000.0;
-    // osc_duty_cycle    = 250;
-    // osc_waveform_type = OSC_SQUARE_E;
+    `uvm_info(get_name(), $sformatf("f = %0d, duty = %0d", 500, 250), UVM_NONE)
+    reg_model.osc.osc_frequency.write(uvm_status, 500<<Q_BITS_C);
+    reg_model.osc.osc_duty_cycle.write(uvm_status, 250);
+    clk_delay(500000);
 
-    // osc_frequency_seq0 = new();
-    // osc_frequency_seq0.osc_f             = osc_f;
-    // osc_frequency_seq0.osc_duty_cycle    = osc_duty_cycle;
-    // osc_frequency_seq0.osc_waveform_type = osc_waveform_type;
+    `uvm_info(get_name(), $sformatf("f = %0d, duty = %0d", 4000, 200), UVM_NONE)
+    reg_model.osc.osc_frequency.write(uvm_status, 4000<<Q_BITS_C);
+    reg_model.osc.osc_duty_cycle.write(uvm_status, 200);
+    clk_delay(500000);
 
-    // osc_frequency_seq0.start(v_sqr.apb3_sequencer);
+    `uvm_info(get_name(), $sformatf("f = %0d, duty = %0d", 3000, 100), UVM_NONE)
+    reg_model.osc.osc_frequency.write(uvm_status, 3000<<Q_BITS_C);
+    reg_model.osc.osc_duty_cycle.write(uvm_status, 100);
+    clk_delay(500000);
 
-    // #400us;
+    `uvm_info(get_name(), $sformatf("f = %0d, duty = %0d", 2000, 750), UVM_NONE)
+    reg_model.osc.osc_frequency.write(uvm_status, 2000<<Q_BITS_C);
+    reg_model.osc.osc_duty_cycle.write(uvm_status, 750);
+    clk_delay(500000);
 
-    // osc_f = 4000.0;
-    // osc_duty_cycle                    = 200;
-    // osc_frequency_seq0.osc_f          = osc_f;
-    // osc_frequency_seq0.osc_duty_cycle = osc_duty_cycle;
-    // osc_frequency_seq0.start(v_sqr.apb3_sequencer);
-
-    // #500us;
-
-    // osc_f = 3000.0;
-    // osc_duty_cycle                    = 100;
-    // osc_frequency_seq0.osc_f          = osc_f;
-    // osc_frequency_seq0.osc_duty_cycle = osc_duty_cycle;
-    // osc_frequency_seq0.start(v_sqr.apb3_sequencer);
-
-    // #500us;
-
-    // osc_f = 2000.0;
-    // osc_duty_cycle                    = 750;
-    // osc_frequency_seq0.osc_f          = osc_f;
-    // osc_frequency_seq0.osc_duty_cycle = osc_duty_cycle;
-    // osc_frequency_seq0.start(v_sqr.apb3_sequencer);
-
-    // #500us;
-
-    // osc_f = 1000.0;
-    // osc_duty_cycle                    = 800;
-    // osc_frequency_seq0.osc_f          = osc_f;
-    // osc_frequency_seq0.osc_duty_cycle = osc_duty_cycle;
-    // osc_frequency_seq0.start(v_sqr.apb3_sequencer);
-
-    // #10ms;
+    `uvm_info(get_name(), $sformatf("f = %0d, duty = %0d", 1000, 800), UVM_NONE)
+    reg_model.osc.osc_frequency.write(uvm_status, 1000<<Q_BITS_C);
+    reg_model.osc.osc_duty_cycle.write(uvm_status, 800);
+    clk_delay(500000);
 
     phase.drop_objection(this);
 

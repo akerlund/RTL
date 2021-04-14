@@ -25,6 +25,7 @@ class osc_env extends uvm_env;
   `uvm_component_utils_begin(osc_env)
   `uvm_component_utils_end
 
+  clk_rst_agent                   clk_rst_agent0;
   vip_axi4_agent #(VIP_REG_CFG_C) reg_agent0;
   osc_virtual_sequencer virtual_sequencer;
 
@@ -49,7 +50,8 @@ class osc_env extends uvm_env;
     uvm_config_db #(register_model)::set(null, "", "reg_model", reg_model);
     vip_axi4_adapter0 = vip_axi4_adapter::type_id::create("vip_axi4_adapter0",, get_full_name());
 
-    reg_agent0 = vip_axi4_agent  #(VIP_REG_CFG_C)::type_id::create("reg_agent0", this);
+    clk_rst_agent0 = clk_rst_agent::type_id::create("clk_rst_agent0", this);
+    reg_agent0     = vip_axi4_agent  #(VIP_REG_CFG_C)::type_id::create("reg_agent0", this);
     uvm_config_db #(int)::set(this, {"reg_agent0", "*"}, "id", 0);
 
     virtual_sequencer = osc_virtual_sequencer::type_id::create("virtual_sequencer", this);
@@ -64,6 +66,7 @@ class osc_env extends uvm_env;
     super.connect_phase(phase);
     reg_model.default_map.set_sequencer(.sequencer(reg_agent0.sequencer), .adapter(vip_axi4_adapter0));
     reg_model.default_map.set_base_addr('h00000000);
+    virtual_sequencer.clk_rst_sequencer0 = clk_rst_agent0.sequencer;
   endfunction
 
 endclass

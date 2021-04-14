@@ -297,6 +297,7 @@ module osc_tb_top;
 
 
   initial begin
+    uvm_config_db #(virtual clk_rst_if)::set(uvm_root::get(),                   "uvm_test_top.tb_env*",            "vif", clk_rst_vif);
     uvm_config_db #(virtual vip_axi4_if #(VIP_REG_CFG_C))::set(uvm_root::get(), "uvm_test_top.tb_env.reg_agent0*", "vif", reg_vif);
     run_test();
     $stop();

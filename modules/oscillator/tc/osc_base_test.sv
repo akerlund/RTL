@@ -57,8 +57,10 @@ class osc_base_test extends uvm_test;
   // Testcase variables
   // ---------------------------------------------------------------------------
 
-  real                osc_f;
-  real                osc_duty_cycle;
+  logic          [1 : 0] cr_osc_waveform_select;
+  logic [N_BITS_C-1 : 0] cr_osc_frequency;
+  logic [N_BITS_C-1 : 0] cr_osc_duty_cycle;
+
   osc_waveform_type_t osc_waveform_type;
 
 
