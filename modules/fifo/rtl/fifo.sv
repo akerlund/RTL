@@ -23,8 +23,9 @@
 `default_nettype none
 
 module fifo #(
-    parameter int DATA_WIDTH_P = -1,
-    parameter int ADDR_WIDTH_P = -1
+    parameter int DATA_WIDTH_P    = -1,
+    parameter int ADDR_WIDTH_P    = -1,
+    parameter int MAX_REG_BYTES_P = -1
   )(
     // Clock and reset
     input  wire                       clk,
@@ -47,11 +48,8 @@ module fifo #(
     input  wire    [ADDR_WIDTH_P : 0] cr_almost_full_level
   );
 
-  // FPGA will use RAM if the memory is larger than 2048 bits (256 bytes)
-  localparam bit GENERATE_FIFO_REG_C = DATA_WIDTH_P * 2**ADDR_WIDTH_P <= 2048 ? 1'b1 : 1'b0;
-
-  // Maximum fill level
-  localparam logic [ADDR_WIDTH_P : 0] FIFO_MAX_LEVEL_C = 2**ADDR_WIDTH_P;
+  localparam int unsigned FIFO_BIT_SIZE_C     = DATA_WIDTH_P * 2**ADDR_WIDTH_P;
+  localparam bit          GENERATE_FIFO_REG_C = FIFO_BIT_SIZE_C <= MAX_REG_BYTES_P*8 ? 1'b1 : 1'b0;
 
   logic write_enable;
   logic read_enable;
@@ -59,9 +57,10 @@ module fifo #(
   assign write_enable = ing_enable && (!ing_full || egr_enable);
   assign read_enable  = egr_enable && !egr_empty;
 
+
   generate
 
-    if (GENERATE_FIFO_REG_C) begin : gen_sync_reg
+    if (GENERATE_FIFO_REG_C) begin : register_based_fifo
 
       // Generate with registers
       fifo_register #(
@@ -87,8 +86,7 @@ module fifo #(
         .sr_fill_level ( sr_fill_level )  // output
       );
 
-    end
-    else begin : generate_synchronous_ram_fifo
+    end else begin : memory_based_fifo
 
       localparam int REG_ADDR_WIDTH_C = 2;
 
@@ -108,6 +106,11 @@ module fifo #(
       assign ing_full        = sr_fill_level[ADDR_WIDTH_P];
       assign ing_almost_full = (sr_fill_level >= cr_almost_full_level);
 
+      // RAM read
+      assign ram_read_enable = ram_fill_level   > 0 &&
+                               fifo_fill_level <= 2 &&
+                               ram_write_address != ram_read_address;
+
       // Status process
       always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
@@ -116,14 +119,12 @@ module fifo #(
         end
         else begin
 
-          // Update the FIFO's fill level
           if (read_enable && !write_enable) begin
             sr_fill_level <= sr_fill_level - 1;
           end else if (write_enable && !read_enable) begin
             sr_fill_level <= sr_fill_level + 1;
           end
 
-          // Update the maximum fill level the FIFO has reached
           if (sr_fill_level >= sr_max_fill_level) begin
             sr_max_fill_level <= sr_fill_level;
           end
@@ -134,7 +135,6 @@ module fifo #(
       always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
           ram_fill_level     <= '0;
-          ram_read_enable    <= '0;
           ram_read_enable_d0 <= '0;
           ram_write_address  <= '0;
           ram_read_address   <= '0;
@@ -145,22 +145,19 @@ module fifo #(
             ram_write_address <= ram_write_address + 1;
           end
 
-          ram_fill_level <= (ram_write_address >= ram_read_address) ?
-                            {1'b0, ram_write_address} - {1'b0, ram_read_address} :
-                            FIFO_MAX_LEVEL_C - ({1'b0, ram_read_address} - {1'b0, ram_write_address});
-
-          ram_read_enable    <= ram_fill_level > 0 && (fifo_fill_level <= 2);
-          ram_read_enable_d0 <= ram_read_enable;
-
-          // Reading from the RAM to the register FIFO
           if (ram_read_enable) begin
             ram_read_address <= ram_read_address + 1;
           end
+
+          ram_fill_level <= (ram_write_address >= ram_read_address) ?
+                            {1'b0, ram_write_address} - {1'b0, ram_read_address} :
+                            2**ADDR_WIDTH_P - ({1'b0, ram_read_address} - {1'b0, ram_write_address});
+
+          ram_read_enable_d0 <= ram_read_enable;
         end
       end
 
 
-      // Generate the FIFO's RAM
       ram_sdp #(
         .DATA_WIDTH_P        ( DATA_WIDTH_P      ),
         .ADDR_WIDTH_P        ( ADDR_WIDTH_P      )
@@ -181,8 +178,7 @@ module fifo #(
         .port_b_data_egr     ( ram_read_data     )  // output
       );
 
-      // Register at the output removes the delay of 1 clk period
-      // it takes for RAM memories to output data
+
       fifo_register #(
         .DATA_WIDTH_P    ( DATA_WIDTH_P       ),
         .ADDR_WIDTH_P    ( REG_ADDR_WIDTH_C   )
