@@ -80,8 +80,14 @@ class fi_base_test extends uvm_test;
     axi4s_mst_cfg0  = vip_axi4s_config::type_id::create("axi4s_mst_cfg0", this);
     axi4s_slv_cfg0  = vip_axi4s_config::type_id::create("axi4s_slv_cfg0", this);
 
+    //axi4s_mst_cfg0.tvalid_delay_enabled    = FALSE;
+    axi4s_mst_cfg0.min_tvalid_delay_time   = 1;
+    axi4s_mst_cfg0.max_tvalid_delay_time   = 10;
     axi4s_mst_cfg0.min_tvalid_delay_period = 2;
     axi4s_mst_cfg0.max_tvalid_delay_period = 10;
+    //axi4s_slv_cfg0.tready_delay_enabled    = FALSE;
+    axi4s_slv_cfg0.min_tready_delay_time   = 1;
+    axi4s_slv_cfg0.max_tready_delay_time   = 10;
     axi4s_slv_cfg0.min_tready_delay_period = 2;
     axi4s_slv_cfg0.max_tready_delay_period = 10;
     axi4s_slv_cfg0.vip_axi4s_agent_type    = VIP_AXI4S_SLAVE_AGENT_E;
