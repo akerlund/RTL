@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="top.wdb" id="1">
+         <top_modules>
+            <top_module name="axi4s_fifo_top" />
+            <top_module name="bool_pkg" />
+            <top_module name="clk_rst_pkg" />
+            <top_module name="clk_rst_types_pkg" />
+            <top_module name="fi_tb_pkg" />
+            <top_module name="fi_tc_pkg" />
+            <top_module name="report_server_pkg" />
+            <top_module name="std" />
+            <top_module name="uvm_pkg" />
+            <top_module name="vip_axi4s_agent_pkg" />
+            <top_module name="vip_axi4s_types_pkg" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="3038400fs"></ZoomStartTime>
+      <ZoomEndTime time="3467001fs"></ZoomEndTime>
+      <Cursor1Time time="3145000fs"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="455"></NameColumnWidth>
+      <ValueColumnWidth column_width="198"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="5" />
+   <wvobject type="group" fp_name="group52">
+      <obj_property name="label">mst</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject type="logic" fp_name="/axi4s_fifo_top/mst_vif/clk">
+         <obj_property name="ElementShortName">clk</obj_property>
+         <obj_property name="ObjectShortName">clk</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/axi4s_fifo_top/mst_vif/rst_n">
+         <obj_property name="ElementShortName">rst_n</obj_property>
+         <obj_property name="ObjectShortName">rst_n</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/axi4s_fifo_top/mst_vif/tvalid">
+         <obj_property name="ElementShortName">tvalid</obj_property>
+         <obj_property name="ObjectShortName">tvalid</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/axi4s_fifo_top/mst_vif/tready">
+         <obj_property name="ElementShortName">tready</obj_property>
+         <obj_property name="ObjectShortName">tready</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/axi4s_fifo_top/mst_vif/tdata">
+         <obj_property name="ElementShortName">tdata[31:0]</obj_property>
+         <obj_property name="ObjectShortName">tdata[31:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/axi4s_fifo_top/mst_vif/tstrb">
+         <obj_property name="ElementShortName">tstrb[3:0]</obj_property>
+         <obj_property name="ObjectShortName">tstrb[3:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/axi4s_fifo_top/mst_vif/tlast">
+         <obj_property name="ElementShortName">tlast</obj_property>
+         <obj_property name="ObjectShortName">tlast</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject type="group" fp_name="group54">
+      <obj_property name="label">axi_fifo</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject type="logic" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/clk">
+         <obj_property name="ElementShortName">clk</obj_property>
+         <obj_property name="ObjectShortName">clk</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/rst_n">
+         <obj_property name="ElementShortName">rst_n</obj_property>
+         <obj_property name="ObjectShortName">rst_n</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/ing_enable">
+         <obj_property name="ElementShortName">ing_enable</obj_property>
+         <obj_property name="ObjectShortName">ing_enable</obj_property>
+         <obj_property name="CustomSignalColor">#FFD700</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/ing_data">
+         <obj_property name="ElementShortName">ing_data[32:0]</obj_property>
+         <obj_property name="ObjectShortName">ing_data[32:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         <obj_property name="CustomSignalColor">#FFD700</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/ing_full">
+         <obj_property name="ElementShortName">ing_full</obj_property>
+         <obj_property name="ObjectShortName">ing_full</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/ing_almost_full">
+         <obj_property name="ElementShortName">ing_almost_full</obj_property>
+         <obj_property name="ObjectShortName">ing_almost_full</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/egr_enable">
+         <obj_property name="ElementShortName">egr_enable</obj_property>
+         <obj_property name="ObjectShortName">egr_enable</obj_property>
+         <obj_property name="CustomSignalColor">#FF00FF</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/egr_data">
+         <obj_property name="ElementShortName">egr_data[32:0]</obj_property>
+         <obj_property name="ObjectShortName">egr_data[32:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         <obj_property name="CustomSignalColor">#FF00FF</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/egr_empty">
+         <obj_property name="ElementShortName">egr_empty</obj_property>
+         <obj_property name="ObjectShortName">egr_empty</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/sr_fill_level">
+         <obj_property name="ElementShortName">sr_fill_level[6:0]</obj_property>
+         <obj_property name="ObjectShortName">sr_fill_level[6:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/sr_max_fill_level">
+         <obj_property name="ElementShortName">sr_max_fill_level[6:0]</obj_property>
+         <obj_property name="ObjectShortName">sr_max_fill_level[6:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/cr_almost_full_level">
+         <obj_property name="ElementShortName">cr_almost_full_level[6:0]</obj_property>
+         <obj_property name="ObjectShortName">cr_almost_full_level[6:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/write_enable">
+         <obj_property name="ElementShortName">write_enable</obj_property>
+         <obj_property name="ObjectShortName">write_enable</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/read_enable">
+         <obj_property name="ElementShortName">read_enable</obj_property>
+         <obj_property name="ObjectShortName">read_enable</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/\generate_synchronous_ram_fifo.ram_write_address ">
+         <obj_property name="ElementShortName">\generate_synchronous_ram_fifo.ram_write_address [5:0]</obj_property>
+         <obj_property name="ObjectShortName">\generate_synchronous_ram_fifo.ram_write_address [5:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/\generate_synchronous_ram_fifo.ram_read_address ">
+         <obj_property name="ElementShortName">\generate_synchronous_ram_fifo.ram_read_address [5:0]</obj_property>
+         <obj_property name="ObjectShortName">\generate_synchronous_ram_fifo.ram_read_address [5:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/\generate_synchronous_ram_fifo.ram_read_data ">
+         <obj_property name="ElementShortName">\generate_synchronous_ram_fifo.ram_read_data [32:0]</obj_property>
+         <obj_property name="ObjectShortName">\generate_synchronous_ram_fifo.ram_read_data [32:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/\generate_synchronous_ram_fifo.ram_fill_level ">
+         <obj_property name="ElementShortName">\generate_synchronous_ram_fifo.ram_fill_level [6:0]</obj_property>
+         <obj_property name="ObjectShortName">\generate_synchronous_ram_fifo.ram_fill_level [6:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/\generate_synchronous_ram_fifo.ram_read_enable ">
+         <obj_property name="ElementShortName">\generate_synchronous_ram_fifo.ram_read_enable </obj_property>
+         <obj_property name="ObjectShortName">\generate_synchronous_ram_fifo.ram_read_enable </obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/\generate_synchronous_ram_fifo.ram_read_enable_d0 ">
+         <obj_property name="ElementShortName">\generate_synchronous_ram_fifo.ram_read_enable_d0 </obj_property>
+         <obj_property name="ObjectShortName">\generate_synchronous_ram_fifo.ram_read_enable_d0 </obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/\generate_synchronous_ram_fifo.reg_full ">
+         <obj_property name="ElementShortName">\generate_synchronous_ram_fifo.reg_full </obj_property>
+         <obj_property name="ObjectShortName">\generate_synchronous_ram_fifo.reg_full </obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/\generate_synchronous_ram_fifo.fifo_fill_level ">
+         <obj_property name="ElementShortName">\generate_synchronous_ram_fifo.fifo_fill_level [2:0]</obj_property>
+         <obj_property name="ObjectShortName">\generate_synchronous_ram_fifo.fifo_fill_level [2:0]</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject type="group" fp_name="group66">
+      <obj_property name="label">ram_fifo</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject type="logic" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/\generate_synchronous_ram_fifo.ram_sdp_i0 /clk">
+         <obj_property name="ElementShortName">clk</obj_property>
+         <obj_property name="ObjectShortName">clk</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/\generate_synchronous_ram_fifo.ram_sdp_i0 /port_a_enable">
+         <obj_property name="ElementShortName">port_a_enable</obj_property>
+         <obj_property name="ObjectShortName">port_a_enable</obj_property>
+         <obj_property name="CustomSignalColor">#FFD700</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/\generate_synchronous_ram_fifo.ram_sdp_i0 /port_a_data_ing">
+         <obj_property name="ElementShortName">port_a_data_ing[32:0]</obj_property>
+         <obj_property name="ObjectShortName">port_a_data_ing[32:0]</obj_property>
+         <obj_property name="CustomSignalColor">#FFD700</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/\generate_synchronous_ram_fifo.ram_sdp_i0 /port_a_write_enable">
+         <obj_property name="ElementShortName">port_a_write_enable</obj_property>
+         <obj_property name="ObjectShortName">port_a_write_enable</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/\generate_synchronous_ram_fifo.ram_sdp_i0 /port_a_address">
+         <obj_property name="ElementShortName">port_a_address[5:0]</obj_property>
+         <obj_property name="ObjectShortName">port_a_address[5:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/\generate_synchronous_ram_fifo.ram_sdp_i0 /port_b_address">
+         <obj_property name="ElementShortName">port_b_address[5:0]</obj_property>
+         <obj_property name="ObjectShortName">port_b_address[5:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/\generate_synchronous_ram_fifo.ram_sdp_i0 /port_b_enable">
+         <obj_property name="ElementShortName">port_b_enable</obj_property>
+         <obj_property name="ObjectShortName">port_b_enable</obj_property>
+         <obj_property name="CustomSignalColor">#FF00FF</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/\generate_synchronous_ram_fifo.ram_sdp_i0 /port_b_data_egr">
+         <obj_property name="ElementShortName">port_b_data_egr[32:0]</obj_property>
+         <obj_property name="ObjectShortName">port_b_data_egr[32:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         <obj_property name="CustomSignalColor">#FF00FF</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/\generate_synchronous_ram_fifo.ram_sdp_i0 /ram_memory">
+         <obj_property name="ElementShortName">ram_memory[63:0][32:0]</obj_property>
+         <obj_property name="ObjectShortName">ram_memory[63:0][32:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/\generate_synchronous_ram_fifo.ram_sdp_i0 /DATA_WIDTH_P">
+         <obj_property name="ElementShortName">DATA_WIDTH_P[31:0]</obj_property>
+         <obj_property name="ObjectShortName">DATA_WIDTH_P[31:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/\generate_synchronous_ram_fifo.ram_sdp_i0 /ADDR_WIDTH_P">
+         <obj_property name="ElementShortName">ADDR_WIDTH_P[31:0]</obj_property>
+         <obj_property name="ObjectShortName">ADDR_WIDTH_P[31:0]</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject type="group" fp_name="group82">
+      <obj_property name="label">reg_fifo</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject type="logic" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/\generate_synchronous_ram_fifo.fifo_register_i0 /clk">
+         <obj_property name="ElementShortName">clk</obj_property>
+         <obj_property name="ObjectShortName">clk</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/\generate_synchronous_ram_fifo.fifo_register_i0 /rst_n">
+         <obj_property name="ElementShortName">rst_n</obj_property>
+         <obj_property name="ObjectShortName">rst_n</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/\generate_synchronous_ram_fifo.fifo_register_i0 /ing_enable">
+         <obj_property name="ElementShortName">ing_enable</obj_property>
+         <obj_property name="ObjectShortName">ing_enable</obj_property>
+         <obj_property name="CustomSignalColor">#FFD700</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/\generate_synchronous_ram_fifo.fifo_register_i0 /ing_data">
+         <obj_property name="ElementShortName">ing_data[32:0]</obj_property>
+         <obj_property name="ObjectShortName">ing_data[32:0]</obj_property>
+         <obj_property name="CustomSignalColor">#FFD700</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/\generate_synchronous_ram_fifo.fifo_register_i0 /ing_full">
+         <obj_property name="ElementShortName">ing_full</obj_property>
+         <obj_property name="ObjectShortName">ing_full</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/\generate_synchronous_ram_fifo.fifo_register_i0 /egr_enable">
+         <obj_property name="ElementShortName">egr_enable</obj_property>
+         <obj_property name="ObjectShortName">egr_enable</obj_property>
+         <obj_property name="CustomSignalColor">#FF00FF</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/\generate_synchronous_ram_fifo.fifo_register_i0 /egr_data">
+         <obj_property name="ElementShortName">egr_data[32:0]</obj_property>
+         <obj_property name="ObjectShortName">egr_data[32:0]</obj_property>
+         <obj_property name="CustomSignalColor">#FF00FF</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/\generate_synchronous_ram_fifo.fifo_register_i0 /egr_empty">
+         <obj_property name="ElementShortName">egr_empty</obj_property>
+         <obj_property name="ObjectShortName">egr_empty</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/\generate_synchronous_ram_fifo.fifo_register_i0 /sr_fill_level">
+         <obj_property name="ElementShortName">sr_fill_level[2:0]</obj_property>
+         <obj_property name="ObjectShortName">sr_fill_level[2:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/\generate_synchronous_ram_fifo.fifo_register_i0 /write_enable">
+         <obj_property name="ElementShortName">write_enable</obj_property>
+         <obj_property name="ObjectShortName">write_enable</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/\generate_synchronous_ram_fifo.fifo_register_i0 /write_address">
+         <obj_property name="ElementShortName">write_address[1:0]</obj_property>
+         <obj_property name="ObjectShortName">write_address[1:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/\generate_synchronous_ram_fifo.fifo_register_i0 /read_enable">
+         <obj_property name="ElementShortName">read_enable</obj_property>
+         <obj_property name="ObjectShortName">read_enable</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/\generate_synchronous_ram_fifo.fifo_register_i0 /read_address">
+         <obj_property name="ElementShortName">read_address[1:0]</obj_property>
+         <obj_property name="ObjectShortName">read_address[1:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/\generate_synchronous_ram_fifo.fifo_register_i0 /DATA_WIDTH_P">
+         <obj_property name="ElementShortName">DATA_WIDTH_P[31:0]</obj_property>
+         <obj_property name="ObjectShortName">DATA_WIDTH_P[31:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/axi4s_fifo_top/axi4s_fifo_i0/fifo_i0/\generate_synchronous_ram_fifo.fifo_register_i0 /ADDR_WIDTH_P">
+         <obj_property name="ElementShortName">ADDR_WIDTH_P[31:0]</obj_property>
+         <obj_property name="ObjectShortName">ADDR_WIDTH_P[31:0]</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject type="group" fp_name="group53">
+      <obj_property name="label">slv</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject type="logic" fp_name="/axi4s_fifo_top/slv_vif/clk">
+         <obj_property name="ElementShortName">clk</obj_property>
+         <obj_property name="ObjectShortName">clk</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/axi4s_fifo_top/slv_vif/rst_n">
+         <obj_property name="ElementShortName">rst_n</obj_property>
+         <obj_property name="ObjectShortName">rst_n</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/axi4s_fifo_top/slv_vif/tvalid">
+         <obj_property name="ElementShortName">tvalid</obj_property>
+         <obj_property name="ObjectShortName">tvalid</obj_property>
+         <obj_property name="CustomSignalColor">#FFD700</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/axi4s_fifo_top/slv_vif/tready">
+         <obj_property name="ElementShortName">tready</obj_property>
+         <obj_property name="ObjectShortName">tready</obj_property>
+         <obj_property name="CustomSignalColor">#FFD700</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/axi4s_fifo_top/slv_vif/tdata">
+         <obj_property name="ElementShortName">tdata[31:0]</obj_property>
+         <obj_property name="ObjectShortName">tdata[31:0]</obj_property>
+         <obj_property name="CustomSignalColor">#FFD700</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/axi4s_fifo_top/slv_vif/tstrb">
+         <obj_property name="ElementShortName">tstrb[3:0]</obj_property>
+         <obj_property name="ObjectShortName">tstrb[3:0]</obj_property>
+      </wvobject>
+      <wvobject type="logic" fp_name="/axi4s_fifo_top/slv_vif/tlast">
+         <obj_property name="ElementShortName">tlast</obj_property>
+         <obj_property name="ObjectShortName">tlast</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/axi4s_fifo_top/slv_vif/CFG_P">
+         <obj_property name="ElementShortName">CFG_P</obj_property>
+         <obj_property name="ObjectShortName">CFG_P</obj_property>
+      </wvobject>
+   </wvobject>
+</wave_config>

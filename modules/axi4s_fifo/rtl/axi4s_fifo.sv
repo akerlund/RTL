@@ -23,8 +23,9 @@
 `default_nettype none
 
 module axi4s_fifo #(
-    parameter int TUSER_WIDTH_P = -1,
-    parameter int ADDR_WIDTH_P  = -1
+    parameter int TUSER_WIDTH_P   = -1,
+    parameter int ADDR_WIDTH_P    = -1,
+    parameter int MAX_REG_BYTES_P = -1
   )(
     input  wire                        clk,
     input  wire                        rst_n,
@@ -55,7 +56,8 @@ module axi4s_fifo #(
 
   fifo #(
     .DATA_WIDTH_P         ( TUSER_WIDTH_P        ),
-    .ADDR_WIDTH_P         ( ADDR_WIDTH_P         )
+    .ADDR_WIDTH_P         ( ADDR_WIDTH_P         ),
+    .MAX_REG_BYTES_P      ( MAX_REG_BYTES_P      )
   ) fifo_i0 (
     .clk                  ( clk                  ), // input
     .rst_n                ( rst_n                ), // input
