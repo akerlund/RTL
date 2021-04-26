@@ -5,6 +5,7 @@ rtl_dirs+="
 
 rtl_files+="
   $module_path/rtl/ram_sdp.sv
+  $module_path/rtl/ram_sdp2c.sv
   $module_path/rtl/ram_sdp_bw.sv
   $module_path/rtl/ram_sp.sv
   $module_path/rtl/ram_sp_bw.sv
