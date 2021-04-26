@@ -24,6 +24,13 @@ class iir_env extends uvm_env;
   `uvm_component_utils_begin(iir_env)
   `uvm_component_utils_end
 
+  protected virtual clk_rst_if vif;
+
+  clk_rst_agent                    clk_rst_agent0;
+  vip_axi4_agent  #(VIP_MEM_CFG_C) mem_agent0;
+  vip_axi4_agent  #(VIP_REG_CFG_C) reg_agent0;
+  vip_axi4s_agent #(VIP_CIR_CFG_C) cir_agent0;
+
   // Agents
   vip_apb3_agent #(vip_apb3_cfg) vip_apb3_agent0;
 
