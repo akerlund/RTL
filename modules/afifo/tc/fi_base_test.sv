@@ -121,8 +121,10 @@ class fi_base_test extends uvm_test;
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     phase.raise_objection(this);
-    reset_seq0.start(v_sqr.clk_rst_sequencer0);
-    reset_seq1.start(v_sqr.clk_rst_sequencer1);
+    fork
+      reset_seq0.start(v_sqr.clk_rst_sequencer0);
+      reset_seq1.start(v_sqr.clk_rst_sequencer1);
+    join
     phase.drop_objection(this);
   endtask
 

@@ -52,7 +52,7 @@ class fi_env extends uvm_env;
 
     // Create Agents
     clk_rst_agent0 = clk_rst_agent::type_id::create("clk_rst_agent0", this);
-    clk_rst_agent1 = clk_rst_agent::type_id::create("clk_rst_agent0", this);
+    clk_rst_agent1 = clk_rst_agent::type_id::create("clk_rst_agent1", this);
     mst_agent0     = vip_axi4s_agent #(VIP_AXI4S_CFG_C)::type_id::create("mst_agent0", this);
     slv_agent0     = vip_axi4s_agent #(VIP_AXI4S_CFG_C)::type_id::create("slv_agent0", this);
 

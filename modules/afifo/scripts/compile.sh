@@ -4,7 +4,7 @@ git_root="$(git rev-parse --show-toplevel)"
 
 # Specify the top files
 rtl_top="afifo"
-uvm_top="afifo"
+uvm_top="fi_tb_top"
 
 # ------------------------------------------------------------------------------
 # Source submodules
