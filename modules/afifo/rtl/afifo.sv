@@ -23,8 +23,8 @@
 `default_nettype none
 
 module afifo #(
-    parameter int DATA_WIDTH_P = 256,
-    parameter int ADDR_WIDTH_P = 2
+    parameter int DATA_WIDTH_P = -1,
+    parameter int ADDR_WIDTH_P = -1
   )(
     input  wire                       clk_wp,
     input  wire                       rst_wp_n,
@@ -52,7 +52,7 @@ module afifo #(
   localparam int SYNC_ADDR_WIDTH_C = 4;
 
   logic                         wp_async_write_en;
-  logic                         rp_async_read_en;
+  logic                         afifo_rd_en;
   logic                         rp_async_valid;
   logic      [ADDR_WIDTH_P : 0] rp_async_fill_level;
   logic    [DATA_WIDTH_P-1 : 0] rp_async_data_out;
@@ -63,28 +63,28 @@ module afifo #(
   assign wp_async_write_en = wp_write_en && !wp_fifo_full;
   assign sync_rp_read_en   = rp_read_en  && !rp_fifo_empty;
 
-  // TODO: Can be always high?
-  assign rp_async_read_en = rp_sync_fill_level + {{SYNC_ADDR_WIDTH_C-1{1'b0}}, rp_async_valid} < SYNC_ADDR_WIDTH_C;
+
+  assign afifo_rd_en = !rp_async_valid && (rp_sync_fill_level + {{SYNC_ADDR_WIDTH_C-1{1'b0}}, rp_async_valid} < SYNC_ADDR_WIDTH_C);
 
   afifo_core #(
     .DATA_WIDTH_P         ( DATA_WIDTH_P         ),
     .ADDR_WIDTH_P         ( ADDR_WIDTH_P         )
   ) afifo_core_i0 (
-    .clk_wp               ( clk_wp               ),
-    .rst_wp_n             ( rst_wp_n             ),
-    .clk_rp               ( clk_rp               ),
-    .rst_rp_n             ( rst_rp_n             ),
-    .wp_write_en          ( wp_async_write_en    ),
-    .wp_data_in           ( wp_data_in           ),
-    .wp_fifo_full         ( wp_fifo_full         ),
-    .rp_read_en           ( rp_async_read_en     ),
-    .rp_data_out          ( rp_async_data_out    ),
-    .rp_valid             ( rp_async_valid       ),
-    .sr_wp_fifo_active    ( sr_wp_fifo_active    ),
-    .sr_wp_fill_level     ( sr_wp_fill_level     ),
-    .sr_wp_max_fill_level ( sr_wp_max_fill_level ),
-    .sr_rp_fifo_active    ( sr_rp_fifo_active    ),
-    .sr_rp_fill_level     ( rp_async_fill_level  )
+    .wclk                 ( clk_wp               ),
+    .rst_w_n              ( rst_wp_n             ),
+    .rclk                 ( clk_rp               ),
+    .rst_r_n              ( rst_rp_n             ),
+    .wclk_wr_en           ( wp_async_write_en    ),
+    .wclk_data            ( wp_data_in           ),
+    .wclk_full            ( wp_fifo_full         ),
+    .rclk_rd_en           ( afifo_rd_en     ),
+    .rclk_data            ( rp_async_data_out    ),
+    .rclk_empty           ( rp_async_valid       )
+    //.sr_wp_fifo_active    ( sr_wp_fifo_active    ),
+    //.sr_wp_fill_level     ( sr_wp_fill_level     ),
+    //.sr_wp_max_fill_level ( sr_wp_max_fill_level ),
+    //.sr_rp_fifo_active    ( sr_rp_fifo_active    ),
+    //.sr_rp_fill_level     ( rp_async_fill_level  )
   );
 
   fifo_register #(
@@ -93,7 +93,7 @@ module afifo #(
   ) fifo_register_i0 (
     .clk             ( clk_rp             ),
     .rst_n           ( rst_rp_n           ),
-    .ing_enable      ( rp_async_valid     ),
+    .ing_enable      ( afifo_rd_en     ),
     .ing_data        ( rp_async_data_out  ),
     .ing_full        (                    ),
     .egr_enable      ( sync_rp_read_en    ),

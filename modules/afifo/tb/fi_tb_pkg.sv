@@ -52,7 +52,7 @@ package fi_tb_pkg;
   };
 
   localparam int FIFO_ADDR_WIDTH_C = 6; // Minimum width is (1)
-  localparam int FIFO_USER_WIDTH_C = VIP_AXI4S_TDATA_WIDTH_C + 1;
+  localparam int FIFO_DATA_WIDTH_C = VIP_AXI4S_TDATA_WIDTH_C + 1;
 
   `include "fi_scoreboard.sv"
   `include "fi_virtual_sequencer.sv"

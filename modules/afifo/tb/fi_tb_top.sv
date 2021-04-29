@@ -31,16 +31,18 @@ module fi_tb_top;
   vip_axi4s_if #(VIP_AXI4S_CFG_C) mst_vif(clk_rst_vif0.clk, clk_rst_vif0.rst_n);
   vip_axi4s_if #(VIP_AXI4S_CFG_C) slv_vif(clk_rst_vif1.clk, clk_rst_vif1.rst_n);
 
-  logic [256-1 : 0] ing_tuser;
-  logic [256-1 : 0] egr_tuser;
-  logic             rp_fifo_empty;
+  logic [FIFO_DATA_WIDTH_C-1 : 0] ing_tuser;
+  logic [FIFO_DATA_WIDTH_C-1 : 0] egr_tuser;
+  logic                           wp_fifo_full;
+  logic                           rp_fifo_empty;
 
   assign ing_tuser = {mst_vif.tlast, mst_vif.tdata};
+  assign mst_vif.tready = !wp_fifo_full;
   assign {slv_vif.tlast, slv_vif.tdata} = egr_tuser;
 
   afifo #(
-    .DATA_WIDTH_P         ( 256                ),
-    .ADDR_WIDTH_P         ( 2                  )
+    .DATA_WIDTH_P         ( FIFO_DATA_WIDTH_C  ),
+    .ADDR_WIDTH_P         ( FIFO_ADDR_WIDTH_C  )
   ) afifo_i0 (
     .clk_wp               ( clk_rst_vif0.clk   ), // input
     .rst_wp_n             ( clk_rst_vif0.rst_n ), // input
@@ -48,7 +50,7 @@ module fi_tb_top;
     .rst_rp_n             ( clk_rst_vif1.rst_n ), // input
     .wp_write_en          ( mst_vif.tvalid     ), // input
     .wp_data_in           ( ing_tuser          ), // input
-    .wp_fifo_full         ( mst_vif.tready     ), // output
+    .wp_fifo_full         ( wp_fifo_full       ), // output
     .rp_read_en           ( slv_vif.tready     ), // input
     .rp_data_out          ( egr_tuser          ), // output
     .rp_valid             ( slv_vif.tvalid     ), // output
