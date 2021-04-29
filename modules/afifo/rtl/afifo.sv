@@ -53,6 +53,7 @@ module afifo #(
 
   logic                         wp_async_write_en;
   logic                         afifo_rd_en;
+  logic                         afifo_rd_en_d0;
   logic                         rp_async_valid;
   logic      [ADDR_WIDTH_P : 0] rp_async_fill_level;
   logic    [DATA_WIDTH_P-1 : 0] rp_async_data_out;
@@ -77,7 +78,7 @@ module afifo #(
     .wclk_wr_en           ( wp_async_write_en    ),
     .wclk_data            ( wp_data_in           ),
     .wclk_full            ( wp_fifo_full         ),
-    .rclk_rd_en           ( afifo_rd_en     ),
+    .rclk_rd_en           ( afifo_rd_en          ),
     .rclk_data            ( rp_async_data_out    ),
     .rclk_empty           ( rp_async_valid       )
     //.sr_wp_fifo_active    ( sr_wp_fifo_active    ),
@@ -91,14 +92,18 @@ module afifo #(
     .DATA_WIDTH_P    ( DATA_WIDTH_P       ),
     .ADDR_WIDTH_P    ( SYNC_ADDR_WIDTH_C  )
   ) fifo_register_i0 (
+    // Clock and reset
     .clk             ( clk_rp             ),
     .rst_n           ( rst_rp_n           ),
-    .ing_enable      ( afifo_rd_en     ),
+    // Ingress
+    .ing_enable      ( afifo_rd_en_d0     ),
     .ing_data        ( rp_async_data_out  ),
     .ing_full        (                    ),
+    // Egress
     .egr_enable      ( sync_rp_read_en    ),
     .egr_data        ( rp_data_out        ),
     .egr_empty       ( rp_fifo_empty      ),
+    // Status registers
     .sr_fill_level   ( rp_sync_fill_level )
   );
 
@@ -115,8 +120,10 @@ module afifo #(
   always_ff @ (posedge clk_rp or negedge rst_rp_n) begin
     if (!rst_rp_n) begin
       rp_valid <= '0;
+      afifo_rd_en_d0 <= '0;
     end
     else begin
+      afifo_rd_en_d0 <= afifo_rd_en;
       if (!rp_fifo_empty && sync_rp_read_en) begin
         rp_valid <= '1;
       end

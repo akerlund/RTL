@@ -35,10 +35,14 @@ module fi_tb_top;
   logic [FIFO_DATA_WIDTH_C-1 : 0] egr_tuser;
   logic                           wp_fifo_full;
   logic                           rp_fifo_empty;
+  logic                           rp_read_en;
 
   assign ing_tuser = {mst_vif.tlast, mst_vif.tdata};
   assign mst_vif.tready = !wp_fifo_full;
   assign {slv_vif.tlast, slv_vif.tdata} = egr_tuser;
+
+  assign rp_read_en     = slv_vif.tvalid && slv_vif.tready;
+  assign slv_vif.tvalid = !rp_fifo_empty;
 
   afifo #(
     .DATA_WIDTH_P         ( FIFO_DATA_WIDTH_C  ),
@@ -51,10 +55,10 @@ module fi_tb_top;
     .wp_write_en          ( mst_vif.tvalid     ), // input
     .wp_data_in           ( ing_tuser          ), // input
     .wp_fifo_full         ( wp_fifo_full       ), // output
-    .rp_read_en           ( slv_vif.tready     ), // input
+    .rp_read_en           ( rp_read_en         ), // input
     .rp_data_out          ( egr_tuser          ), // output
-    .rp_valid             ( slv_vif.tvalid     ), // output
-    .rp_fifo_empty        (                    ), // output
+    .rp_valid             (                    ), // output
+    .rp_fifo_empty        ( rp_fifo_empty      ), // output
     .sr_wp_fifo_active    (                    ), // output
     .sr_wp_fill_level     (                    ), // output
     .sr_wp_max_fill_level (                    ), // output
