@@ -1,1 +1,4 @@
 `verilator_config
+lint_off -rule EOFNEWLINE -file "*" -match "*"
+lint_off -rule PINCONNECTEMPTY -file "*afifo.sv" -match "* 'ing_full'"
+

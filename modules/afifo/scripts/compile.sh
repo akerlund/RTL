@@ -27,7 +27,6 @@ git_root="$(git rev-parse --show-toplevel)"
 source $git_root/modules/synchronizers/cdc_bit_sync/rtl/files.lst
 source $git_root/modules/memory/reg/rtl/files.lst
 source $git_root/modules/memory/ram/rtl/files.lst
-source $git_root/modules/memory/ram/rtl/files.lst
 source $git_root/modules/fifo/rtl/files.lst
 source ./rtl/files.lst
 source ./tb/files.lst
