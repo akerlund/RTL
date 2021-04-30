@@ -58,10 +58,8 @@ module fi_tb_top;
     .rp_read_en           ( rp_read_en         ), // input
     .rp_data_out          ( egr_tuser          ), // output
     .rp_fifo_empty        ( rp_fifo_empty      ), // output
-    .sr_wp_fifo_active    (                    ), // output
     .sr_wp_fill_level     (                    ), // output
     .sr_wp_max_fill_level (                    ), // output
-    .sr_rp_fifo_active    (                    ), // output
     .sr_rp_fill_level     (                    )  // output
   );
 

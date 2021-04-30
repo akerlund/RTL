@@ -60,7 +60,7 @@ module ram_sdp2c #(
     end
 
     // synthesis translate_off
-    if (port_a_enable && (port_a_address == port_b_address)) begin
+    if (port_a_enable && port_a_write_enable && (port_a_address == port_b_address)) begin
       port_b_data_egr <= {DATA_WIDTH_P{1'bx}};
     end
     // synthesis translate_on

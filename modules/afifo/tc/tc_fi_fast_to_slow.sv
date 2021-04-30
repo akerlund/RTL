@@ -31,8 +31,9 @@ class tc_fi_fast_to_slow extends tc_fi_basic;
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    clk_rst_config0.clock_period = 300.0;  // 17MHz
-    clk_rst_config1.clock_period = 512.0; // 3MHz
+    //clk_rst_config0.clock_period = 1.4771; // 677MHz
+    clk_rst_config0.clock_period = 8.849557; // 113MHz
+    clk_rst_config1.clock_period = 200.0;  // 5MHz
   endfunction
 
 

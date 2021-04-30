@@ -39,11 +39,9 @@ module afifo #(
     output logic [DATA_WIDTH_P-1 : 0] rp_data_out,
     output logic                      rp_fifo_empty,
 
-    output logic                      sr_wp_fifo_active,
     output logic   [ADDR_WIDTH_P : 0] sr_wp_fill_level,
     output logic   [ADDR_WIDTH_P : 0] sr_wp_max_fill_level,
 
-    output logic                      sr_rp_fifo_active,
     output logic   [ADDR_WIDTH_P : 0] sr_rp_fill_level
   );
 
@@ -59,11 +57,11 @@ module afifo #(
 
   // FIFO
   logic                        rp_read_en_c0;
-  logic [REG_ADDR_WIDTH_C : 0] rp_sync_fill_level;
+  logic [REG_ADDR_WIDTH_C : 0] rp_sr_fill_level;
 
   // AFIFO
   assign wclk_wr_en_c0 = wp_write_en && !wp_fifo_full;
-  assign rclk_rd_en_c0 = !rclk_empty && (rp_sync_fill_level <= 2);
+  assign rclk_rd_en_c0 = !rclk_empty && (rp_sr_fill_level <= 2);
 
   // FIFO
   assign rp_read_en_c0 = rp_read_en  && !rp_fifo_empty;
@@ -91,26 +89,37 @@ module afifo #(
 
 
   fifo_register #(
-    .DATA_WIDTH_P    ( DATA_WIDTH_P       ),
-    .ADDR_WIDTH_P    ( REG_ADDR_WIDTH_C   )
+    .DATA_WIDTH_P    ( DATA_WIDTH_P     ),
+    .ADDR_WIDTH_P    ( REG_ADDR_WIDTH_C )
   ) fifo_register_i0 (
-    .clk             ( clk_rp             ), // input
-    .rst_n           ( rst_rp_n           ), // input
-    .ing_enable      ( rclk_rd_en_d0      ), // input
-    .ing_data        ( rclk_data          ), // input
-    .ing_full        (                    ), // output
-    .egr_enable      ( rp_read_en_c0      ), // input
-    .egr_data        ( rp_data_out        ), // output
-    .egr_empty       ( rp_fifo_empty      ), // output
-    .sr_fill_level   ( rp_sync_fill_level )  // output
+    .clk             ( clk_rp           ), // input
+    .rst_n           ( rst_rp_n         ), // input
+    .ing_enable      ( rclk_rd_en_d0    ), // input
+    .ing_data        ( rclk_data        ), // input
+    .ing_full        (                  ), // output
+    .egr_enable      ( rp_read_en_c0    ), // input
+    .egr_data        ( rp_data_out      ), // output
+    .egr_empty       ( rp_fifo_empty    ), // output
+    .sr_fill_level   ( rp_sr_fill_level )  // output
   );
+
+
+  always_ff @ (posedge clk_wp or negedge rst_wp_n) begin
+    if (!rst_wp_n) begin
+      sr_wp_max_fill_level <= '0;
+    end else begin
+      if (sr_wp_fill_level > sr_wp_max_fill_level) begin
+        sr_wp_max_fill_level <= rclk_rd_en_c0;
+      end
+    end
+  end
 
 
   always_comb begin
     if (rp_fifo_empty) begin
       sr_rp_fill_level <= '0;
     end else begin
-      sr_rp_fill_level <= sr_rclk_fill_level + rp_sync_fill_level;
+      sr_rp_fill_level <= sr_rclk_fill_level + rp_sr_fill_level;
     end
   end
 

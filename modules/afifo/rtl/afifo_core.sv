@@ -77,6 +77,7 @@ module afifo_core #(
   assign wclk_wr_addr      = wclk_wr_bin[ADDR_WIDTH_P-1 : 0];
   assign wclk_mem_wr_en    = wclk_wr_en && !wclk_full;
 
+
   always_ff @(posedge wclk or negedge rst_w_n) begin
     if (!rst_w_n) begin
       wclk_rst_n   <= '0;
@@ -93,13 +94,16 @@ module afifo_core #(
     end
   end
 
+
   always_ff @(posedge wclk or negedge rst_w_n) begin
     if (!rst_w_n) begin
       sr_wclk_fill_level <= '0;
     end else begin
-      sr_wclk_fill_level <= wclk_wr_bin >= wclk_rd_bin ?
-                            wclk_wr_bin - wclk_rd_bin :
-                            2**ADDR_WIDTH_P - wclk_rd_bin - wclk_wr_bin;
+      if (wclk_wr_bin >= wclk_rd_bin) begin
+        sr_wclk_fill_level <= wclk_wr_bin - wclk_rd_bin;
+      end else begin
+        sr_wclk_fill_level <= 2**ADDR_WIDTH_P - wclk_rd_bin - wclk_wr_bin;
+      end
     end
   end
 
@@ -113,6 +117,7 @@ module afifo_core #(
   assign rclk_rd_addr      = rclk_rd_bin[ADDR_WIDTH_P-1 : 0];
   assign rclk_empty_next   = (rclk_rd_gray_next == rclk_wr_gray);
 
+
   always_ff @(posedge rclk or negedge rst_r_n) begin
     if (!rst_r_n) begin
       rclk_rst_n   <= '0;
@@ -125,6 +130,19 @@ module afifo_core #(
         rclk_rd_bin  <= rclk_rd_bin_next;
         rclk_rd_gray <= rclk_rd_gray_next;
         rclk_empty   <= rclk_empty_next;
+      end
+    end
+  end
+
+
+  always_ff @(posedge rclk or negedge rst_r_n) begin
+    if (!rst_r_n) begin
+      sr_rclk_fill_level <= '0;
+    end else begin
+      if (rclk_wr_bin >= rclk_rd_bin) begin
+        sr_rclk_fill_level <= rclk_wr_bin - rclk_rd_bin;
+      end else begin
+        sr_rclk_fill_level <= 2**ADDR_WIDTH_P - rclk_rd_bin - rclk_wr_bin;
       end
     end
   end
@@ -165,12 +183,14 @@ module afifo_core #(
     .dst_bit   ( wclk_rclk_rst_n )
   );
 
+
   gray_to_bin #(
     .WIDTH_P ( ADDR_WIDTH_P+1 )
   ) gray_to_bin_i0 (
     .gray    ( wclk_rd_gray   ),
     .bin     ( wclk_rd_bin    )
   );
+
 
   gray_to_bin #(
     .WIDTH_P ( ADDR_WIDTH_P+1 )
