@@ -37,7 +37,6 @@ module afifo #(
 
     input  wire                       rp_read_en,
     output logic [DATA_WIDTH_P-1 : 0] rp_data_out,
-    output logic                      rp_valid,
     output logic                      rp_fifo_empty,
 
     output logic                      sr_wp_fifo_active,
@@ -48,88 +47,79 @@ module afifo #(
     output logic   [ADDR_WIDTH_P : 0] sr_rp_fill_level
   );
 
-  // FPGA will use RAM if the memory is larger than 2048 bits
-  localparam int SYNC_ADDR_WIDTH_C = 4;
+  localparam int REG_ADDR_WIDTH_C = 2;
 
-  logic                         wp_async_write_en;
-  logic                         afifo_rd_en;
-  logic                         afifo_rd_en_d0;
-  logic                         rp_async_valid;
-  logic      [ADDR_WIDTH_P : 0] rp_async_fill_level;
-  logic    [DATA_WIDTH_P-1 : 0] rp_async_data_out;
+  // AFIFO
+  logic                        wclk_wr_en_c0;
+  logic                        rclk_rd_en_c0;
+  logic                        rclk_rd_en_d0;
+  logic   [DATA_WIDTH_P-1 : 0] rclk_data;
+  logic                        rclk_empty;
+  logic     [ADDR_WIDTH_P : 0] sr_rclk_fill_level;
 
-  logic                         sync_rp_read_en;
-  logic [SYNC_ADDR_WIDTH_C : 0] rp_sync_fill_level;
+  // FIFO
+  logic                        rp_read_en_c0;
+  logic [REG_ADDR_WIDTH_C : 0] rp_sync_fill_level;
 
-  assign wp_async_write_en = wp_write_en && !wp_fifo_full;
-  assign sync_rp_read_en   = rp_read_en  && !rp_fifo_empty;
+  // AFIFO
+  assign wclk_wr_en_c0 = wp_write_en && !wp_fifo_full;
+  assign rclk_rd_en_c0 = !rclk_empty && (rp_sync_fill_level <= 2);
 
+  // FIFO
+  assign rp_read_en_c0 = rp_read_en  && !rp_fifo_empty;
 
-  assign afifo_rd_en = !rp_async_valid && (rp_sync_fill_level + {{SYNC_ADDR_WIDTH_C-1{1'b0}}, rp_async_valid} < SYNC_ADDR_WIDTH_C);
 
   afifo_core #(
-    .DATA_WIDTH_P         ( DATA_WIDTH_P         ),
-    .ADDR_WIDTH_P         ( ADDR_WIDTH_P         )
+    .DATA_WIDTH_P       ( DATA_WIDTH_P       ),
+    .ADDR_WIDTH_P       ( ADDR_WIDTH_P       )
   ) afifo_core_i0 (
-    .wclk                 ( clk_wp               ),
-    .rst_w_n              ( rst_wp_n             ),
-    .rclk                 ( clk_rp               ),
-    .rst_r_n              ( rst_rp_n             ),
-    .wclk_wr_en           ( wp_async_write_en    ),
-    .wclk_data            ( wp_data_in           ),
-    .wclk_full            ( wp_fifo_full         ),
-    .rclk_rd_en           ( afifo_rd_en          ),
-    .rclk_data            ( rp_async_data_out    ),
-    .rclk_empty           ( rp_async_valid       )
-    //.sr_wp_fifo_active    ( sr_wp_fifo_active    ),
-    //.sr_wp_fill_level     ( sr_wp_fill_level     ),
-    //.sr_wp_max_fill_level ( sr_wp_max_fill_level ),
-    //.sr_rp_fifo_active    ( sr_rp_fifo_active    ),
-    //.sr_rp_fill_level     ( rp_async_fill_level  )
+    // Write
+    .wclk               ( clk_wp             ), // input
+    .rst_w_n            ( rst_wp_n           ), // input
+    .wclk_wr_en         ( wclk_wr_en_c0      ), // input
+    .wclk_data          ( wp_data_in         ), // input
+    .wclk_full          ( wp_fifo_full       ), // output
+    // Read
+    .rclk               ( clk_rp             ), // input
+    .rst_r_n            ( rst_rp_n           ), // input
+    .rclk_rd_en         ( rclk_rd_en_c0      ), // input
+    .rclk_data          ( rclk_data          ), // output
+    .rclk_empty         ( rclk_empty         ), // output
+    .sr_wclk_fill_level ( sr_wp_fill_level   ), // output
+    .sr_rclk_fill_level ( sr_rclk_fill_level )  // output
   );
+
 
   fifo_register #(
     .DATA_WIDTH_P    ( DATA_WIDTH_P       ),
-    .ADDR_WIDTH_P    ( SYNC_ADDR_WIDTH_C  )
+    .ADDR_WIDTH_P    ( REG_ADDR_WIDTH_C   )
   ) fifo_register_i0 (
-    // Clock and reset
-    .clk             ( clk_rp             ),
-    .rst_n           ( rst_rp_n           ),
-    // Ingress
-    .ing_enable      ( afifo_rd_en_d0     ),
-    .ing_data        ( rp_async_data_out  ),
-    .ing_full        (                    ),
-    // Egress
-    .egr_enable      ( sync_rp_read_en    ),
-    .egr_data        ( rp_data_out        ),
-    .egr_empty       ( rp_fifo_empty      ),
-    // Status registers
-    .sr_fill_level   ( rp_sync_fill_level )
+    .clk             ( clk_rp             ), // input
+    .rst_n           ( rst_rp_n           ), // input
+    .ing_enable      ( rclk_rd_en_d0      ), // input
+    .ing_data        ( rclk_data          ), // input
+    .ing_full        (                    ), // output
+    .egr_enable      ( rp_read_en_c0      ), // input
+    .egr_data        ( rp_data_out        ), // output
+    .egr_empty       ( rp_fifo_empty      ), // output
+    .sr_fill_level   ( rp_sync_fill_level )  // output
   );
+
 
   always_comb begin
     if (rp_fifo_empty) begin
       sr_rp_fill_level <= '0;
-    end
-    else begin
-      sr_rp_fill_level <= rp_async_fill_level + rp_sync_fill_level + rp_async_valid;
+    end else begin
+      sr_rp_fill_level <= sr_rclk_fill_level + rp_sync_fill_level;
     end
   end
 
-  // Valid process
+
   always_ff @ (posedge clk_rp or negedge rst_rp_n) begin
     if (!rst_rp_n) begin
-      rp_valid <= '0;
-      afifo_rd_en_d0 <= '0;
-    end
-    else begin
-      afifo_rd_en_d0 <= afifo_rd_en;
-      if (!rp_fifo_empty && sync_rp_read_en) begin
-        rp_valid <= '1;
-      end
-      else begin
-        rp_valid <= '0;
-      end
+      rclk_rd_en_d0 <= '0;
+    end else begin
+      rclk_rd_en_d0 <= rclk_rd_en_c0;
     end
   end
 

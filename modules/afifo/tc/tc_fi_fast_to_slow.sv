@@ -20,30 +20,24 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-`ifndef SYFI_TC_PKG
-`define SYFI_TC_PKG
+class tc_fi_fast_to_slow extends tc_fi_basic;
 
-package fi_tc_pkg;
+  `uvm_component_utils(tc_fi_fast_to_slow)
 
-  `include "uvm_macros.svh"
-  import uvm_pkg::*;
+  function new(string name = "tc_fi_fast_to_slow", uvm_component parent = null);
+    super.new(name, parent);
+  endfunction
 
-  import fi_tb_pkg::*;
 
-  // Import testbench and agent packages here
-  import bool_pkg::*;
-  import report_server_pkg::*;
-  import vip_axi4s_types_pkg::*;
-  import vip_axi4s_agent_pkg::*;
-  import clk_rst_types_pkg::*;
-  import clk_rst_pkg::*;
+  function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
+    clk_rst_config0.clock_period = 300.0;  // 17MHz
+    clk_rst_config1.clock_period = 512.0; // 3MHz
+  endfunction
 
-  // Include testcase files here
-  `include "fi_base_test.sv"
-  `include "tc_fi_basic.sv"
-  `include "tc_fi_fast_to_slow.sv"
-  `include "tc_fi_slow_to_fast.sv"
 
-endpackage
+  task run_phase(uvm_phase phase);
+    super.run_phase(phase);
+  endtask
 
-`endif
+endclass

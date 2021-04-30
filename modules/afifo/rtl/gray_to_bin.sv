@@ -20,30 +20,23 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-`ifndef SYFI_TC_PKG
-`define SYFI_TC_PKG
+`default_nettype none
 
-package fi_tc_pkg;
+module gray_to_bin #(
+    parameter WIDTH_P = -1
+  )(
+    input  wire  [WIDTH_P-1 : 0] gray,
+    output logic [WIDTH_P-1 : 0] bin
+  );
 
-  `include "uvm_macros.svh"
-  import uvm_pkg::*;
+  genvar i;
 
-  import fi_tb_pkg::*;
+  generate
+    for (i = 0; i < WIDTH_P; i++) begin
+      assign bin[i] = ^gray[WIDTH_P-1 : i];
+    end
+  endgenerate
 
-  // Import testbench and agent packages here
-  import bool_pkg::*;
-  import report_server_pkg::*;
-  import vip_axi4s_types_pkg::*;
-  import vip_axi4s_agent_pkg::*;
-  import clk_rst_types_pkg::*;
-  import clk_rst_pkg::*;
+endmodule
 
-  // Include testcase files here
-  `include "fi_base_test.sv"
-  `include "tc_fi_basic.sv"
-  `include "tc_fi_fast_to_slow.sv"
-  `include "tc_fi_slow_to_fast.sv"
-
-endpackage
-
-`endif
+`default_nettype wire

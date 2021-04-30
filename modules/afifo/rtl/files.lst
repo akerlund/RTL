@@ -5,6 +5,7 @@ rtl_dirs+="
 "
 
 rtl_files+="
+  $module_path/rtl/gray_to_bin.sv
   $module_path/rtl/afifo.sv
   $module_path/rtl/afifo_core.sv
 "

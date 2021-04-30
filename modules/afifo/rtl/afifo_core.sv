@@ -17,6 +17,8 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 // Description:
+// Simulation and Synthesis Techniques for Asynchronous FIFO Design
+// http://www.sunburst-design.com/papers/CummingsSNUG2002SJ_FIFO1.pdf
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -36,69 +38,70 @@ module afifo_core #(
     input  wire                       rst_r_n,
     input  wire                       rclk_rd_en,
     output logic [DATA_WIDTH_P-1 : 0] rclk_data,
-    output logic                      rclk_empty
+    output logic                      rclk_empty,
+
+    output logic   [ADDR_WIDTH_P : 0] sr_wclk_fill_level,
+    output logic   [ADDR_WIDTH_P : 0] sr_rclk_fill_level
   );
 
-  logic                      wp_rp_under_reset_n;
+  logic                      wclk_rst_n;
+  logic                      wclk_rclk_rst_n;
   logic   [ADDR_WIDTH_P : 0] wclk_wr_bin;
   logic   [ADDR_WIDTH_P : 0] wclk_wr_bin_next;
   logic   [ADDR_WIDTH_P : 0] wclk_wr_gray;
   logic   [ADDR_WIDTH_P : 0] wclk_wr_gray_next;
   logic [ADDR_WIDTH_P-1 : 0] wclk_wr_addr;
   logic                      wclk_full_next;
-  logic   [ADDR_WIDTH_P : 0] wclk_rd_gray0;
-  logic   [ADDR_WIDTH_P : 0] wclk_rd_gray1;
+  logic   [ADDR_WIDTH_P : 0] wclk_rd_gray;
+  logic   [ADDR_WIDTH_P : 0] wclk_rd_bin;
+  logic                      wclk_mem_wr_en;
 
-  logic                      rp_wp_under_reset_n;
+  logic                      rclk_rst_n;
+  logic                      rclk_wclk_rst_n;
   logic   [ADDR_WIDTH_P : 0] rclk_rd_bin;
   logic   [ADDR_WIDTH_P : 0] rclk_rd_bin_next;
   logic   [ADDR_WIDTH_P : 0] rclk_rd_gray;
   logic   [ADDR_WIDTH_P : 0] rclk_rd_gray_next;
   logic [ADDR_WIDTH_P-1 : 0] rclk_rd_addr;
   logic                      rclk_empty_next;
-  logic   [ADDR_WIDTH_P : 0] rclk_wr_gray0;
-  logic   [ADDR_WIDTH_P : 0] rclk_wr_gray1;
-
-  logic                      wclk_mem_wr_en;
+  logic   [ADDR_WIDTH_P : 0] rclk_wr_gray;
+  logic   [ADDR_WIDTH_P : 0] rclk_wr_bin;
 
   // ---------------------------------------------------------------------------
   // Write logic
   // ---------------------------------------------------------------------------
 
-  // Calculate the next write address, and the next graycode pointer.
   assign wclk_wr_bin_next  = wclk_wr_bin + {{ADDR_WIDTH_P{1'b0}}, wclk_wr_en && !wclk_full};
   assign wclk_wr_gray_next = (wclk_wr_bin_next >> 1) ^ wclk_wr_bin_next;
+  assign wclk_full_next    = wclk_wr_gray_next == {~wclk_rd_gray[ADDR_WIDTH_P : ADDR_WIDTH_P-1], wclk_rd_gray[ADDR_WIDTH_P-2 : 0]};
   assign wclk_wr_addr      = wclk_wr_bin[ADDR_WIDTH_P-1 : 0];
-  assign wclk_full_next    = (wclk_wr_gray_next == { ~wclk_rd_gray1[ADDR_WIDTH_P : ADDR_WIDTH_P-1], wclk_rd_gray1[ADDR_WIDTH_P-2:0] });
+  assign wclk_mem_wr_en    = wclk_wr_en && !wclk_full;
 
-  // Read pointer CDC, RCLK -> WCLK
   always_ff @(posedge wclk or negedge rst_w_n) begin
     if (!rst_w_n) begin
-      {wclk_rd_gray1, wclk_rd_gray0} <= 0;
+      wclk_rst_n   <= '0;
+      wclk_full    <= '1;
+      wclk_wr_bin  <= '0;
+      wclk_wr_gray <= '0;
     end else begin
-      {wclk_rd_gray1, wclk_rd_gray0} <= {wclk_rd_gray0, rclk_rd_gray};
+      wclk_rst_n <= '1;
+      if (wclk_rclk_rst_n) begin
+        wclk_wr_bin  <= wclk_wr_bin_next;
+        wclk_wr_gray <= wclk_wr_gray_next;
+        wclk_full    <= wclk_full_next;
+      end
     end
   end
 
-  // Register these two values--the address and its Gray code representation
   always_ff @(posedge wclk or negedge rst_w_n) begin
     if (!rst_w_n) begin
-      {wclk_wr_bin, wclk_wr_gray} <= 0;
+      sr_wclk_fill_level <= '0;
     end else begin
-      {wclk_wr_bin, wclk_wr_gray} <= {wclk_wr_bin_next, wclk_wr_gray_next};
+      sr_wclk_fill_level <= wclk_wr_bin >= wclk_rd_bin ?
+                            wclk_wr_bin - wclk_rd_bin :
+                            2**ADDR_WIDTH_P - wclk_rd_bin - wclk_wr_bin;
     end
   end
-
-  // Calculate whether or not the register will be full on the next clock.
-  always_ff @(posedge wclk or negedge rst_w_n) begin
-    if (!rst_w_n) begin
-      wclk_full <= 1'b0;
-    end else begin
-      wclk_full <= wclk_full_next;
-    end
-  end
-
-  assign wclk_mem_wr_en = wclk_wr_en && !wclk_full;
 
 
   // ---------------------------------------------------------------------------
@@ -108,146 +111,104 @@ module afifo_core #(
   assign rclk_rd_bin_next  = rclk_rd_bin + {{ADDR_WIDTH_P{1'b0}}, rclk_rd_en && !rclk_empty};
   assign rclk_rd_gray_next = (rclk_rd_bin_next >> 1) ^ rclk_rd_bin_next;
   assign rclk_rd_addr      = rclk_rd_bin[ADDR_WIDTH_P-1 : 0];
-  assign rclk_empty_next   = (rclk_rd_gray_next == rclk_wr_gray1);
+  assign rclk_empty_next   = (rclk_rd_gray_next == rclk_wr_gray);
 
   always_ff @(posedge rclk or negedge rst_r_n) begin
     if (!rst_r_n) begin
-      {rclk_wr_gray1, rclk_wr_gray0} <= 0;
+      rclk_rst_n   <= '0;
+      rclk_empty   <= '1;
+      rclk_rd_bin  <= '0;
+      rclk_rd_gray <= '0;
     end else begin
-      {rclk_wr_gray1, rclk_wr_gray0} <= {rclk_wr_gray0, wclk_wr_gray};
+      rclk_rst_n <= '1;
+      if (rclk_wclk_rst_n) begin
+        rclk_rd_bin  <= rclk_rd_bin_next;
+        rclk_rd_gray <= rclk_rd_gray_next;
+        rclk_empty   <= rclk_empty_next;
+      end
     end
   end
 
-  always_ff @(posedge rclk or negedge rst_r_n) begin
-    if (!rst_r_n) begin
-      {rclk_rd_bin, rclk_rd_gray} <= 0;
-    end else begin
-      {rclk_rd_bin, rclk_rd_gray} <= {rclk_rd_bin_next, rclk_rd_gray_next};
-    end
-  end
-
-  always_ff @(posedge rclk or negedge rst_r_n) begin
-    if (!rst_r_n) begin
-      rclk_empty <= 1'b1;
-    end else begin
-      rclk_empty <= rclk_empty_next;
-    end
-  end
-
-
-
-
-
-
-  // Write port signals
-  logic wp_wp_under_reset_n;
-  logic sr_wp_fifo_active;
-
-  // // Write process
-  // always_ff @ (posedge wclk or negedge rst_wp_n) begin
-  //   if (!rst_wp_n) begin
-  //     wp_wp_under_reset_n     <= '0;
-  //     sr_wp_fifo_active       <= '0;
-  //   end
-  //   else begin
-
-  //     wp_wp_under_reset_n <= 1;
-
-  //     // Synchronized reset
-  //     if (wp_wp_under_reset_n && wp_rp_under_reset_n) begin
-
-  //       sr_wp_fifo_active <= '1;
-
-  //     end
-  //   end
-  // end
-
-
-  // Read process
-  logic rp_rp_under_reset_n;
-  logic sr_rp_fifo_active;
-  // always_ff @ (posedge rclk or negedge rst_r_n) begin
-    // if (!rst_r_n) begin
-      // rp_rp_under_reset_n    <= '0;
-      // sr_rp_fifo_active      <= '0;
-    // end
-    // else begin
-//
-      // rp_rp_under_reset_n <= 1;
-//
-      // if (rp_rp_under_reset_n && rp_wp_under_reset_n) begin // Synchronized reset
-//
-        // sr_rp_fifo_active <= 1;
-//
-      // end
-    // end
-  // end
 
   ram_sdp2c #(
-    .DATA_WIDTH_P        ( DATA_WIDTH_P      ),
-    .ADDR_WIDTH_P        ( ADDR_WIDTH_P      )
+    .DATA_WIDTH_P        ( DATA_WIDTH_P   ),
+    .ADDR_WIDTH_P        ( ADDR_WIDTH_P   )
   ) ram_sdp2c_i0 (
-    .clk_a               ( wclk             ),
-    .port_a_enable       ( '1                ),
-    .port_a_write_enable ( wclk_mem_wr_en    ),
-    .port_a_address      ( wclk_wr_addr      ),
-    .port_a_data_ing     ( wclk_data         ),
-    .clk_b               ( rclk              ),
-    .port_b_enable       ( '1                ),
-    .port_b_address      ( rclk_rd_addr      ),
-    .port_b_data_egr     ( rclk_data         )
+    .clk_a               ( wclk           ),
+    .port_a_enable       ( '1             ),
+    .port_a_write_enable ( wclk_mem_wr_en ),
+    .port_a_address      ( wclk_wr_addr   ),
+    .port_a_data_ing     ( wclk_data      ),
+    .clk_b               ( rclk           ),
+    .port_b_enable       ( '1             ),
+    .port_b_address      ( rclk_rd_addr   ),
+    .port_b_data_egr     ( rclk_data      )
   );
 
-/*
+
   cdc_bit_sync cdc_bit_sync_i0 (
-    .clk_src   ( wclk               ),
-    .rst_src_n ( rst_w_n            ),
-    .clk_dst   ( rclk                ),
-    .rst_dst_n ( rst_r_n            ),
-    .src_bit   ( wp_wp_under_reset_n ),
-    .dst_bit   ( rp_wp_under_reset_n )
+    .clk_src   ( wclk            ),
+    .rst_src_n ( rst_w_n         ),
+    .clk_dst   ( rclk            ),
+    .rst_dst_n ( rst_r_n         ),
+    .src_bit   ( wclk_rst_n      ),
+    .dst_bit   ( rclk_wclk_rst_n )
   );
 
 
   cdc_bit_sync cdc_bit_sync_i1 (
-    .clk_src   ( rclk                ),
-    .rst_src_n ( rst_r_n            ),
-    .clk_dst   ( wclk               ),
-    .rst_dst_n ( rst_w_n            ),
-    .src_bit   ( rp_rp_under_reset_n ),
-    .dst_bit   ( wp_rp_under_reset_n )
-  );*/
-/*
+    .clk_src   ( rclk            ),
+    .rst_src_n ( rst_r_n         ),
+    .clk_dst   ( wclk            ),
+    .rst_dst_n ( rst_w_n         ),
+    .src_bit   ( rclk_rst_n      ),
+    .dst_bit   ( wclk_rclk_rst_n )
+  );
 
-  // Read pointer, rclk   to wclk
+  gray_to_bin #(
+    .WIDTH_P ( ADDR_WIDTH_P+1 )
+  ) gray_to_bin_i0 (
+    .gray    ( wclk_rd_gray   ),
+    .bin     ( wclk_rd_bin    )
+  );
+
+  gray_to_bin #(
+    .WIDTH_P ( ADDR_WIDTH_P+1 )
+  ) gray_to_bin_i1 (
+    .gray    ( rclk_wr_gray   ),
+    .bin     ( rclk_wr_bin    )
+  );
+
   genvar i;
+
+  // Write pointer, wclk to rclk
   generate
     for (i = 0; i <= ADDR_WIDTH_P; i++) begin
       cdc_bit_sync cdc_bit_sync_i (
-        .clk_src   ( rclk                    ),
-        .rst_src_n ( rst_rp_n                ),
-        .clk_dst   ( wclk                   ),
-        .rst_dst_n ( rst_wp_n                ),
-        .src_bit   ( rp_read_pointer_gray[i] ),
-        .dst_bit   ( wp_read_pointer_gray[i] )
+        .clk_src   ( wclk            ),
+        .rst_src_n ( rst_w_n         ),
+        .clk_dst   ( rclk            ),
+        .rst_dst_n ( rst_r_n         ),
+        .src_bit   ( wclk_wr_gray[i] ),
+        .dst_bit   ( rclk_wr_gray[i] )
       );
     end
   endgenerate
 
-  // Write pointer, wclk  to rclk
+  // Read pointer, rclk to wclk
   generate
     for (i = 0; i <= ADDR_WIDTH_P; i++) begin
       cdc_bit_sync cdc_bit_sync_i (
-        .clk_src   ( wclk                    ),
-        .rst_src_n ( rst_wp_n                 ),
-        .clk_dst   ( rclk                     ),
-        .rst_dst_n ( rst_rp_n                 ),
-        .src_bit   ( wp_write_pointer_gray[i] ),
-        .dst_bit   ( rp_write_pointer_gray[i] )
+        .clk_src   ( rclk            ),
+        .rst_src_n ( rst_r_n         ),
+        .clk_dst   ( wclk            ),
+        .rst_dst_n ( rst_w_n         ),
+        .src_bit   ( rclk_rd_gray[i] ),
+        .dst_bit   ( wclk_rd_gray[i] )
       );
     end
   endgenerate
-*/
+
 endmodule
 
 `default_nettype wire
