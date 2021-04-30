@@ -109,7 +109,7 @@ module afifo #(
       sr_wp_max_fill_level <= '0;
     end else begin
       if (sr_wp_fill_level > sr_wp_max_fill_level) begin
-        sr_wp_max_fill_level <= rclk_rd_en_c0;
+        sr_wp_max_fill_level <= sr_wp_fill_level;
       end
     end
   end
@@ -117,9 +117,9 @@ module afifo #(
 
   always_comb begin
     if (rp_fifo_empty) begin
-      sr_rp_fill_level <= '0;
+      sr_rp_fill_level = '0;
     end else begin
-      sr_rp_fill_level <= sr_rclk_fill_level + rp_sr_fill_level;
+      sr_rp_fill_level = sr_rclk_fill_level + rp_sr_fill_level;
     end
   end
 
