@@ -6,12 +6,36 @@ git_root="$(git rev-parse --show-toplevel)"
 rtl_top=iir_biquad_top
 uvm_top="iir_tb_top"
 
-# Specify other file lists
-source $git_root/modules/math/cordic/rtl/rtl_files.lst
+# ------------------------------------------------------------------------------
+# Source submodules
+# ------------------------------------------------------------------------------
+
+git_sub_root="$(git rev-parse --show-toplevel)"
+
+git_root="$(git rev-parse --show-toplevel)/submodules/VIP"
+source $git_sub_root/submodules/VIP/bool/files.lst
+source $git_sub_root/submodules/VIP/vip_axi4_agent/files.lst
+source $git_sub_root/submodules/VIP/vip_clk_rst_agent/files.lst
+source $git_sub_root/submodules/VIP/report_server/files.lst
+
+git_root="$(git rev-parse --show-toplevel)/submodules/PYRG"
+source $git_sub_root/submodules/PYRG/rtl/files.lst
+
+# ------------------------------------------------------------------------------
+# Source modules
+# ------------------------------------------------------------------------------
+
+# Restoring the git root
+git_root="$(git rev-parse --show-toplevel)"
+
+source $git_root/modules/oscillator/rtl/files.lst
+source $git_root/modules/math/long_division/rtl/files.lst
+source $git_root/modules/math/cordic/rtl/files.lst
+source $git_root/modules/math/multiplication/rtl/files.lst
 
 # Source the module's file lists
-source ./rtl/rtl_files.lst
-source ./tb/uvm_files.lst
+source ./rtl/files.lst
+source ./tb/files.lst
 
 # Parameter override
 parameters+=("AXI_DATA_WIDTH_P=32 ")
