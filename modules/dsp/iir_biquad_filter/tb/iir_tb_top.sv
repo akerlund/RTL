@@ -25,18 +25,43 @@ import iir_tc_pkg::*;
 
 module iir_tb_top;
 
-  bit clk;
-  bit rst_n;
+  clk_rst_if                   clk_rst_vif();
+  vip_axi4_if #(VIP_REG_CFG_C) reg_vif(clk_rst_vif.clk, clk_rst_vif.rst_n);
 
-  time clk_period = 4ns;
+  axi4_reg_if  #(
+    .AXI4_ID_WIDTH_P   ( VIP_REG_CFG_C.VIP_AXI4_ID_WIDTH_P   ),
+    .AXI4_ADDR_WIDTH_P ( VIP_REG_CFG_C.VIP_AXI4_ADDR_WIDTH_P ),
+    .AXI4_DATA_WIDTH_P ( VIP_REG_CFG_C.VIP_AXI4_DATA_WIDTH_P ),
+    .AXI4_STRB_WIDTH_P ( VIP_REG_CFG_C.VIP_AXI4_STRB_WIDTH_P )
+  ) osc_cfg_if (clk_rst_vif.clk, clk_rst_vif.rst_n);
 
-  // IF
-  vip_apb3_if #(vip_apb3_cfg) apb3_vif(clk, rst_n);
+  // Register slave
+  assign osc_cfg_if.awaddr  = reg_vif.awaddr;
+  assign osc_cfg_if.awvalid = reg_vif.awvalid;
+  assign reg_vif.awready    = osc_cfg_if.awready;
+  assign osc_cfg_if.wdata   = reg_vif.wdata;
+  assign osc_cfg_if.wstrb   = reg_vif.wstrb;
+  assign osc_cfg_if.wlast   = reg_vif.wlast;
+  assign osc_cfg_if.wvalid  = reg_vif.wvalid;
+  assign reg_vif.wready     = osc_cfg_if.wready;
+  assign reg_vif.bresp      = osc_cfg_if.bresp;
+  assign reg_vif.bvalid     = osc_cfg_if.bvalid;
+  assign osc_cfg_if.bready  = reg_vif.bready;
+  assign osc_cfg_if.araddr  = reg_vif.araddr;
+  assign osc_cfg_if.arlen   = reg_vif.arlen;
+  assign osc_cfg_if.arvalid = reg_vif.arvalid;
+  assign reg_vif.arready    = osc_cfg_if.arready;
+  assign reg_vif.rdata      = osc_cfg_if.rdata;
+  assign reg_vif.rresp      = osc_cfg_if.rresp;
+  assign reg_vif.rlast      = osc_cfg_if.rlast;
+  assign reg_vif.rvalid     = osc_cfg_if.rvalid;
+  assign osc_cfg_if.rready  = reg_vif.rready;
+
 
   logic [N_BITS_C-1 : 0] filtered_waveform;
 
 
-
+/*
   iir_dut_biquad_system #(
     // Oscillator
     .WAVE_WIDTH_P       ( WAVE_WIDTH_C                    ),
@@ -66,52 +91,25 @@ module iir_tb_top;
     .apb3_pwdata        ( apb3_vif.pwdata                 ),
     .apb3_pready        ( apb3_vif.pready                 ),
     .apb3_prdata        ( apb3_vif.prdata                 )
-  );
+  );*/
+
+
 
   initial begin
-
-    uvm_config_db #(virtual vip_apb3_if #(vip_apb3_cfg))::set(uvm_root::get(), "uvm_test_top.tb_env.vip_apb3_agent0*", "vif", apb3_vif);
-
+    uvm_config_db #(virtual clk_rst_if)::set(uvm_root::get(),                   "uvm_test_top.tb_env*",            "vif", clk_rst_vif);
+    uvm_config_db #(virtual vip_axi4_if #(VIP_REG_CFG_C))::set(uvm_root::get(), "uvm_test_top.tb_env.reg_agent0*", "vif", reg_vif);
     run_test();
     $stop();
-
   end
 
 
-
   initial begin
-
-    // With recording detail you can switch on/off transaction recording.
+    $timeformat(-9, 0, "", 11);  // units, precision, suffix, min field width
     if ($test$plusargs("RECORD")) begin
       uvm_config_db #(uvm_verbosity)::set(null,"*", "recording_detail", UVM_FULL);
-    end
-    else begin
+    end else begin
       uvm_config_db #(uvm_verbosity)::set(null,"*", "recording_detail", UVM_NONE);
     end
-  end
-
-
-  // Generate reset
-  initial begin
-
-    rst_n = 1'b1;
-
-    #(clk_period*5)
-
-    rst_n = 1'b0;
-
-    #(clk_period*5)
-
-    @(posedge clk);
-
-    rst_n = 1'b1;
-
-  end
-
-  // Generate clock
-  always begin
-    #(clk_period/2)
-    clk = ~clk;
   end
 
 endmodule

@@ -27,74 +27,53 @@ class iir_env extends uvm_env;
   protected virtual clk_rst_if vif;
 
   clk_rst_agent                    clk_rst_agent0;
-  vip_axi4_agent  #(VIP_MEM_CFG_C) mem_agent0;
   vip_axi4_agent  #(VIP_REG_CFG_C) reg_agent0;
-  vip_axi4s_agent #(VIP_CIR_CFG_C) cir_agent0;
+  //vip_axi4s_agent #(VIP_CIR_CFG_C) cir_agent0;
 
-  // Agents
-  vip_apb3_agent #(vip_apb3_cfg) vip_apb3_agent0;
-
-  // Agent configurations
-  vip_apb3_config vip_apb3_config0;
-
-  // The block configuration, e.g., clk period, reset time
-  iir_config tb_cfg;
-
-  // Scoreboard
-  iir_scoreboard scoreboard0;
-
-  // Virtual sequencer, i.e., a collection of agent sequencers
+  //register_model        reg_model;
+  //iir_scoreboard        scoreboard0;
   iir_virtual_sequencer virtual_sequencer;
-
 
 
   function new(string name, uvm_component parent);
     super.new(name, parent);
   endfunction
 
-
-
+  //----------------------------------------------------------------------------
+  //
+  //----------------------------------------------------------------------------
   function void build_phase(uvm_phase phase);
 
     super.build_phase(phase);
 
+    //reg_model = register_model::type_id::create("reg_model");
+    //reg_model.build();
+    //reg_model.reset();
+    //uvm_config_db #(register_model)::set(null, "", "reg_model", reg_model);
+    //vip_axi4_adapter0 = vip_axi4_adapter::type_id::create("vip_axi4_adapter0",, get_full_name());
 
-    if (tb_cfg == null) begin
-      `uvm_info(get_type_name(), "No testbench configuration. Creating a new", UVM_LOW)
-      tb_cfg = iir_config::type_id::create("tb_cfg", this);
-      void'(uvm_config_db #(iir_config)::get(this, "", "tb_cfg", tb_cfg));
-    end
+    clk_rst_agent0 = clk_rst_agent::type_id::create("clk_rst_agent0", this);
+    reg_agent0     = vip_axi4_agent  #(VIP_REG_CFG_C)::type_id::create("reg_agent0", this);
+    uvm_config_db #(int)::set(this, {"clk_rst_agent0", "*"}, "id", 0);
+    uvm_config_db #(int)::set(this, {"reg_agent0",     "*"}, "id", 1);
 
-    `uvm_info(get_type_name(), {"Configuration:\n", tb_cfg.sprint()}, UVM_LOW)
+    //scoreboard0 = iir_scoreboard::type_id::create("scoreboard0", this);
 
-    // Configurations
-    vip_apb3_config0 = vip_apb3_config::type_id::create("vip_apb3_config0", this);
-
-    // Create Agents
-    vip_apb3_agent0 = vip_apb3_agent #(vip_apb3_cfg)::type_id::create("vip_apb3_agent0", this);
-
-    uvm_config_db #(int)::set(this, {"vip_apb3_agent0", "*"}, "id", 0);
-
-    uvm_config_db #(vip_apb3_config)::set(this, {"vip_apb3_agent0", "*"}, "cfg", vip_apb3_config0);
-
-    // Create Scoreboards
-    scoreboard0 = iir_scoreboard::type_id::create("scoreboard0", this);
-
-    // Create Virtual Sequencer
     virtual_sequencer = iir_virtual_sequencer::type_id::create("virtual_sequencer", this);
     uvm_config_db #(iir_virtual_sequencer)::set(this, {"virtual_sequencer", "*"}, "virtual_sequencer", virtual_sequencer);
 
   endfunction
 
-
-
+  //----------------------------------------------------------------------------
+  //
+  //----------------------------------------------------------------------------
   function void connect_phase(uvm_phase phase);
-
     super.connect_phase(phase);
-    virtual_sequencer.apb3_sequencer = vip_apb3_agent0.sequencer;
-    vip_apb3_agent0.monitor.collected_write_port.connect(scoreboard0.apb_write_port);
-    vip_apb3_agent0.monitor.collected_read_port.connect(scoreboard0.apb_read_port);
-
+    //reg_model.default_map.set_sequencer(.sequencer(reg_agent0.sequencer), .adapter(vip_axi4_adapter0));
+    //reg_model.default_map.set_base_addr('h00000000);
+    virtual_sequencer.clk_rst_sequencer0 = clk_rst_agent0.sequencer;
+    //vip_apb3_agent0.monitor.collected_write_port.connect(scoreboard0.apb_write_port);
+    //vip_apb3_agent0.monitor.collected_read_port.connect(scoreboard0.apb_read_port);
   endfunction
 
 endclass

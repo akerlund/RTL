@@ -27,11 +27,14 @@ package iir_tb_pkg;
   import uvm_pkg::*;
   `include "uvm_macros.svh"
 
-  import vip_apb3_types_pkg::*;
-  import vip_apb3_pkg::*;
   import iir_biquad_types_pkg::*;
-  import iir_biquad_apb_slave_addr_pkg::*;
   import oscillator_types_pkg::*;
+
+  import bool_pkg::*;
+  import clk_rst_types_pkg::*;
+  import clk_rst_pkg::*;
+  import vip_axi4_types_pkg::*;
+  import vip_axi4_agent_pkg::*;
 
   // DUT constants
   localparam int WAVE_WIDTH_C     = 24;
@@ -41,24 +44,24 @@ package iir_tb_pkg;
   localparam int N_BITS_C         = 32;
   localparam int Q_BITS_C         = 11;
 
-  // APB base addresses
+  // Base addresses
   localparam int OSC_BASE_ADDR_C  = 0;
   localparam int IIR_BASE_ADDR_C  = 16;
   localparam int OSC_PSEL_BIT_C   = 0;
   localparam int IIR_PSEL_BIT_C   = 1;
 
-  // Configuration of the APB3 VIP
-  localparam vip_apb3_cfg_t vip_apb3_cfg = '{
-    APB_ADDR_WIDTH_P   : 8,
-    APB_DATA_WIDTH_P   : 32,
-    APB_NR_OF_SLAVES_P : 2
+  // Configuration of the VIP (Registers)
+  localparam vip_axi4_cfg_t VIP_REG_CFG_C = '{
+    VIP_AXI4_ID_WIDTH_P   : 2,
+    VIP_AXI4_ADDR_WIDTH_P : 16,
+    VIP_AXI4_DATA_WIDTH_P : 64,
+    VIP_AXI4_STRB_WIDTH_P : 8,
+    VIP_AXI4_USER_WIDTH_P : 0
   };
 
-  `include "iir_config.sv"
-  `include "iir_scoreboard.sv"
+  //`include "iir_scoreboard.sv"
   `include "iir_virtual_sequencer.sv"
   `include "iir_env.sv"
-  `include "iir_seq_lib.sv"
 
 endpackage
 
