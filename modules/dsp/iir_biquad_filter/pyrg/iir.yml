@@ -1,0 +1,161 @@
+---
+iir:
+
+  bus_width: 64
+
+  rtl_path: "$GIT_ROOT/modules/dsp/iir_biquad_filter/rtl"
+  uvm_path: "$GIT_ROOT/modules/dsp/iir_biquad_filter/tb/uvm_reg"
+  sw_path:  "$GIT_ROOT/modules/dsp/iir_biquad_filter/sw"
+
+  parameters:
+    - N_BITS_C
+
+  registers:
+
+    - name:   iir_f0
+      desc:   Cut-off frequency
+      access: RW
+      bit_fields:
+        - field: {
+          name:        cr_iir_f0,
+          description: Cut-off frequency,
+          size:        N_BITS_C,
+          lsb_pos:     0,
+          reset_value: 0x0
+        }
+
+    - name:   iir_fs
+      desc:   Sampling frequency
+      access: RW
+      bit_fields:
+        - field: {
+          name:        cr_iir_fs,
+          description: Sampling frequency,
+          size:        N_BITS_C,
+          lsb_pos:     0,
+          reset_value: 0x0
+        }
+
+    - name:   iir_q
+      desc:   Alfa (q)
+      access: RW
+      bit_fields:
+        - field: {
+          name:        cr_iir_q,
+          description: Alfa (q),
+          size:        N_BITS_C,
+          lsb_pos:     0,
+          reset_value: 0x0
+        }
+
+    - name:   iir_type
+      desc:   Select filter type
+      access: RW
+      bit_fields:
+        - field: {
+          name:        cr_iir_q,
+          description: LP BP HP,
+          size:        N_BITS_C,
+          lsb_pos:     0,
+          reset_value: 0x0
+        }
+
+    - name:   iir_bypass
+      desc:   Bypass the filter
+      access: RW
+      bit_fields:
+        - field: {
+          name:        cr_iir_bypass,
+          description: Bypass the filter,
+          size:        1,
+          lsb_pos:     0,
+          reset_value: 0x0
+        }
+
+    - name:   iir_w0
+      desc:   iir_w0
+      access: RO
+      bit_fields:
+        - field: {
+          name:        sr_iir_w0,
+          description: iir_w0,
+          size:        N_BITS_C,
+          lsb_pos:     0
+        }
+
+    - name:   iir_alfa
+      desc:   iir_alfa
+      access: RO
+      bit_fields:
+        - field: {
+          name:        sr_iir_alfa,
+          description: iir_alfa,
+          size:        N_BITS_C,
+          lsb_pos:     0
+        }
+
+    - name:   iir_b0
+      desc:   iir_b0
+      access: RO
+      bit_fields:
+        - field: {
+          name:        sr_iir_b0,
+          description: iir_b0,
+          size:        N_BITS_C,
+          lsb_pos:     0
+        }
+
+    - name:   iir_b1
+      desc:   iir_b1
+      access: RO
+      bit_fields:
+        - field: {
+          name:        sr_iir_b1,
+          description: iir_b1,
+          size:        N_BITS_C,
+          lsb_pos:     0
+        }
+
+    - name:   iir_b2
+      desc:   iir_b2
+      access: RO
+      bit_fields:
+        - field: {
+          name:        sr_iir_b2,
+          description: iir_b2,
+          size:        N_BITS_C,
+          lsb_pos:     0
+        }
+
+    - name:   iir_10
+      desc:   iir_10
+      access: RO
+      bit_fields:
+        - field: {
+          name:        sr_iir_10,
+          description: iir_10,
+          size:        N_BITS_C,
+          lsb_pos:     0
+        }
+
+    - name:   iir_11
+      desc:   iir_11
+      access: RO
+      bit_fields:
+        - field: {
+          name:        sr_iir_11,
+          description: iir_11,
+          size:        N_BITS_C,
+          lsb_pos:     0
+        }
+
+    - name:   iir_12
+      desc:   iir_12
+      access: RO
+      bit_fields:
+        - field: {
+          name:        sr_iir_12,
+          description: iir_12,
+          size:        N_BITS_C,
+          lsb_pos:     0
+        }
