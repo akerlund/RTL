@@ -6,8 +6,6 @@ rtl_dirs+="
 
 rtl_files+="
   $module_path/rtl/iir_biquad_types_pkg.sv
-  $module_path/rtl/iir_biquad_apb_slave_addr_pkg.sv
-  $module_path/rtl/iir_biquad_apb_slave.sv
   $module_path/rtl/iir_biquad_core.sv
   $module_path/rtl/iir_biquad_top.sv
 "

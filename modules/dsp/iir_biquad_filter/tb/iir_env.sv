@@ -28,13 +28,13 @@ class iir_env extends uvm_env;
 
   clk_rst_agent                      clk_rst_agent0;
   vip_axi4_agent    #(VIP_REG_CFG_C) reg_agent0;
+  iir_virtual_sequencer              virtual_sequencer;
+
   //vip_axi4s_agent #(VIP_AXI4S_CFG_C) mst_agent0;
+  //iir_scoreboard        scoreboard0;
 
   register_model        reg_model;
   vip_axi4_adapter      vip_axi4_adapter0;
-  //iir_scoreboard        scoreboard0;
-  iir_virtual_sequencer virtual_sequencer;
-
 
   function new(string name, uvm_component parent);
     super.new(name, parent);
@@ -55,11 +55,11 @@ class iir_env extends uvm_env;
 
     clk_rst_agent0 = clk_rst_agent::type_id::create("clk_rst_agent0", this);
     reg_agent0     = vip_axi4_agent  #(VIP_REG_CFG_C)::type_id::create("reg_agent0", this);
-    //mst_agent0     = vip_axi4s_agent #(VIP_AXI4S_CFG_C)::type_id::create("mst_agent0",  this);
     uvm_config_db #(int)::set(this, {"clk_rst_agent0", "*"}, "id", 0);
     uvm_config_db #(int)::set(this, {"reg_agent0",     "*"}, "id", 1);
-    //uvm_config_db #(int)::set(this, {"mst_agent0",     "*"}, "id", 2);
 
+    //mst_agent0     = vip_axi4s_agent #(VIP_AXI4S_CFG_C)::type_id::create("mst_agent0",  this);
+    //uvm_config_db #(int)::set(this, {"mst_agent0",     "*"}, "id", 2);
     //scoreboard0 = iir_scoreboard::type_id::create("scoreboard0", this);
 
     virtual_sequencer = iir_virtual_sequencer::type_id::create("virtual_sequencer", this);
