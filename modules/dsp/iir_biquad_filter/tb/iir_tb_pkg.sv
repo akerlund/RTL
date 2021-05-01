@@ -27,15 +27,13 @@ package iir_tb_pkg;
   import uvm_pkg::*;
   `include "uvm_macros.svh"
 
-  import iir_biquad_types_pkg::*;
+  //import iir_biquad_types_pkg::*;
 
   import bool_pkg::*;
   import clk_rst_types_pkg::*;
   import clk_rst_pkg::*;
   import vip_axi4_types_pkg::*;
   import vip_axi4_agent_pkg::*;
-  //import vip_axi4s_types_pkg::*;
-  //import vip_axi4s_agent_pkg::*;
 
   // DUT constants
   localparam int WAVE_WIDTH_C     = 24;
@@ -61,13 +59,15 @@ package iir_tb_pkg;
   };
 
   // Configuration of the AXI4-S VIP
+  //import vip_axi4s_types_pkg::*;
+  //import vip_axi4s_agent_pkg::*;
   //localparam vip_axi4s_cfg_t VIP_AXI4S_CFG_C = '{
   //  VIP_AXI4S_TDATA_WIDTH_P : WAVE_WIDTH_C,
-  //  VIP_AXI4S_TSTRB_WIDTH_P : WAVE_WIDTH_C/8,
+  //  VIP_AXI4S_TSTRB_WIDTH_P : 4,
   //  VIP_AXI4S_TKEEP_WIDTH_P : 0,
   //  VIP_AXI4S_TID_WIDTH_P   : 2,
   //  VIP_AXI4S_TDEST_WIDTH_P : 0,
-  //  VIP_AXI4S_TUSER_WIDTH_P : 1
+  //  VIP_AXI4S_TUSER_WIDTH_P : 0
   //};
 
   // Register model

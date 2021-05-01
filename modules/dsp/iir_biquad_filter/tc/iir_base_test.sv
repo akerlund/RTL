@@ -36,7 +36,7 @@ class iir_base_test extends uvm_test;
 
   iir_env               tb_env;
   iir_virtual_sequencer v_sqr;
-  //register_model        reg_model;
+  register_model        reg_model;
   uvm_status_e          uvm_status;
   uvm_reg_data_t        value;
 
@@ -44,13 +44,15 @@ class iir_base_test extends uvm_test;
   // VIP Agent configurations
   // ---------------------------------------------------------------------------
 
-  clk_rst_config clk_rst_config0;
+  clk_rst_config   clk_rst_config0;
+  //vip_axi4s_config axi4s_mst_cfg0;
 
   // ---------------------------------------------------------------------------
   // Sequences
   // ---------------------------------------------------------------------------
 
-  reset_sequence     reset_seq0;
+  reset_sequence                    reset_seq0;
+  //vip_axi4s_seq  #(VIP_AXI4S_CFG_C) vip_axi4s_seq0;
 
   // ---------------------------------------------------------------------------
   // Testcase variables
@@ -60,13 +62,8 @@ class iir_base_test extends uvm_test;
   int               iir_f0;
   int               iir_fs;
   int               iir_q;
-  iir_biquad_type_t iir_type;
+  //iir_biquad_type_t iir_type;
   int               iir_bypass;
-
-  // Oscillator
-  int                 osc_f;
-  int                 osc_duty_cycle;
-  osc_waveform_type_t osc_waveform_type;
 
 
   function new(string name = "iir_base_test", uvm_component parent = null);
@@ -93,7 +90,9 @@ class iir_base_test extends uvm_test;
 
     // Configurations
     clk_rst_config0 = clk_rst_config::type_id::create("clk_rst_config0", this);
+    //axi4s_mst_cfg0  = vip_axi4s_config::type_id::create("axi4s_mst_cfg0", this);
     uvm_config_db #(clk_rst_config)::set(this,  {"tb_env.clk_rst_agent0", "*"}, "cfg", clk_rst_config0);
+    //uvm_config_db #(vip_axi4s_config)::set(this, {"tb_env.mst_agent0",    "*"}, "cfg", axi4s_mst_cfg0);
 
   endfunction
 
@@ -112,7 +111,8 @@ class iir_base_test extends uvm_test;
 
   function void start_of_simulation_phase(uvm_phase phase);
     super.start_of_simulation_phase(phase);
-    reset_seq0 = reset_sequence::type_id::create("reset_seq0");
+    reset_seq0     = reset_sequence::type_id::create("reset_seq0");
+    //vip_axi4s_seq0 = vip_axi4s_seq #(VIP_AXI4S_CFG_C)::type_id::create("vip_axi4s_seq0");
   endfunction
 
 

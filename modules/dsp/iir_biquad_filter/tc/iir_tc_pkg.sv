@@ -26,7 +26,7 @@ package iir_tc_pkg;
 
   import iir_tb_pkg::*;
 
-  import iir_biquad_types_pkg::*;
+  //import iir_biquad_types_pkg::*;
 
   import bool_pkg::*;
   import report_server_pkg::*;
