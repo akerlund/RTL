@@ -102,58 +102,57 @@ module ara_tb_top;
     .AXI_ID_WIDTH_P   ( VIP_AXI4_CFG_C.VIP_AXI4_ID_WIDTH_P   ),
     .AXI_ADDR_WIDTH_P ( VIP_AXI4_CFG_C.VIP_AXI4_ADDR_WIDTH_P ),
     .AXI_DATA_WIDTH_P ( VIP_AXI4_CFG_C.VIP_AXI4_DATA_WIDTH_P ),
-    .AXI_USER_WIDTH_P ( VIP_AXI4_CFG_C.VIP_AXI4_USER_WIDTH_P ),
-    .NR_OF_MASTERS_P  ( 1                               ),
-    .NR_OF_SLAVES_P   ( NR_OF_SLAVES_C                  )
+    .NR_OF_MASTERS_P  ( 1                                    ),
+    .NR_OF_SLAVES_P   ( NR_OF_SLAVES_C                       )
   ) axi4_read_arbiter_i0 (
 
     // Clock and reset
-    .clk              ( clk_rst_vif.clk                 ), // input
-    .rst_n            ( clk_rst_vif.rst_n               ), // input
+    .clk              ( clk_rst_vif.clk                      ), // input
+    .rst_n            ( clk_rst_vif.rst_n                    ), // input
 
     // -------------------------------------------------------------------------
     // AXI4 Masters
     // -------------------------------------------------------------------------
 
     // Read Address Channel
-    .mst_arid         ( mst_vif.arid                    ), // input
-    .mst_araddr       ( mst_vif.araddr                  ), // input
-    .mst_arlen        ( mst_vif.arlen                   ), // input
-    .mst_arvalid      ( mst_vif.arvalid                 ), // input
-    .mst_arsize       ( mst_vif.arsize                  ), // input
-    .mst_arburst      ( mst_vif.arburst                 ), // input
-    .mst_arregion     ( mst_vif.arregion                ), // input
-    .mst_arready      ( mst_vif.arready                 ), // output
+    .mst_arid         ( mst_vif.arid                         ), // input
+    .mst_araddr       ( mst_vif.araddr                       ), // input
+    .mst_arlen        ( mst_vif.arlen                        ), // input
+    .mst_arvalid      ( mst_vif.arvalid                      ), // input
+    .mst_arsize       ( mst_vif.arsize                       ), // input
+    .mst_arburst      ( mst_vif.arburst                      ), // input
+    .mst_arregion     ( mst_vif.arregion                     ), // input
+    .mst_arready      ( mst_vif.arready                      ), // output
 
     // Read Data Channel
-    .mst_rid          ( mst_vif.rid                     ), // output
-    .mst_rresp        ( mst_vif.rresp                   ), // output
-    .mst_rdata        ( mst_vif.rdata                   ), // output
-    .mst_rlast        ( mst_vif.rlast                   ), // output
-    .mst_rvalid       ( mst_vif.rvalid                  ), // output
-    .mst_rready       ( mst_vif.rready                  ), // input
+    .mst_rid          ( mst_vif.rid                          ), // output
+    .mst_rresp        ( mst_vif.rresp                        ), // output
+    .mst_rdata        ( mst_vif.rdata                        ), // output
+    .mst_rlast        ( mst_vif.rlast                        ), // output
+    .mst_rvalid       ( mst_vif.rvalid                       ), // output
+    .mst_rready       ( mst_vif.rready                       ), // input
 
     // -------------------------------------------------------------------------
     // AXI4 Slave
     // -------------------------------------------------------------------------
 
     // Read Address Channel
-    .slv_arid         ( slvs_arid0                      ), // output
-    .slv_araddr       ( slvs_araddr0                    ), // output
-    .slv_arlen        ( slvs_arlen0                     ), // output
-    .slv_arsize       ( slvs_arsize0                    ), // output
-    .slv_arburst      ( slvs_arburst0                   ), // output
-    .slv_arregion     ( slvs_arregion0                  ), // output
-    .slv_arvalid      ( slvs_arvalid0                   ), // output
-    .slv_arready      ( slvs_arready0                   ), // input
+    .slv_arid         ( slvs_arid0                           ), // output
+    .slv_araddr       ( slvs_araddr0                         ), // output
+    .slv_arlen        ( slvs_arlen0                          ), // output
+    .slv_arsize       ( slvs_arsize0                         ), // output
+    .slv_arburst      ( slvs_arburst0                        ), // output
+    .slv_arregion     ( slvs_arregion0                       ), // output
+    .slv_arvalid      ( slvs_arvalid0                        ), // output
+    .slv_arready      ( slvs_arready0                        ), // input
 
     // Read Data Channel
-    .slv_rid          ( slvs_rid0                       ), // input
-    .slv_rresp        ( slvs_rresp0                     ), // input
-    .slv_rdata        ( slvs_rdata0                     ), // input
-    .slv_rlast        ( slvs_rlast0                     ), // input
-    .slv_rvalid       ( slvs_rvalid0                    ), // input
-    .slv_rready       ( slvs_rready0                    )  // output
+    .slv_rid          ( slvs_rid0                            ), // input
+    .slv_rresp        ( slvs_rresp0                          ), // input
+    .slv_rdata        ( slvs_rdata0                          ), // input
+    .slv_rlast        ( slvs_rlast0                          ), // input
+    .slv_rvalid       ( slvs_rvalid0                         ), // input
+    .slv_rready       ( slvs_rready0                         )  // output
   );
 
   // ---------------------------------------------------------------------------
@@ -163,58 +162,57 @@ module ara_tb_top;
     .AXI_ID_WIDTH_P   ( VIP_AXI4_CFG_C.VIP_AXI4_ID_WIDTH_P   ),
     .AXI_ADDR_WIDTH_P ( VIP_AXI4_CFG_C.VIP_AXI4_ADDR_WIDTH_P ),
     .AXI_DATA_WIDTH_P ( VIP_AXI4_CFG_C.VIP_AXI4_DATA_WIDTH_P ),
-    .AXI_USER_WIDTH_P ( VIP_AXI4_CFG_C.VIP_AXI4_USER_WIDTH_P ),
-    .NR_OF_MASTERS_P  ( NR_OF_SLAVES_C                  ),
-    .NR_OF_SLAVES_P   ( 1                               )
+    .NR_OF_MASTERS_P  ( NR_OF_SLAVES_C                       ),
+    .NR_OF_SLAVES_P   ( 1                                    )
   ) axi4_read_arbiter_i1 (
 
     // Clock and reset
-    .clk              ( clk_rst_vif.clk                 ), // input
-    .rst_n            ( clk_rst_vif.rst_n               ), // input
+    .clk              ( clk_rst_vif.clk                      ), // input
+    .rst_n            ( clk_rst_vif.rst_n                    ), // input
 
     // -------------------------------------------------------------------------
     // AXI4 Masters
     // -------------------------------------------------------------------------
 
     // Read Address Channel
-    .mst_arid         ( slvs_arid                       ), // input
-    .mst_araddr       ( slvs_araddr                     ), // input
-    .mst_arlen        ( slvs_arlen                      ), // input
-    .mst_arsize       ( slvs_arsize                     ), // input
-    .mst_arburst      ( slvs_arburst                    ), // input
-    .mst_arregion     ( slvs_arregion                   ), // input
-    .mst_arvalid      ( slvs_arvalid                    ), // input
-    .mst_arready      ( slvs_arready                    ), // output
+    .mst_arid         ( slvs_arid                            ), // input
+    .mst_araddr       ( slvs_araddr                          ), // input
+    .mst_arlen        ( slvs_arlen                           ), // input
+    .mst_arsize       ( slvs_arsize                          ), // input
+    .mst_arburst      ( slvs_arburst                         ), // input
+    .mst_arregion     ( slvs_arregion                        ), // input
+    .mst_arvalid      ( slvs_arvalid                         ), // input
+    .mst_arready      ( slvs_arready                         ), // output
 
     // Read Data Channel
-    .mst_rid          ( slvs_rid                        ), // output
-    .mst_rresp        ( slvs_rresp                      ), // output
-    .mst_rdata        ( slvs_rdata                      ), // output
-    .mst_rlast        ( slvs_rlast                      ), // output
-    .mst_rvalid       ( slvs_rvalid                     ), // output
-    .mst_rready       ( slvs_rready                     ), // input
+    .mst_rid          ( slvs_rid                             ), // output
+    .mst_rresp        ( slvs_rresp                           ), // output
+    .mst_rdata        ( slvs_rdata                           ), // output
+    .mst_rlast        ( slvs_rlast                           ), // output
+    .mst_rvalid       ( slvs_rvalid                          ), // output
+    .mst_rready       ( slvs_rready                          ), // input
 
     // -------------------------------------------------------------------------
     // AXI4 Slave
     // -------------------------------------------------------------------------
 
     // Read Address Channel
-    .slv_arid         ( mem_vif.arid                    ), // output
-    .slv_araddr       ( mem_vif.araddr                  ), // output
-    .slv_arlen        ( mem_vif.arlen                   ), // output
-    .slv_arsize       ( mem_vif.arsize                  ), // output
-    .slv_arburst      ( mem_vif.arburst                 ), // output
-    .slv_arregion     ( mem_vif.arregion                ), // output
-    .slv_arvalid      ( mem_vif.arvalid                 ), // output
-    .slv_arready      ( mem_vif.arready                 ), // input
+    .slv_arid         ( mem_vif.arid                         ), // output
+    .slv_araddr       ( mem_vif.araddr                       ), // output
+    .slv_arlen        ( mem_vif.arlen                        ), // output
+    .slv_arsize       ( mem_vif.arsize                       ), // output
+    .slv_arburst      ( mem_vif.arburst                      ), // output
+    .slv_arregion     ( mem_vif.arregion                     ), // output
+    .slv_arvalid      ( mem_vif.arvalid                      ), // output
+    .slv_arready      ( mem_vif.arready                      ), // input
 
     // Read Data Channel
-    .slv_rid          ( mem_vif.rid                     ), // input
-    .slv_rresp        ( mem_vif.rresp                   ), // input
-    .slv_rdata        ( mem_vif.rdata                   ), // input
-    .slv_rlast        ( mem_vif.rlast                   ), // input
-    .slv_rvalid       ( mem_vif.rvalid                  ), // input
-    .slv_rready       ( mem_vif.rready                  )  // output
+    .slv_rid          ( mem_vif.rid                          ), // input
+    .slv_rresp        ( mem_vif.rresp                        ), // input
+    .slv_rdata        ( mem_vif.rdata                        ), // input
+    .slv_rlast        ( mem_vif.rlast                        ), // input
+    .slv_rvalid       ( mem_vif.rvalid                       ), // input
+    .slv_rready       ( mem_vif.rready                       )  // output
   );
 
 
@@ -232,8 +230,7 @@ module ara_tb_top;
     $timeformat(-9, 0, "", 11);  // units, precision, suffix, min field width
     if ($test$plusargs("RECORD")) begin
       uvm_config_db #(uvm_verbosity)::set(null,"*", "recording_detail", UVM_FULL);
-    end
-    else begin
+    end else begin
       uvm_config_db #(uvm_verbosity)::set(null,"*", "recording_detail", UVM_NONE);
     end
   end
