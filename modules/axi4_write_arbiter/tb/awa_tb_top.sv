@@ -73,11 +73,13 @@ module awa_tb_top;
   vip_axi4_if #(VIP_AXI4_CFG_C) mst_vif3(clk_rst_vif.clk, clk_rst_vif.rst_n);
   vip_axi4_if #(VIP_AXI4_CFG_C) mem_vif(clk_rst_vif.clk, clk_rst_vif.rst_n);
 
-  mst_vif0.sink_read_channel();
-  mst_vif1.sink_read_channel();
-  mst_vif2.sink_read_channel();
-  mst_vif3.sink_read_channel();
-  mem_vif.sink_read_channel();
+  initial begin
+    mst_vif0.sink_read_channel();
+    mst_vif1.sink_read_channel();
+    mst_vif2.sink_read_channel();
+    mst_vif3.sink_read_channel();
+    mem_vif.sink_read_channel();
+  end
 
   // -------------------------------------------------------------------------
   // Connection between the arbiters:
