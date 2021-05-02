@@ -50,8 +50,8 @@ class ara_base_test extends uvm_test;
   // Sequences
   // ---------------------------------------------------------------------------
 
-  reset_sequence    reset_seq0;
-  vip_axi4_read_seq vip_axi4_read_seq0;
+  reset_sequence                      reset_seq0;
+  vip_axi4_read_seq #(VIP_AXI4_CFG_C) vip_axi4_read_seq0;
 
 
   function new(string name = "ara_base_test", uvm_component parent = null);
@@ -105,7 +105,7 @@ class ara_base_test extends uvm_test;
   function void start_of_simulation_phase(uvm_phase phase);
     super.start_of_simulation_phase(phase);
     reset_seq0         = reset_sequence::type_id::create("reset_seq0");
-    vip_axi4_read_seq0 = vip_axi4_read_seq::type_id::create("vip_axi4_read_seq0");
+    vip_axi4_read_seq0 = vip_axi4_read_seq #(VIP_AXI4_CFG_C)::type_id::create("vip_axi4_read_seq0");
   endfunction
 
 
@@ -122,5 +122,11 @@ class ara_base_test extends uvm_test;
   task clk_delay(int delay);
     #(delay*clk_rst_config0.clock_period);
   endtask
+
+
+  function void report_phase(uvm_phase phase);
+    super.report_phase(phase);
+    report_server0.test_report();
+  endfunction
 
 endclass
