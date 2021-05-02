@@ -53,11 +53,11 @@ class awa_base_test extends uvm_test;
   // Sequences
   // ---------------------------------------------------------------------------
 
-  reset_sequence     reset_seq0;
-  vip_axi4_write_seq vip_axi4_write_seq0;
-  vip_axi4_write_seq vip_axi4_write_seq1;
-  vip_axi4_write_seq vip_axi4_write_seq2;
-  vip_axi4_write_seq vip_axi4_write_seq3;
+  reset_sequence                       reset_seq0;
+  vip_axi4_write_seq #(VIP_AXI4_CFG_C) vip_axi4_write_seq0;
+  vip_axi4_write_seq #(VIP_AXI4_CFG_C) vip_axi4_write_seq1;
+  vip_axi4_write_seq #(VIP_AXI4_CFG_C) vip_axi4_write_seq2;
+  vip_axi4_write_seq #(VIP_AXI4_CFG_C) vip_axi4_write_seq3;
 
   function new(string name = "awa_base_test", uvm_component parent = null);
     super.new(name, parent);
@@ -125,10 +125,10 @@ class awa_base_test extends uvm_test;
   function void start_of_simulation_phase(uvm_phase phase);
     super.start_of_simulation_phase(phase);
     reset_seq0          = reset_sequence::type_id::create("reset_seq0");
-    vip_axi4_write_seq0 = vip_axi4_write_seq::type_id::create("vip_axi4_write_seq0");
-    vip_axi4_write_seq1 = vip_axi4_write_seq::type_id::create("vip_axi4_write_seq1");
-    vip_axi4_write_seq2 = vip_axi4_write_seq::type_id::create("vip_axi4_write_seq2");
-    vip_axi4_write_seq3 = vip_axi4_write_seq::type_id::create("vip_axi4_write_seq3");
+    vip_axi4_write_seq0 = vip_axi4_write_seq #(VIP_AXI4_CFG_C)::type_id::create("vip_axi4_write_seq0");
+    vip_axi4_write_seq1 = vip_axi4_write_seq #(VIP_AXI4_CFG_C)::type_id::create("vip_axi4_write_seq1");
+    vip_axi4_write_seq2 = vip_axi4_write_seq #(VIP_AXI4_CFG_C)::type_id::create("vip_axi4_write_seq2");
+    vip_axi4_write_seq3 = vip_axi4_write_seq #(VIP_AXI4_CFG_C)::type_id::create("vip_axi4_write_seq3");
   endfunction
 
 
@@ -144,5 +144,11 @@ class awa_base_test extends uvm_test;
   task clk_delay(int delay);
     #(delay*clk_rst_config0.clock_period);
   endtask
+
+
+  function void report_phase(uvm_phase phase);
+    super.report_phase(phase);
+    report_server0.test_report();
+  endfunction
 
 endclass
