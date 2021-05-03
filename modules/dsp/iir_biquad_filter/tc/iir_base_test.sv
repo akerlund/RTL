@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -36,35 +37,21 @@ class iir_base_test extends uvm_test;
 
   iir_env               tb_env;
   iir_virtual_sequencer v_sqr;
-  register_model        reg_model;
-  uvm_status_e          uvm_status;
-  uvm_reg_data_t        value;
 
   // ---------------------------------------------------------------------------
   // VIP Agent configurations
   // ---------------------------------------------------------------------------
 
   clk_rst_config   clk_rst_config0;
-  //vip_axi4s_config axi4s_mst_cfg0;
+  vip_axi4s_config axi4s_mst_cfg0;
+  vip_axi4_config  axi4_reg_cfg;
 
   // ---------------------------------------------------------------------------
   // Sequences
   // ---------------------------------------------------------------------------
 
   reset_sequence                    reset_seq0;
-  //vip_axi4s_seq  #(VIP_AXI4S_CFG_C) vip_axi4s_seq0;
-
-  // ---------------------------------------------------------------------------
-  // Testcase variables
-  // ---------------------------------------------------------------------------
-
-  // IIR
-  int               iir_f0;
-  int               iir_fs;
-  int               iir_q;
-  //iir_biquad_type_t iir_type;
-  int               iir_bypass;
-
+  vip_axi4s_seq  #(VIP_AXI4S_CFG_C) vip_axi4s_seq0;
 
   function new(string name = "iir_base_test", uvm_component parent = null);
     super.new(name, parent);
@@ -89,30 +76,33 @@ class iir_base_test extends uvm_test;
     tb_env = iir_env::type_id::create("tb_env", this);
 
     // Configurations
-    clk_rst_config0 = clk_rst_config::type_id::create("clk_rst_config0", this);
-    //axi4s_mst_cfg0  = vip_axi4s_config::type_id::create("axi4s_mst_cfg0", this);
-    uvm_config_db #(clk_rst_config)::set(this,  {"tb_env.clk_rst_agent0", "*"}, "cfg", clk_rst_config0);
-    //uvm_config_db #(vip_axi4s_config)::set(this, {"tb_env.mst_agent0",    "*"}, "cfg", axi4s_mst_cfg0);
+    clk_rst_config0 = clk_rst_config::type_id::create("clk_rst_config0",  this);
+    axi4s_mst_cfg0  = vip_axi4s_config::type_id::create("axi4s_mst_cfg0", this);
+    axi4_reg_cfg    = vip_axi4_config::type_id::create("axi4_reg_cfg",    this);
+
+    axi4s_mst_cfg0.tvalid_delay_enabled = FALSE;
+    axi4_reg_cfg.wvalid_delay_enabled   = FALSE;
+    axi4_reg_cfg.rready_delay_enabled   = FALSE;
+
+    uvm_config_db #(clk_rst_config)::set(this,   {"tb_env.clk_rst_agent0", "*"}, "cfg", clk_rst_config0);
+    uvm_config_db #(vip_axi4s_config)::set(this, {"tb_env.mst_agent0",     "*"}, "cfg", axi4s_mst_cfg0);
+    uvm_config_db #(vip_axi4_config)::set(this,  {"tb_env.reg_agent0",     "*"}, "cfg", axi4_reg_cfg);
 
   endfunction
 
 
   function void end_of_elaboration_phase(uvm_phase phase);
-
-    //if (!uvm_config_db #(register_model)::get(null, "*", "reg_model", reg_model)) begin
-    //  `uvm_fatal("NOREG", "No registered register model in the factory")
-    //end
-
-    `uvm_info(get_type_name(), $sformatf("Topology of the test:\n%s", this.sprint(uvm_table_printer0)), UVM_LOW)
-
+    super.end_of_elaboration_phase(phase);
     v_sqr = tb_env.virtual_sequencer;
+    `uvm_info(get_type_name(), $sformatf("Topology of the test:\n%s", this.sprint(uvm_table_printer0)), UVM_LOW)
+    `uvm_info(get_name(), {"VIP AXI4S Agent (Master):\n", axi4s_mst_cfg0.sprint()}, UVM_LOW)
   endfunction
 
 
   function void start_of_simulation_phase(uvm_phase phase);
     super.start_of_simulation_phase(phase);
     reset_seq0     = reset_sequence::type_id::create("reset_seq0");
-    //vip_axi4s_seq0 = vip_axi4s_seq #(VIP_AXI4S_CFG_C)::type_id::create("vip_axi4s_seq0");
+    vip_axi4s_seq0 = vip_axi4s_seq #(VIP_AXI4S_CFG_C)::type_id::create("vip_axi4s_seq0");
   endfunction
 
 
@@ -127,5 +117,4 @@ class iir_base_test extends uvm_test;
   task clk_delay(int delay);
     #(delay*clk_rst_config0.clock_period);
   endtask
-
 endclass

@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,6 +20,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+`ifndef SYiir_TC_PKG
+`define SYiir_TC_PKG
+
 package iir_tc_pkg;
 
   `include "uvm_macros.svh"
@@ -26,20 +30,21 @@ package iir_tc_pkg;
 
   import iir_tb_pkg::*;
 
-  //import iir_biquad_types_pkg::*;
-
   import bool_pkg::*;
   import report_server_pkg::*;
-  import vip_axi4_types_pkg::*;
-  import vip_axi4_agent_pkg::*;
-  //import vip_axi4s_types_pkg::*;
-  //import vip_axi4s_agent_pkg::*;
   import clk_rst_types_pkg::*;
   import clk_rst_pkg::*;
+  import vip_axi4s_types_pkg::*;
+  import vip_axi4s_agent_pkg::*;
+  import vip_axi4_types_pkg::*;
+  import vip_axi4_agent_pkg::*;
 
   `include "iir_base_test.sv"
+  `include "tc_iir_basic.sv"
   //`include "tc_iir_basic_configuration.sv"
   //`include "tc_iir_reconfiguration.sv"
   //`include "tc_iir_coefficient_check.sv"
 
 endpackage
+
+`endif

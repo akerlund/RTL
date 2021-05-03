@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -23,8 +24,10 @@ class iir_virtual_sequencer extends uvm_virtual_sequencer;
 
   `uvm_component_utils(iir_virtual_sequencer)
 
-  clk_rst_sequencer                   clk_rst_sequencer0;
-  vip_axi4_sequencer #(VIP_REG_CFG_C) reg_sequencer;
+  clk_rst_sequencer                      clk_rst_sequencer0;
+  vip_axi4_sequencer    #(VIP_REG_CFG_C) reg_sequencer;
+  vip_axi4s_sequencer #(VIP_AXI4S_CFG_C) mst_sequencer;
+  vip_axi4s_sequencer #(VIP_AXI4S_CFG_C) slv_sequencer;
 
   function new(string name = "virtual_sequencer", uvm_component parent = null);
     super.new(name, parent);

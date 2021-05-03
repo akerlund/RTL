@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -25,79 +26,25 @@ import iir_tc_pkg::*;
 
 module iir_tb_top;
 
-  clk_rst_if                   clk_rst_vif();
-  vip_axi4_if #(VIP_REG_CFG_C) reg_vif(clk_rst_vif.clk, clk_rst_vif.rst_n);
+  clk_rst_if                      clk_rst_vif();
+  vip_axi4_if    #(VIP_REG_CFG_C) reg_vif(clk_rst_vif.clk, clk_rst_vif.rst_n);
+  vip_axi4s_if #(VIP_AXI4S_CFG_C) mst_vif(clk_rst_vif.clk, clk_rst_vif.rst_n);
+  vip_axi4s_if #(VIP_AXI4S_CFG_C) slv_vif(clk_rst_vif.clk, clk_rst_vif.rst_n);
 
-  axi4_reg_if  #(
-    .AXI4_ID_WIDTH_P   ( VIP_REG_CFG_C.VIP_AXI4_ID_WIDTH_P   ),
-    .AXI4_ADDR_WIDTH_P ( VIP_REG_CFG_C.VIP_AXI4_ADDR_WIDTH_P ),
-    .AXI4_DATA_WIDTH_P ( VIP_REG_CFG_C.VIP_AXI4_DATA_WIDTH_P ),
-    .AXI4_STRB_WIDTH_P ( VIP_REG_CFG_C.VIP_AXI4_STRB_WIDTH_P )
-  ) osc_cfg_if (clk_rst_vif.clk, clk_rst_vif.rst_n);
+  logic [FIFO_USER_WIDTH_C-1 : 0] ing_tuser;
+  logic [FIFO_USER_WIDTH_C-1 : 0] egr_tuser;
 
-  // Register slave
-  assign osc_cfg_if.awaddr  = reg_vif.awaddr;
-  assign osc_cfg_if.awvalid = reg_vif.awvalid;
-  assign reg_vif.awready    = osc_cfg_if.awready;
-  assign osc_cfg_if.wdata   = reg_vif.wdata;
-  assign osc_cfg_if.wstrb   = reg_vif.wstrb;
-  assign osc_cfg_if.wlast   = reg_vif.wlast;
-  assign osc_cfg_if.wvalid  = reg_vif.wvalid;
-  assign reg_vif.wready     = osc_cfg_if.wready;
-  assign reg_vif.bresp      = osc_cfg_if.bresp;
-  assign reg_vif.bvalid     = osc_cfg_if.bvalid;
-  assign osc_cfg_if.bready  = reg_vif.bready;
-  assign osc_cfg_if.araddr  = reg_vif.araddr;
-  assign osc_cfg_if.arlen   = reg_vif.arlen;
-  assign osc_cfg_if.arvalid = reg_vif.arvalid;
-  assign reg_vif.arready    = osc_cfg_if.arready;
-  assign reg_vif.rdata      = osc_cfg_if.rdata;
-  assign reg_vif.rresp      = osc_cfg_if.rresp;
-  assign reg_vif.rlast      = osc_cfg_if.rlast;
-  assign reg_vif.rvalid     = osc_cfg_if.rvalid;
-  assign osc_cfg_if.rready  = reg_vif.rready;
+  assign ing_tuser = {mst_vif.tlast, mst_vif.tdata};
+  assign {slv_vif.tlast, slv_vif.tdata} = egr_tuser;
 
-
-  logic [N_BITS_C-1 : 0] filtered_waveform;
-
-
-/*
-  iir_dut_biquad_system #(
-    // Oscillator
-    .WAVE_WIDTH_P       ( WAVE_WIDTH_C                    ),
-    // Divider and ...
-    .N_BITS_P           ( N_BITS_C                        ),
-    .Q_BITS_P           ( Q_BITS_C                        ),
-    // Interconnections
-    .AXI_DATA_WIDTH_P   ( AXI_DATA_WIDTH_C                ),
-    .AXI_ID_WIDTH_P     ( AXI_ID_WIDTH_C                  ),
-    // APB3
-    .APB_ADDR_WIDTH_P   ( vip_apb3_cfg.APB_ADDR_WIDTH_P   ),
-    .APB_DATA_WIDTH_P   ( vip_apb3_cfg.APB_DATA_WIDTH_P   ),
-    .APB_NR_OF_SLAVES_P ( vip_apb3_cfg.APB_NR_OF_SLAVES_P ),
-    .OSC_BASE_ADDR_P    ( OSC_BASE_ADDR_C                 ),
-    .OSC_PSEL_P         ( OSC_PSEL_BIT_C                  ),
-    .IIR_BASE_ADDR_P    ( IIR_BASE_ADDR_C                 ),
-    .IIR_PSEL_P         ( IIR_PSEL_BIT_C                  )
-
-  ) iir_dut_biquad_system_i0 (
-    .clk                ( clk                             ),
-    .rst_n              ( rst_n                           ),
-    .filtered_waveform  ( filtered_waveform               ),
-    .apb3_paddr         ( apb3_vif.paddr                  ),
-    .apb3_psel          ( apb3_vif.psel                   ),
-    .apb3_penable       ( apb3_vif.penable                ),
-    .apb3_pwrite        ( apb3_vif.pwrite                 ),
-    .apb3_pwdata        ( apb3_vif.pwdata                 ),
-    .apb3_pready        ( apb3_vif.pready                 ),
-    .apb3_prdata        ( apb3_vif.prdata                 )
-  );*/
-
+  assign {slv_vif.tstrb, slv_vif.tkeep, slv_vif.tid, slv_vif.tdest} = '0;
 
 
   initial begin
-    uvm_config_db #(virtual clk_rst_if)::set(uvm_root::get(),                   "uvm_test_top.tb_env*",            "vif", clk_rst_vif);
-    uvm_config_db #(virtual vip_axi4_if #(VIP_REG_CFG_C))::set(uvm_root::get(), "uvm_test_top.tb_env.reg_agent0*", "vif", reg_vif);
+    uvm_config_db #(virtual clk_rst_if)::set(uvm_root::get(),                      "uvm_test_top.tb_env*",            "vif", clk_rst_vif);
+    uvm_config_db #(virtual vip_axi4_if  #(VIP_REG_CFG_C))::set(uvm_root::get(),   "uvm_test_top.tb_env.reg_agent0*", "vif", reg_vif);
+    uvm_config_db #(virtual vip_axi4s_if #(VIP_AXI4S_CFG_C))::set(uvm_root::get(), "uvm_test_top.tb_env.mst_agent0*", "vif", mst_vif);
+    uvm_config_db #(virtual vip_axi4s_if #(VIP_AXI4S_CFG_C))::set(uvm_root::get(), "uvm_test_top.tb_env.slv_agent0*", "vif", slv_vif);
     run_test();
     $stop();
   end

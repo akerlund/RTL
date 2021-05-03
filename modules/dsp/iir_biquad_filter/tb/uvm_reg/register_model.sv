@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2021 Fredrik Åkerlund
-// https://github.com/akerlund/FPGA
+// https://github.com/akerlund/VIP
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@ class register_model extends uvm_reg_block;
 
   `uvm_object_utils(register_model)
 
-  iir_block  iir;
+  iir_block   iir;
   uvm_reg_map reg_map;
 
   function new (string name = "register_model");
@@ -48,7 +48,7 @@ class register_model extends uvm_reg_block;
 
     default_map = reg_map;
 
-    `uvm_info(get_name(), $sformatf("Adding submap IIR"), UVM_LOW)
+    `uvm_info(get_name(), $sformatf("Adding submap iir"), UVM_LOW)
     reg_map.add_submap(iir.default_map, 0);
 
     lock_model();
