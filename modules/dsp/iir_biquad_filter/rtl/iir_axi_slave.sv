@@ -32,16 +32,16 @@ module iir_axi_slave #(
     output logic [N_BITS_C-1 : 0] cr_iir_f0,
     output logic [N_BITS_C-1 : 0] cr_iir_fs,
     output logic [N_BITS_C-1 : 0] cr_iir_q,
-    output logic [N_BITS_C-1 : 0] cr_iir_q,
+    output logic [N_BITS_C-1 : 0] cr_iir_type,
     output logic                  cr_iir_bypass,
     input  wire  [N_BITS_C-1 : 0] sr_iir_w0,
     input  wire  [N_BITS_C-1 : 0] sr_iir_alfa,
     input  wire  [N_BITS_C-1 : 0] sr_iir_b0,
     input  wire  [N_BITS_C-1 : 0] sr_iir_b1,
     input  wire  [N_BITS_C-1 : 0] sr_iir_b2,
-    input  wire  [N_BITS_C-1 : 0] sr_iir_10,
-    input  wire  [N_BITS_C-1 : 0] sr_iir_11,
-    input  wire  [N_BITS_C-1 : 0] sr_iir_12
+    input  wire  [N_BITS_C-1 : 0] sr_iir_a0,
+    input  wire  [N_BITS_C-1 : 0] sr_iir_a1,
+    input  wire  [N_BITS_C-1 : 0] sr_iir_a2
   );
 
   localparam logic [1 : 0] AXI_RESP_SLVERR_C = 2'b01;
@@ -93,7 +93,7 @@ module iir_axi_slave #(
       cr_iir_f0     <= 0;
       cr_iir_fs     <= 0;
       cr_iir_q      <= 0;
-      cr_iir_q      <= 0;
+      cr_iir_type   <= 0;
       cr_iir_bypass <= 0;
 
     end
@@ -162,7 +162,7 @@ module iir_axi_slave #(
               end
 
               IIR_TYPE_ADDR: begin
-                cr_iir_q <= cif.wdata[N_BITS_C-1 : 0];
+                cr_iir_type <= cif.wdata[N_BITS_C-1 : 0];
               end
 
               IIR_BYPASS_ADDR: begin
@@ -266,7 +266,7 @@ module iir_axi_slave #(
       end
 
       IIR_TYPE_ADDR: begin
-        cif.rdata[N_BITS_C-1 : 0] = cr_iir_q;
+        cif.rdata[N_BITS_C-1 : 0] = cr_iir_type;
       end
 
       IIR_BYPASS_ADDR: begin
@@ -293,16 +293,16 @@ module iir_axi_slave #(
         cif.rdata[N_BITS_C-1 : 0] = sr_iir_b2;
       end
 
-      IIR_10_ADDR: begin
-        cif.rdata[N_BITS_C-1 : 0] = sr_iir_10;
+      IIR_A0_ADDR: begin
+        cif.rdata[N_BITS_C-1 : 0] = sr_iir_a0;
       end
 
-      IIR_11_ADDR: begin
-        cif.rdata[N_BITS_C-1 : 0] = sr_iir_11;
+      IIR_A1_ADDR: begin
+        cif.rdata[N_BITS_C-1 : 0] = sr_iir_a1;
       end
 
-      IIR_12_ADDR: begin
-        cif.rdata[N_BITS_C-1 : 0] = sr_iir_12;
+      IIR_A2_ADDR: begin
+        cif.rdata[N_BITS_C-1 : 0] = sr_iir_a2;
       end
 
 

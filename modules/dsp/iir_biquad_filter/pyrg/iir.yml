@@ -53,7 +53,7 @@ iir:
       access: RW
       bit_fields:
         - field: {
-          name:        cr_iir_q,
+          name:        cr_iir_type,
           description: LP BP HP,
           size:        N_BITS_C,
           lsb_pos:     0,
@@ -127,35 +127,35 @@ iir:
           lsb_pos:     0
         }
 
-    - name:   iir_10
-      desc:   iir_10
+    - name:   iir_a0
+      desc:   iir_a0
       access: RO
       bit_fields:
         - field: {
-          name:        sr_iir_10,
-          description: iir_10,
+          name:        sr_iir_a0,
+          description: iir_a0,
           size:        N_BITS_C,
           lsb_pos:     0
         }
 
-    - name:   iir_11
-      desc:   iir_11
+    - name:   iir_a1
+      desc:   iir_a1
       access: RO
       bit_fields:
         - field: {
-          name:        sr_iir_11,
-          description: iir_11,
+          name:        sr_iir_a1,
+          description: iir_a1,
           size:        N_BITS_C,
           lsb_pos:     0
         }
 
-    - name:   iir_12
-      desc:   iir_12
+    - name:   iir_a2
+      desc:   iir_a2
       access: RO
       bit_fields:
         - field: {
-          name:        sr_iir_12,
-          description: iir_12,
+          name:        sr_iir_a2,
+          description: iir_a2,
           size:        N_BITS_C,
           lsb_pos:     0
         }

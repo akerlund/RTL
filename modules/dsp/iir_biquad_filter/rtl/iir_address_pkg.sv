@@ -36,9 +36,9 @@ package iir_address_pkg;
   localparam logic [15 : 0] IIR_B0_ADDR     = 16'h0038;
   localparam logic [15 : 0] IIR_B1_ADDR     = 16'h0040;
   localparam logic [15 : 0] IIR_B2_ADDR     = 16'h0048;
-  localparam logic [15 : 0] IIR_10_ADDR     = 16'h0050;
-  localparam logic [15 : 0] IIR_11_ADDR     = 16'h0058;
-  localparam logic [15 : 0] IIR_12_ADDR     = 16'h0060;
+  localparam logic [15 : 0] IIR_A0_ADDR     = 16'h0050;
+  localparam logic [15 : 0] IIR_A1_ADDR     = 16'h0058;
+  localparam logic [15 : 0] IIR_A2_ADDR     = 16'h0060;
 
 endpackage
 

@@ -33,9 +33,9 @@ class iir_block extends uvm_reg_block;
   rand iir_b0_reg iir_b0;
   rand iir_b1_reg iir_b1;
   rand iir_b2_reg iir_b2;
-  rand iir_10_reg iir_10;
-  rand iir_11_reg iir_11;
-  rand iir_12_reg iir_12;
+  rand iir_a0_reg iir_a0;
+  rand iir_a1_reg iir_a1;
+  rand iir_a2_reg iir_a2;
 
 
   function new (string name = "iir_block");
@@ -85,17 +85,17 @@ class iir_block extends uvm_reg_block;
     iir_b2.build();
     iir_b2.configure(this);
 
-    iir_10 = iir_10_reg::type_id::create("iir_10");
-    iir_10.build();
-    iir_10.configure(this);
+    iir_a0 = iir_a0_reg::type_id::create("iir_a0");
+    iir_a0.build();
+    iir_a0.configure(this);
 
-    iir_11 = iir_11_reg::type_id::create("iir_11");
-    iir_11.build();
-    iir_11.configure(this);
+    iir_a1 = iir_a1_reg::type_id::create("iir_a1");
+    iir_a1.build();
+    iir_a1.configure(this);
 
-    iir_12 = iir_12_reg::type_id::create("iir_12");
-    iir_12.build();
-    iir_12.configure(this);
+    iir_a2 = iir_a2_reg::type_id::create("iir_a2");
+    iir_a2.build();
+    iir_a2.configure(this);
 
 
 
@@ -111,9 +111,9 @@ class iir_block extends uvm_reg_block;
     default_map.add_reg(iir_b0, 56, "RO");
     default_map.add_reg(iir_b1, 64, "RO");
     default_map.add_reg(iir_b2, 72, "RO");
-    default_map.add_reg(iir_10, 80, "RO");
-    default_map.add_reg(iir_11, 88, "RO");
-    default_map.add_reg(iir_12, 96, "RO");
+    default_map.add_reg(iir_a0, 80, "RO");
+    default_map.add_reg(iir_a1, 88, "RO");
+    default_map.add_reg(iir_a2, 96, "RO");
 
 
     lock_model();
