@@ -28,6 +28,12 @@ package iir_tb_pkg;
   import uvm_pkg::*;
   `include "uvm_macros.svh"
 
+  import iir_biquad_types_pkg::*;
+  import iir_address_pkg::*;
+
+  import vip_fixed_point_pkg::*;
+  import vip_iir_pkg::*;
+
   import bool_pkg::*;
   import clk_rst_types_pkg::*;
   import clk_rst_pkg::*;
