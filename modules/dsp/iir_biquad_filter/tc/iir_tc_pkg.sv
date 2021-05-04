@@ -29,6 +29,7 @@ package iir_tc_pkg;
   import uvm_pkg::*;
 
   import iir_tb_pkg::*;
+  import iir_biquad_types_pkg::*;
 
   import bool_pkg::*;
   import report_server_pkg::*;
@@ -40,10 +41,9 @@ package iir_tc_pkg;
   import vip_axi4_agent_pkg::*;
 
   `include "iir_base_test.sv"
-  `include "tc_iir_basic.sv"
-  //`include "tc_iir_basic_configuration.sv"
-  //`include "tc_iir_reconfiguration.sv"
-  //`include "tc_iir_coefficient_check.sv"
+  `include "tc_iir_basic_configuration.sv"
+  `include "tc_iir_reconfiguration.sv"
+  `include "tc_iir_coefficient_check.sv"
 
 endpackage
 

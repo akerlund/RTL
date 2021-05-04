@@ -37,6 +37,9 @@ class iir_base_test extends uvm_test;
 
   iir_env               tb_env;
   iir_virtual_sequencer v_sqr;
+  register_model        reg_model;
+  uvm_status_e          uvm_status;
+  uvm_reg_data_t        value;
 
   // ---------------------------------------------------------------------------
   // VIP Agent configurations
@@ -52,6 +55,18 @@ class iir_base_test extends uvm_test;
 
   reset_sequence                    reset_seq0;
   vip_axi4s_seq  #(VIP_AXI4S_CFG_C) vip_axi4s_seq0;
+
+  // ---------------------------------------------------------------------------
+  // Testcase variables
+  // ---------------------------------------------------------------------------
+
+  int               iir_f0;
+  int               iir_fs;
+  int               iir_q;
+  iir_biquad_type_t iir_type;
+  int               iir_bypass;
+  int               sleep_counter;
+
 
   function new(string name = "iir_base_test", uvm_component parent = null);
     super.new(name, parent);
@@ -93,6 +108,10 @@ class iir_base_test extends uvm_test;
 
   function void end_of_elaboration_phase(uvm_phase phase);
     super.end_of_elaboration_phase(phase);
+
+    if (!uvm_config_db #(register_model)::get(null, "*", "reg_model", reg_model)) begin
+      `uvm_fatal("NOREG", "No registered register model in the factory")
+    end
     v_sqr = tb_env.virtual_sequencer;
     `uvm_info(get_type_name(), $sformatf("Topology of the test:\n%s", this.sprint(uvm_table_printer0)), UVM_LOW)
     `uvm_info(get_name(), {"VIP AXI4S Agent (Master):\n", axi4s_mst_cfg0.sprint()}, UVM_LOW)
@@ -107,9 +126,31 @@ class iir_base_test extends uvm_test;
 
 
   task run_phase(uvm_phase phase);
+
     super.run_phase(phase);
     phase.raise_objection(this);
+
     reset_seq0.start(v_sqr.clk_rst_sequencer0);
+
+    vip_axi4s_seq0.set_verbose(FALSE);
+    vip_axi4s_seq0.set_data_type(VIP_AXI4S_TDATA_COUNTER_E);
+    vip_axi4s_seq0.set_cfg_burst_length(128, 1);
+    vip_axi4s_seq0.set_nr_of_bursts(2**16);
+    vip_axi4s_seq0.set_tstrb(VIP_AXI4S_TSTRB_ALL_E);
+    vip_axi4s_seq0.set_log_denominator(64);
+
+    fork
+      vip_axi4s_seq0.start(v_sqr.mst_sequencer);
+    join_none
+
+    fork
+      forever begin
+        #100us;
+        sleep_counter++;
+        `uvm_info(get_name(), $sformatf("%0dus", sleep_counter*100), UVM_LOW)
+      end
+    join_none
+
     phase.drop_objection(this);
   endtask
 

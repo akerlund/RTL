@@ -1,7 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2020 Fredrik Åkerlund
-// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -20,12 +19,17 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-class tc_iir_basic extends iir_base_test;
+class tc_iir_basic_configuration extends iir_base_test;
 
-  `uvm_component_utils(tc_iir_basic)
+  `uvm_component_utils(tc_iir_basic_configuration)
 
-  function new(string name = "tc_iir_basic", uvm_component parent = null);
+  function new(string name = "tc_iir_basic_configuration", uvm_component parent = null);
     super.new(name, parent);
+    iir_f0     = 500;
+    iir_fs     = 64000;
+    iir_q      = 1;
+    iir_type   = IIR_LOW_PASS_E;
+    iir_bypass = '0;
   endfunction
 
 
@@ -39,15 +43,17 @@ class tc_iir_basic extends iir_base_test;
     super.run_phase(phase);
     phase.raise_objection(this);
 
-    vip_axi4s_seq0.set_data_type(VIP_AXI4S_TDATA_COUNTER_E);
-    vip_axi4s_seq0.set_cfg_burst_length(128, 1);
-    vip_axi4s_seq0.set_nr_of_bursts(2**16);
-    vip_axi4s_seq0.set_tstrb(VIP_AXI4S_TSTRB_ALL_E);
-    vip_axi4s_seq0.set_log_denominator(64);
-    vip_axi4s_seq0.start(v_sqr.mst_sequencer);
+    `uvm_info(get_name(), $sformatf("Writing an IIR configuration"), UVM_LOW)
+    reg_model.iir.iir_f0.write(uvm_status,     iir_f0);
+    reg_model.iir.iir_fs.write(uvm_status,     iir_fs);
+    reg_model.iir.iir_q.write(uvm_status,      iir_q);
+    reg_model.iir.iir_type.write(uvm_status,   iir_type);
+    reg_model.iir.iir_bypass.write(uvm_status, iir_bypass);
+
+    `uvm_info(get_name(), $sformatf("Waiting 10ms"), UVM_LOW)
+    #10ms;
 
     phase.drop_objection(this);
-
   endtask
 
 endclass

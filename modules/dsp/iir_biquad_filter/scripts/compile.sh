@@ -18,6 +18,9 @@ source $git_sub_root/submodules/VIP/vip_axi4_agent/files.lst
 source $git_sub_root/submodules/VIP/vip_axi4s_agent/files.lst
 source $git_sub_root/submodules/VIP/vip_clk_rst_agent/files.lst
 source $git_sub_root/submodules/VIP/report_server/files.lst
+source $git_sub_root/submodules/VIP/vip_fixed_point/files.lst
+source $git_sub_root/submodules/VIP/vip_math/files.lst
+source $git_sub_root/submodules/VIP/vip_dsp/files.lst
 
 git_root="$(git rev-parse --show-toplevel)/submodules/PYRG"
 source $git_sub_root/submodules/PYRG/rtl/files.lst
