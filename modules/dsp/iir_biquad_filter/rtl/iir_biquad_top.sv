@@ -45,6 +45,15 @@ module iir_biquad_top #(
     input  wire                                    rst_n,
 
     // -------------------------------------------------------------------------
+    // Filter ports
+    // -------------------------------------------------------------------------
+
+    input  wire                                    x_valid,
+    input  wire  signed           [N_BITS_P-1 : 0] x,
+    output logic                                   y_valid,
+    output logic signed           [N_BITS_P-1 : 0] y,
+
+    // -------------------------------------------------------------------------
     // CORDIC interface
     // -------------------------------------------------------------------------
 
@@ -75,15 +84,6 @@ module iir_biquad_top #(
     input  wire                                    div_ing_tlast,
     input  wire             [AXI_ID_WIDTH_P-1 : 0] div_ing_tid,
     input  wire                                    div_ing_tuser,     // Overflow
-
-    // -------------------------------------------------------------------------
-    // Filter ports
-    // -------------------------------------------------------------------------
-
-    input  wire                                    x_valid,
-    input  wire  signed           [N_BITS_P-1 : 0] x,
-    output logic                                   y_valid,
-    output logic signed           [N_BITS_P-1 : 0] y,
 
     // -------------------------------------------------------------------------
     // APB registers

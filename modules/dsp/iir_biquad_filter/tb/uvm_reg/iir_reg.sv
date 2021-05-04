@@ -143,7 +143,7 @@ class iir_type_reg extends uvm_reg;
 
   `uvm_object_utils(iir_type_reg)
 
-  rand uvm_reg_field cr_iir_q;
+  rand uvm_reg_field cr_iir_type;
 
 
   function new (string name = "iir_type_reg");
@@ -157,8 +157,8 @@ class iir_type_reg extends uvm_reg;
     // -----------------------------------------------------------------------------
     // LP BP HP
     // -----------------------------------------------------------------------------
-    cr_iir_q = uvm_reg_field::type_id::create("cr_iir_q");
-    cr_iir_q.configure(
+    cr_iir_type = uvm_reg_field::type_id::create("cr_iir_type");
+    cr_iir_type.configure(
       .parent(this),
       .size(N_BITS_C),
       .lsb_pos(0),
@@ -169,7 +169,7 @@ class iir_type_reg extends uvm_reg;
       .is_rand(0),
       .individually_accessible(0)
     );
-    add_hdl_path_slice("cr_iir_q", 0, N_BITS_C);
+    add_hdl_path_slice("cr_iir_type", 0, N_BITS_C);
 
   endfunction
 
@@ -410,16 +410,16 @@ class iir_b2_reg extends uvm_reg;
 endclass
 
 // -----------------------------------------------------------------------------
-// iir_10
+// iir_a0
 // -----------------------------------------------------------------------------
-class iir_10_reg extends uvm_reg;
+class iir_a0_reg extends uvm_reg;
 
-  `uvm_object_utils(iir_10_reg)
+  `uvm_object_utils(iir_a0_reg)
 
-  rand uvm_reg_field sr_iir_10;
+  rand uvm_reg_field sr_iir_a0;
 
 
-  function new (string name = "iir_10_reg");
+  function new (string name = "iir_a0_reg");
     super.new(name, N_BITS_C, UVM_NO_COVERAGE);
   endfunction
 
@@ -428,10 +428,10 @@ class iir_10_reg extends uvm_reg;
 
 
     // -----------------------------------------------------------------------------
-    // iir_10
+    // iir_a0
     // -----------------------------------------------------------------------------
-    sr_iir_10 = uvm_reg_field::type_id::create("sr_iir_10");
-    sr_iir_10.configure(
+    sr_iir_a0 = uvm_reg_field::type_id::create("sr_iir_a0");
+    sr_iir_a0.configure(
       .parent(this),
       .size(N_BITS_C),
       .lsb_pos(0),
@@ -442,23 +442,23 @@ class iir_10_reg extends uvm_reg;
       .is_rand(0),
       .individually_accessible(0)
     );
-    add_hdl_path_slice("sr_iir_10", 0, N_BITS_C);
+    add_hdl_path_slice("sr_iir_a0", 0, N_BITS_C);
 
   endfunction
 
 endclass
 
 // -----------------------------------------------------------------------------
-// iir_11
+// iir_a1
 // -----------------------------------------------------------------------------
-class iir_11_reg extends uvm_reg;
+class iir_a1_reg extends uvm_reg;
 
-  `uvm_object_utils(iir_11_reg)
+  `uvm_object_utils(iir_a1_reg)
 
-  rand uvm_reg_field sr_iir_11;
+  rand uvm_reg_field sr_iir_a1;
 
 
-  function new (string name = "iir_11_reg");
+  function new (string name = "iir_a1_reg");
     super.new(name, N_BITS_C, UVM_NO_COVERAGE);
   endfunction
 
@@ -467,10 +467,10 @@ class iir_11_reg extends uvm_reg;
 
 
     // -----------------------------------------------------------------------------
-    // iir_11
+    // iir_a1
     // -----------------------------------------------------------------------------
-    sr_iir_11 = uvm_reg_field::type_id::create("sr_iir_11");
-    sr_iir_11.configure(
+    sr_iir_a1 = uvm_reg_field::type_id::create("sr_iir_a1");
+    sr_iir_a1.configure(
       .parent(this),
       .size(N_BITS_C),
       .lsb_pos(0),
@@ -481,23 +481,23 @@ class iir_11_reg extends uvm_reg;
       .is_rand(0),
       .individually_accessible(0)
     );
-    add_hdl_path_slice("sr_iir_11", 0, N_BITS_C);
+    add_hdl_path_slice("sr_iir_a1", 0, N_BITS_C);
 
   endfunction
 
 endclass
 
 // -----------------------------------------------------------------------------
-// iir_12
+// iir_a2
 // -----------------------------------------------------------------------------
-class iir_12_reg extends uvm_reg;
+class iir_a2_reg extends uvm_reg;
 
-  `uvm_object_utils(iir_12_reg)
+  `uvm_object_utils(iir_a2_reg)
 
-  rand uvm_reg_field sr_iir_12;
+  rand uvm_reg_field sr_iir_a2;
 
 
-  function new (string name = "iir_12_reg");
+  function new (string name = "iir_a2_reg");
     super.new(name, N_BITS_C, UVM_NO_COVERAGE);
   endfunction
 
@@ -506,10 +506,10 @@ class iir_12_reg extends uvm_reg;
 
 
     // -----------------------------------------------------------------------------
-    // iir_12
+    // iir_a2
     // -----------------------------------------------------------------------------
-    sr_iir_12 = uvm_reg_field::type_id::create("sr_iir_12");
-    sr_iir_12.configure(
+    sr_iir_a2 = uvm_reg_field::type_id::create("sr_iir_a2");
+    sr_iir_a2.configure(
       .parent(this),
       .size(N_BITS_C),
       .lsb_pos(0),
@@ -520,7 +520,7 @@ class iir_12_reg extends uvm_reg;
       .is_rand(0),
       .individually_accessible(0)
     );
-    add_hdl_path_slice("sr_iir_12", 0, N_BITS_C);
+    add_hdl_path_slice("sr_iir_a2", 0, N_BITS_C);
 
   endfunction
 

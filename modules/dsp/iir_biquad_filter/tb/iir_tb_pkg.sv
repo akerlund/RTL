@@ -43,10 +43,11 @@ package iir_tb_pkg;
   localparam int VIP_AXI4S_TDEST_WIDTH_C = 0;
   localparam int VIP_AXI4S_TUSER_WIDTH_C = 0;
 
-  localparam int FIFO_ADDR_WIDTH_C = 6; // Minimum width is (1)
-  localparam int FIFO_USER_WIDTH_C = VIP_AXI4S_TDATA_WIDTH_C + 1;
 
-  localparam int N_BITS_C = 32;
+  localparam int N_BITS_C         = 32;
+  localparam int Q_BITS_C         = 11;
+  localparam int AXI_ID_WIDTH_C   = 3;
+  localparam int CFG_DATA_WIDTH_C = 64;
 
   // Configuration of the VIP (Data)
   localparam vip_axi4s_cfg_t VIP_AXI4S_CFG_C = '{
