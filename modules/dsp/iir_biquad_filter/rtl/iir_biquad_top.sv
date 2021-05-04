@@ -35,7 +35,6 @@ module iir_biquad_top #(
     parameter int AXI_DATA_WIDTH_P = -1,
     parameter int AXI_ID_WIDTH_P   = -1,
     parameter int AXI4S_ID_P       = -1,
-    parameter int APB_DATA_WIDTH_P = -1,
     parameter int N_BITS_P         = -1,
     parameter int Q_BITS_P         = -1
   )(
@@ -89,19 +88,19 @@ module iir_biquad_top #(
     // APB registers
     // -------------------------------------------------------------------------
 
-    input  wire           [APB_DATA_WIDTH_P-1 : 0] cr_iir_f0,
-    input  wire           [APB_DATA_WIDTH_P-1 : 0] cr_iir_fs,
-    input  wire           [APB_DATA_WIDTH_P-1 : 0] cr_iir_q,
-    input  wire           [APB_DATA_WIDTH_P-1 : 0] cr_iir_type,
-    input  wire           [APB_DATA_WIDTH_P-1 : 0] cr_bypass,
-    output logic signed   [APB_DATA_WIDTH_P-1 : 0] sr_w0,
-    output logic signed   [APB_DATA_WIDTH_P-1 : 0] sr_alfa,
-    output logic signed   [APB_DATA_WIDTH_P-1 : 0] sr_zero_b0,
-    output logic signed   [APB_DATA_WIDTH_P-1 : 0] sr_zero_b1,
-    output logic signed   [APB_DATA_WIDTH_P-1 : 0] sr_zero_b2,
-    output logic signed   [APB_DATA_WIDTH_P-1 : 0] sr_pole_a0,
-    output logic signed   [APB_DATA_WIDTH_P-1 : 0] sr_pole_a1,
-    output logic signed   [APB_DATA_WIDTH_P-1 : 0] sr_pole_a2
+    input  wire                   [N_BITS_P-1 : 0] cr_iir_f0,
+    input  wire                   [N_BITS_P-1 : 0] cr_iir_fs,
+    input  wire                   [N_BITS_P-1 : 0] cr_iir_q,
+    input  wire                   [N_BITS_P-1 : 0] cr_iir_type,
+    input  wire                   [N_BITS_P-1 : 0] cr_bypass,
+    output logic signed           [N_BITS_P-1 : 0] sr_w0,
+    output logic signed           [N_BITS_P-1 : 0] sr_alfa,
+    output logic signed           [N_BITS_P-1 : 0] sr_zero_b0,
+    output logic signed           [N_BITS_P-1 : 0] sr_zero_b1,
+    output logic signed           [N_BITS_P-1 : 0] sr_zero_b2,
+    output logic signed           [N_BITS_P-1 : 0] sr_pole_a0,
+    output logic signed           [N_BITS_P-1 : 0] sr_pole_a1,
+    output logic signed           [N_BITS_P-1 : 0] sr_pole_a2
   );
 
   localparam logic signed [N_BITS_P-1 : 0] ONE_C           = (1 << Q_BITS_P);
@@ -156,25 +155,25 @@ module iir_biquad_top #(
   logic        [AXI_DATA_WIDTH_P-1 : 0] cordic_cosine;
 
   // Configuration registers
-  logic        [APB_DATA_WIDTH_P-1 : 0] iir_f0;
-  logic        [APB_DATA_WIDTH_P-1 : 0] iir_fs;
-  logic        [APB_DATA_WIDTH_P-1 : 0] iir_q;
-  logic        [APB_DATA_WIDTH_P-1 : 0] iir_type;
-  logic        [APB_DATA_WIDTH_P-1 : 0] bypass;
+  logic        [N_BITS_P-1 : 0] iir_f0;
+  logic        [N_BITS_P-1 : 0] iir_fs;
+  logic        [N_BITS_P-1 : 0] iir_q;
+  logic        [N_BITS_P-1 : 0] iir_type;
+  logic        [N_BITS_P-1 : 0] bypass;
 
   // MVP coefficients
-  logic signed         [N_BITS_P-1 : 0] w0;
-  logic signed         [N_BITS_P-1 : 0] sine_of_w0;
-  logic signed         [N_BITS_P-1 : 0] cosine_of_w0;
-  logic signed         [N_BITS_P-1 : 0] alfa;
+  logic signed [N_BITS_P-1 : 0] w0;
+  logic signed [N_BITS_P-1 : 0] sine_of_w0;
+  logic signed [N_BITS_P-1 : 0] cosine_of_w0;
+  logic signed [N_BITS_P-1 : 0] alfa;
 
   // Zero and pole coefficients
-  logic signed         [N_BITS_P-1 : 0] cr_zero_b0;
-  logic signed         [N_BITS_P-1 : 0] cr_zero_b1;
-  logic signed         [N_BITS_P-1 : 0] cr_zero_b2;
-  logic signed         [N_BITS_P-1 : 0] cr_pole_a0;
-  logic signed         [N_BITS_P-1 : 0] cr_pole_a1;
-  logic signed         [N_BITS_P-1 : 0] cr_pole_a2;
+  logic signed [N_BITS_P-1 : 0] cr_zero_b0;
+  logic signed [N_BITS_P-1 : 0] cr_zero_b1;
+  logic signed [N_BITS_P-1 : 0] cr_zero_b2;
+  logic signed [N_BITS_P-1 : 0] cr_pole_a0;
+  logic signed [N_BITS_P-1 : 0] cr_pole_a1;
+  logic signed [N_BITS_P-1 : 0] cr_pole_a2;
 
   // Status registers to the APB slave
   assign sr_w0      = w0;
