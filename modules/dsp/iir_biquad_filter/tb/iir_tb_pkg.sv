@@ -69,7 +69,7 @@ package iir_tb_pkg;
   localparam vip_axi4_cfg_t VIP_REG_CFG_C = '{
     VIP_AXI4_ID_WIDTH_P   : 2,
     VIP_AXI4_ADDR_WIDTH_P : 16,
-    VIP_AXI4_DATA_WIDTH_P : 64,
+    VIP_AXI4_DATA_WIDTH_P : CFG_DATA_WIDTH_C,
     VIP_AXI4_STRB_WIDTH_P : 8,
     VIP_AXI4_USER_WIDTH_P : 0
   };

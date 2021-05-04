@@ -72,7 +72,6 @@ module iir_tb_top;
   logic                                   cor_iir_tvalid;
   logic                                   cor_iir_tready;
   logic signed         [2*N_BITS_C-1 : 0] cor_iir_tdata;
-  logic                                   cor_iir_tlast;
   logic            [AXI_ID_WIDTH_C-1 : 0] cor_iir_tid;
 
   // IIR - Divider
@@ -102,81 +101,81 @@ module iir_tb_top;
   logic                                   div_fen_tuser;
 
   // Registers
-  logic          [CFG_DATA_WIDTH_C-1 : 0] cr_iir_f0;
-  logic          [CFG_DATA_WIDTH_C-1 : 0] cr_iir_fs;
-  logic          [CFG_DATA_WIDTH_C-1 : 0] cr_iir_q;
-  logic          [CFG_DATA_WIDTH_C-1 : 0] cr_iir_type;
-  logic          [CFG_DATA_WIDTH_C-1 : 0] cr_iir_bypass;
-  logic signed   [CFG_DATA_WIDTH_C-1 : 0] sr_iir_w0;
-  logic signed   [CFG_DATA_WIDTH_C-1 : 0] sr_iir_alfa;
-  logic signed   [CFG_DATA_WIDTH_C-1 : 0] sr_iir_zero_b0;
-  logic signed   [CFG_DATA_WIDTH_C-1 : 0] sr_iir_zero_b1;
-  logic signed   [CFG_DATA_WIDTH_C-1 : 0] sr_iir_zero_b2;
-  logic signed   [CFG_DATA_WIDTH_C-1 : 0] sr_iir_pole_a0;
-  logic signed   [CFG_DATA_WIDTH_C-1 : 0] sr_iir_pole_a1;
-  logic signed   [CFG_DATA_WIDTH_C-1 : 0] sr_iir_pole_a2;
+  logic          [N_BITS_C-1 : 0] cr_iir_f0;
+  logic          [N_BITS_C-1 : 0] cr_iir_fs;
+  logic          [N_BITS_C-1 : 0] cr_iir_q;
+  logic          [N_BITS_C-1 : 0] cr_iir_type;
+  logic                           cr_iir_bypass;
+  logic signed   [N_BITS_C-1 : 0] sr_iir_w0;
+  logic signed   [N_BITS_C-1 : 0] sr_iir_alfa;
+  logic signed   [N_BITS_C-1 : 0] sr_iir_zero_b0;
+  logic signed   [N_BITS_C-1 : 0] sr_iir_zero_b1;
+  logic signed   [N_BITS_C-1 : 0] sr_iir_zero_b2;
+  logic signed   [N_BITS_C-1 : 0] sr_iir_pole_a0;
+  logic signed   [N_BITS_C-1 : 0] sr_iir_pole_a1;
+  logic signed   [N_BITS_C-1 : 0] sr_iir_pole_a2;
 
   assign iir_cor_tready = '1;
   assign mst_vif.tready = '1;
 
   iir_biquad_top #(
-    .AXI_DATA_WIDTH_P  ( N_BITS_C         ),
-    .AXI_ID_WIDTH_P    ( AXI_ID_WIDTH_C   ),
-    .AXI4S_ID_P        ( '0               ),
-    .APB_DATA_WIDTH_P  ( CFG_DATA_WIDTH_C ),
-    .N_BITS_P          ( N_BITS_C         ),
-    .Q_BITS_P          ( Q_BITS_C         )
+    .AXI_DATA_WIDTH_P  ( N_BITS_C          ),
+    .AXI_ID_WIDTH_P    ( AXI_ID_WIDTH_C    ),
+    .AXI4S_ID_P        ( '0                ),
+    .APB_DATA_WIDTH_P  ( CFG_DATA_WIDTH_C  ),
+    .N_BITS_P          ( N_BITS_C          ),
+    .Q_BITS_P          ( Q_BITS_C          )
   ) iir_biquad_top_i0 (
 
     // Clock and reset
-    .clk               ( clk              ), // input
-    .rst_n             ( rst_n            ), // input
+    .clk               ( clk_rst_vif.clk   ), // input
+    .rst_n             ( clk_rst_vif.rst_n ), // input
 
     // Filter ports
-    .x_valid           ( sampling_enable  ), // input
-    .x                 ( mst_vif.tdata    ), // input
-    .y_valid           (                  ), // output
-    .y                 (                  ), // output
+    .x_valid           ( sampling_enable   ), // input
+    .x                 ( mst_vif.tdata     ), // input
+    .y_valid           (                   ), // output
+    .y                 (                   ), // output
 
     // CORDIC interface
-    .cordic_egr_tvalid ( iir_cor_tvalid   ), // output
-    .cordic_egr_tready ( iir_cor_tready   ), // input
-    .cordic_egr_tdata  ( iir_cor_tdata    ), // output
-    .cordic_egr_tlast  ( iir_cor_tlast    ), // output
-    .cordic_egr_tid    ( iir_cor_tid      ), // output
-    .cordic_egr_tuser  ( iir_cor_tuser    ), // output
-    .cordic_ing_tvalid ( cor_iir_tvalid   ), // input
-    .cordic_ing_tready ( cor_iir_tready   ), // output
-    .cordic_ing_tdata  ( cor_iir_tdata    ), // input
-    .cordic_ing_tlast  ( cor_iir_tlast    ), // input
+    .cordic_egr_tvalid ( iir_cor_tvalid    ), // output
+    .cordic_egr_tready ( iir_cor_tready    ), // input
+    .cordic_egr_tdata  ( iir_cor_tdata     ), // output
+    .cordic_egr_tlast  ( iir_cor_tlast     ), // output
+    .cordic_egr_tid    ( iir_cor_tid       ), // output
+    .cordic_egr_tuser  ( iir_cor_tuser     ), // output
+    .cordic_ing_tvalid ( cor_iir_tvalid    ), // input
+    .cordic_ing_tready ( cor_iir_tready    ), // output
+    .cordic_ing_tdata  ( cor_iir_tdata     ), // input
+    .cordic_ing_tlast  ( '1                ), // input
 
     // Long division interface
-    .div_egr_tvalid    ( iir_div_tvalid   ), // output
-    .div_egr_tready    ( iir_div_tready   ), // input
-    .div_egr_tdata     ( iir_div_tdata    ), // output
-    .div_egr_tlast     ( iir_div_tlast    ), // output
-    .div_egr_tid       ( iir_div_tid      ), // output
-    .div_ing_tvalid    ( div_iir_tvalid   ), // input
-    .div_ing_tready    ( div_iir_tready   ), // output
-    .div_ing_tdata     ( div_iir_tdata    ), // input
-    .div_ing_tlast     ( div_iir_tlast    ), // input
-    .div_ing_tid       ( div_iir_tid      ), // input
-    .div_ing_tuser     ( div_iir_tuser    ), // input
+    .div_egr_tvalid    ( iir_div_tvalid    ), // output
+    .div_egr_tready    ( iir_div_tready    ), // input
+    .div_egr_tdata     ( iir_div_tdata     ), // output
+    .div_egr_tlast     ( iir_div_tlast     ), // output
+    .div_egr_tid       ( iir_div_tid       ), // output
+    .div_ing_tvalid    ( div_iir_tvalid    ), // input
+    .div_ing_tready    ( div_iir_tready    ), // output
+    .div_ing_tdata     ( div_iir_tdata     ), // input
+    .div_ing_tlast     ( div_iir_tlast     ), // input
+    .div_ing_tid       ( div_iir_tid       ), // input
+    .div_ing_tuser     ( div_iir_tuser     ), // input
 
     // Registers
-    .cr_iir_f0         ( cr_iir_f0        ), // input
-    .cr_iir_fs         ( cr_iir_fs        ), // input
-    .cr_iir_q          ( cr_iir_q         ), // input
-    .cr_iir_type       ( cr_iir_type      ), // input
-    .cr_bypass         ( cr_iir_bypass    ), // input
-    .sr_w0             ( sr_iir_w0        ), // output
-    .sr_alfa           ( sr_iir_alfa      ), // output
-    .sr_zero_b0        ( sr_iir_zero_b0   ), // output
-    .sr_zero_b1        ( sr_iir_zero_b1   ), // output
-    .sr_zero_b2        ( sr_iir_zero_b2   ), // output
-    .sr_pole_a0        ( sr_iir_pole_a0   ), // output
-    .sr_pole_a1        ( sr_iir_pole_a1   ), // output
-    .sr_pole_a2        ( sr_iir_pole_a2   )  // output
+    .cr_iir_f0         ( cr_iir_f0         ), // input
+    .cr_iir_fs         ( cr_iir_fs         ), // input
+    .cr_iir_q          ( cr_iir_q          ), // input
+    .cr_iir_type       ( cr_iir_type       ), // input
+    .cr_bypass         ( cr_iir_bypass     ), // input
+    .sr_w0             ( sr_iir_w0         ), // output
+    .sr_alfa           ( sr_iir_alfa       ), // output
+    .sr_zero_b0        ( sr_iir_zero_b0    ), // output
+    .sr_zero_b1        ( sr_iir_zero_b1    ), // output
+    .sr_zero_b2        ( sr_iir_zero_b2    ), // output
+    .sr_pole_a0        ( sr_iir_pole_a0    ), // output
+    .sr_pole_a1        ( sr_iir_pole_a1    ), // output
+    .sr_pole_a2        ( sr_iir_pole_a2    )  // output
   );
 
 
@@ -210,8 +209,8 @@ module iir_tb_top;
     .NR_OF_STAGES_P    ( 16                )
   ) cordic_axi4s_if_i0 (
 
-    .clk               ( clk               ), // input
-    .rst_n             ( rst_n             ), // input
+    .clk               ( clk_rst_vif.clk   ), // input
+    .rst_n             ( clk_rst_vif.rst_n ), // input
 
     .ing_tvalid        ( iir_cor_tvalid    ), // input
     .ing_tdata         ( iir_cor_tdata     ), // input
@@ -225,75 +224,75 @@ module iir_tb_top;
 
 
   long_division_axi4s_if #(
-    .AXI_DATA_WIDTH_P ( N_BITS_C         ),
-    .AXI_ID_WIDTH_P   ( AXI_ID_WIDTH_C   ),
-    .N_BITS_P         ( N_BITS_C         ),
-    .Q_BITS_P         ( Q_BITS_C         )
+    .AXI_DATA_WIDTH_P ( N_BITS_C          ),
+    .AXI_ID_WIDTH_P   ( AXI_ID_WIDTH_C    ),
+    .N_BITS_P         ( N_BITS_C          ),
+    .Q_BITS_P         ( Q_BITS_C          )
   ) long_division_axi4s_if_i0 (
 
-    .clk              ( clk              ), // input
-    .rst_n            ( rst_n            ), // input
+    .clk              ( clk_rst_vif.clk   ), // input
+    .rst_n            ( clk_rst_vif.rst_n ), // input
 
-    .ing_tvalid       ( iir_div_tvalid   ), // input
-    .ing_tready       ( iir_div_tready   ), // output
-    .ing_tdata        ( iir_div_tdata    ), // input
-    .ing_tlast        ( iir_div_tlast    ), // input
-    .ing_tid          ( iir_div_tid      ), // input
+    .ing_tvalid       ( iir_div_tvalid    ), // input
+    .ing_tready       ( iir_div_tready    ), // output
+    .ing_tdata        ( iir_div_tdata     ), // input
+    .ing_tlast        ( iir_div_tlast     ), // input
+    .ing_tid          ( iir_div_tid       ), // input
 
-    .egr_tvalid       ( div_iir_tvalid   ), // output
-    .egr_tdata        ( div_iir_tdata    ), // output
-    .egr_tlast        ( div_iir_tlast    ), // output
-    .egr_tid          ( div_iir_tid      ), // output
-    .egr_tuser        ( div_iir_tuser    )  // output
+    .egr_tvalid       ( div_iir_tvalid    ), // output
+    .egr_tdata        ( div_iir_tdata     ), // output
+    .egr_tlast        ( div_iir_tlast     ), // output
+    .egr_tid          ( div_iir_tid       ), // output
+    .egr_tuser        ( div_iir_tuser     )  // output
   );
 
 
   frequency_enable #(
-    .SYS_CLK_FREQUENCY_P ( 125000000           ),
-    .AXI_DATA_WIDTH_P    ( N_BITS_C            ),
-    .AXI_ID_WIDTH_P      ( AXI_ID_WIDTH_C      ),
-    .Q_BITS_P            ( Q_BITS_C            ),
-    .AXI4S_ID_P          ( 0                   )
+    .SYS_CLK_FREQUENCY_P ( 125000000         ),
+    .AXI_DATA_WIDTH_P    ( N_BITS_C          ),
+    .AXI_ID_WIDTH_P      ( AXI_ID_WIDTH_C    ),
+    .Q_BITS_P            ( Q_BITS_C          ),
+    .AXI4S_ID_P          ( 0                 )
   ) frequency_enable_i0 (
-    .clk                 ( clk                 ),
-    .rst_n               ( rst_n               ),
-    .enable              ( sampling_enable     ),
-    .cr_enable_frequency ( cr_iir_fs           ),
-    .div_egr_tvalid      ( fen_div_tvalid      ),
-    .div_egr_tready      ( fen_div_tready      ),
-    .div_egr_tdata       ( fen_div_tdata       ),
-    .div_egr_tlast       ( fen_div_tlast       ),
-    .div_egr_tid         ( fen_div_tid         ),
-    .div_ing_tvalid      ( div_fen_tvalid      ),
-    .div_ing_tready      ( div_fen_tready      ),
-    .div_ing_tdata       ( div_fen_tdata       ),
-    .div_ing_tlast       ( div_fen_tlast       ),
-    .div_ing_tid         ( div_fen_tid         ),
-    .div_ing_tuser       ( div_fen_tuser       )
+    .clk                 ( clk_rst_vif.clk   ),
+    .rst_n               ( clk_rst_vif.rst_n ),
+    .enable              ( sampling_enable   ),
+    .cr_enable_frequency ( cr_iir_fs         ),
+    .div_egr_tvalid      ( fen_div_tvalid    ),
+    .div_egr_tready      ( fen_div_tready    ),
+    .div_egr_tdata       ( fen_div_tdata     ),
+    .div_egr_tlast       ( fen_div_tlast     ),
+    .div_egr_tid         ( fen_div_tid       ),
+    .div_ing_tvalid      ( div_fen_tvalid    ),
+    .div_ing_tready      ( div_fen_tready    ),
+    .div_ing_tdata       ( div_fen_tdata     ),
+    .div_ing_tlast       ( div_fen_tlast     ),
+    .div_ing_tid         ( div_fen_tid       ),
+    .div_ing_tuser       ( div_fen_tuser     )
   );
 
 
   long_division_axi4s_if #(
-    .AXI_DATA_WIDTH_P ( N_BITS_C         ),
-    .AXI_ID_WIDTH_P   ( AXI_ID_WIDTH_C   ),
-    .N_BITS_P         ( N_BITS_C         ),
-    .Q_BITS_P         ( Q_BITS_C         )
+    .AXI_DATA_WIDTH_P ( N_BITS_C          ),
+    .AXI_ID_WIDTH_P   ( AXI_ID_WIDTH_C    ),
+    .N_BITS_P         ( N_BITS_C          ),
+    .Q_BITS_P         ( Q_BITS_C          )
   ) long_division_axi4s_if_i2 (
 
-    .clk              ( clk              ), // input
-    .rst_n            ( rst_n            ), // input
+    .clk              ( clk_rst_vif.clk   ), // input
+    .rst_n            ( clk_rst_vif.rst_n ), // input
 
-    .ing_tvalid       ( fen_div_tvalid   ), // input
-    .ing_tready       ( fen_div_tready   ), // output
-    .ing_tdata        ( fen_div_tdata    ), // input
-    .ing_tlast        ( fen_div_tlast    ), // input
-    .ing_tid          ( fen_div_tid      ), // input
+    .ing_tvalid       ( fen_div_tvalid    ), // input
+    .ing_tready       ( fen_div_tready    ), // output
+    .ing_tdata        ( fen_div_tdata     ), // input
+    .ing_tlast        ( fen_div_tlast     ), // input
+    .ing_tid          ( fen_div_tid       ), // input
 
-    .egr_tvalid       ( div_fen_tvalid   ), // output
-    .egr_tdata        ( div_fen_tdata    ), // output
-    .egr_tlast        ( div_fen_tlast    ), // output
-    .egr_tid          ( div_fen_tid      ), // output
-    .egr_tuser        ( div_fen_tuser    )  // output
+    .egr_tvalid       ( div_fen_tvalid    ), // output
+    .egr_tdata        ( div_fen_tdata     ), // output
+    .egr_tlast        ( div_fen_tlast     ), // output
+    .egr_tid          ( div_fen_tid       ), // output
+    .egr_tuser        ( div_fen_tuser     )  // output
   );
 
   initial begin
