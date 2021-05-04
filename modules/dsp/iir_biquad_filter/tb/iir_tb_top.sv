@@ -122,7 +122,6 @@ module iir_tb_top;
     .AXI_DATA_WIDTH_P  ( N_BITS_C          ),
     .AXI_ID_WIDTH_P    ( AXI_ID_WIDTH_C    ),
     .AXI4S_ID_P        ( '0                ),
-    .APB_DATA_WIDTH_P  ( CFG_DATA_WIDTH_C  ),
     .N_BITS_P          ( N_BITS_C          ),
     .Q_BITS_P          ( Q_BITS_C          )
   ) iir_biquad_top_i0 (
