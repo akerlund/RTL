@@ -27,6 +27,12 @@ _all_modules=$(find $git_root/modules -name Makefile | grep -v csrc | xargs dirn
 _run_target=run_all
 _compile_only=0
 
+_color_green="$(tput setaf 2)"
+_color_red="$(tput setaf 1)"
+_color_def="$(tput sgr0)"
+_ret=0
+
+
 while getopts ":hct:" opt; do
   case $opt in
     c )
@@ -39,12 +45,6 @@ while getopts ":hct:" opt; do
   esac
 done
 shift $((OPTIND -1))
-
-_color_green="$(tput setaf 2)"
-_color_red="$(tput setaf 1)"
-_color_def="$(tput sgr0)"
-_ret=0
-
 
 for mod in $_all_modules; do
 
@@ -62,17 +62,22 @@ for mod in $_all_modules; do
 
   cd $mod
 
+  if [ -f "tmp.log" ]; then
+    rm tmp.log
+  fi
+
   printf "%-45s" "Compiling $_mod_name:"
-  t_sec=-$SECONDS
+  _time_s=-$SECONDS
 
   make clean build > tmp.log 2>&1
+  _status=$?
 
-  t_sec=$((t + SECONDS))
-  t_str=$(date -d@$t_sec -u +%H:%M:%S)
+  _time_s=$((_time_s + SECONDS))
+  _time_str=$(date -d@$_time_s -u +%H:%M:%S)
 
-  if [ $? -eq 0 ]; then
+  if [ $_status -eq 0 ]; then
 
-    echo "${_color_green}Passed${_color_def} ($t_str)"
+    echo "${_color_green}Passed${_color_def} ($_time_str)"
 
     if [[ $_compile_only -eq 0 && -d tc ]]; then
 
@@ -94,9 +99,8 @@ for mod in $_all_modules; do
       fi
     fi
   else
-    echo "${_color_red}Failed${_color_def}"
+    echo "${_color_red}Failed${_color_def} ($_time_str)"
     _ret=-1
-    grep 'Error-' tmp.log
   fi
   rm tmp.log
 done
