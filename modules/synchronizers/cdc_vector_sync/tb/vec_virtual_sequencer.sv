@@ -24,10 +24,10 @@ class vec_virtual_sequencer extends uvm_virtual_sequencer;
 
   `uvm_component_utils(vec_virtual_sequencer)
 
-  vip_axi4s_sequencer #(axi4s_cfg) mst0_sequencer;
-  vip_axi4s_sequencer #(axi4s_cfg) slv0_sequencer;
-  clk_rst_sequencer                clk_rst_sequencer0;
-  clk_rst_sequencer                clk_rst_sequencer1;
+  vip_axi4s_sequencer #(VIP_AXI4S_CFG_C) mst0_sequencer;
+  vip_axi4s_sequencer #(VIP_AXI4S_CFG_C) slv0_sequencer;
+  clk_rst_sequencer                      clk_rst_sequencer0;
+  clk_rst_sequencer                      clk_rst_sequencer1;
 
   function new(string name = "virtual_sequencer", uvm_component parent = null);
     super.new(name, parent);
