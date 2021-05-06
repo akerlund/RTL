@@ -4,10 +4,10 @@ git_root="$(git rev-parse --show-toplevel)"
 
 # Specify the top files
 rtl_top=reset_synchronizer
-uvm_top=""
+uvm_top=reset_synchronizer
 
 # Specify other file lists
-source $git_root/modules/synchronizers/io/rtl/rtl_files.lst
+source $git_root/modules/synchronizers/io/rtl/files.lst
 
 # Source the module's file lists
-source ./rtl/rtl_files.lst
+source ./rtl/files.lst

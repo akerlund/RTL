@@ -3,23 +3,10 @@
 git_root=$(git rev-parse --show-toplevel)
 
 _skip_modules+="
-  fifo
   fft
-  cdc_bit_sync
-  cdc_vector_sync
-  io
-  reset
-  mixer
   rgb_led
   color_hsl_12bit
   led_pwm
-  button
-  encoder
-  switch
-  clock_enable_scaler
-  delay_enable
-  frequency_enable
-  clock_enable
 "
 _skip_modules=${_skip_modules//[$'\t\r\n']}
 
