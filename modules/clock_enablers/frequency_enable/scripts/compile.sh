@@ -4,10 +4,10 @@ git_root="$(git rev-parse --show-toplevel)"
 
 # Specify the top files
 rtl_top=frequency_enable
-uvm_top=""
+uvm_top=frequency_enable
 
 # Source the module's file lists
-source ./rtl/rtl_files.lst
+source ./rtl/files.lst
 
 # Parameter override
 parameters+=("SYS_CLK_FREQUENCY_P=200000000 ")
