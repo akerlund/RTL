@@ -35,7 +35,6 @@ class vec_base_test extends uvm_test;
   // ---------------------------------------------------------------------------
 
   vec_env               tb_env;
-  vec_config            tb_cfg;
   vec_virtual_sequencer v_sqr;
 
   // ---------------------------------------------------------------------------
@@ -48,29 +47,22 @@ class vec_base_test extends uvm_test;
   vip_axi4s_config vip_axi4s_config_slv;
 
   // ---------------------------------------------------------------------------
-  // Test configuration
-  // ---------------------------------------------------------------------------
-
-  // ---------------------------------------------------------------------------
   // Sequences
   // ---------------------------------------------------------------------------
-  reset_sequence                  reset_sequence0;
-  reset_sequence                  reset_sequence1;
-  axi4s_counting_seq #(axi4s_cfg) axi4s_counting_seq0;
+  reset_sequence              reset_sequence0;
+  reset_sequence              reset_sequence1;
+  vip_axi4s_seq  #(VIP_AXI4S_CFG_C) vip_axi4s_seq0;
 
   // ---------------------------------------------------------------------------
   // Variables for sequences
   // ---------------------------------------------------------------------------
 
   int nr_of_bursts;
-  int max_idle_between_bursts;
-
 
 
   function new(string name = "vec_base_test", uvm_component parent = null);
     super.new(name, parent);
   endfunction
-
 
 
   virtual function void build_phase(uvm_phase phase);
@@ -89,7 +81,6 @@ class vec_base_test extends uvm_test;
     clk_rst_config1      = clk_rst_config::type_id::create("clk_rst_config1", this);
     vip_axi4s_config_mst = vip_axi4s_config::type_id::create("vip_axi4s_config_mst", this);
     vip_axi4s_config_slv = vip_axi4s_config::type_id::create("vip_axi4s_config_slv", this);
-    tb_cfg               = vec_config::type_id::create("tb_cfg", this);
 
     vip_axi4s_config_slv.vip_axi4s_agent_type = VIP_AXI4S_SLAVE_AGENT_E;
 
@@ -114,38 +105,30 @@ class vec_base_test extends uvm_test;
     `uvm_info(get_name(), {"Clock and Reset Agent 1:\n", clk_rst_config1.sprint()},      UVM_LOW)
     `uvm_info(get_name(), {"VIP Master Agent:\n",        vip_axi4s_config_mst.sprint()}, UVM_LOW)
     `uvm_info(get_name(), {"VIP Slave Agent:\n",         vip_axi4s_config_slv.sprint()}, UVM_LOW)
-    `uvm_info(get_name(), {"Testbench:\n",               tb_cfg.sprint()},               UVM_LOW)
-
   endfunction
-
 
 
   function void start_of_simulation_phase(uvm_phase phase);
 
     super.start_of_simulation_phase(phase);
 
-    reset_sequence0     = reset_sequence::type_id::create("reset_sequence0");
-    reset_sequence1     = reset_sequence::type_id::create("reset_sequence1");
-    axi4s_counting_seq0 = axi4s_counting_seq #(axi4s_cfg)::type_id::create("axi4s_counting_seq0");
-
+    reset_sequence0 = reset_sequence::type_id::create("reset_sequence0");
+    reset_sequence1 = reset_sequence::type_id::create("reset_sequence1");
+    vip_axi4s_seq0  = vip_axi4s_seq #(VIP_AXI4S_CFG_C)::type_id::create("vip_axi4s_seq0");
   endfunction
-
 
 
   task run_phase(uvm_phase phase);
 
     super.run_phase(phase);
-
     phase.raise_objection(this);
 
-    // Resetting the DUT
     fork
       reset_sequence0.start(v_sqr.clk_rst_sequencer0);
       reset_sequence1.start(v_sqr.clk_rst_sequencer1);
     join
 
     phase.drop_objection(this);
-
   endtask
 
 endclass

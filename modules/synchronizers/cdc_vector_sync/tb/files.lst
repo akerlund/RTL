@@ -1,4 +1,4 @@
-module_path=$git_root/modules/synchronizers/cdc_vector_synch
+module_path=$git_root/modules/synchronizers/cdc_vector_sync
 
 uvm_dirs+="
   +incdir+$module_path/tb/

@@ -27,16 +27,16 @@ class vec_scoreboard extends uvm_scoreboard;
 
   `uvm_component_utils(vec_scoreboard)
 
-  uvm_analysis_imp_collected_port_mst0 #(vip_axi4s_item #(axi4s_cfg), vec_scoreboard) collected_port_mst0;
-  uvm_analysis_imp_collected_port_slv0 #(vip_axi4s_item #(axi4s_cfg), vec_scoreboard) collected_port_slv0;
+  uvm_analysis_imp_collected_port_mst0 #(vip_axi4s_item #(VIP_AXI4S_CFG_C), vec_scoreboard) collected_port_mst0;
+  uvm_analysis_imp_collected_port_slv0 #(vip_axi4s_item #(VIP_AXI4S_CFG_C), vec_scoreboard) collected_port_slv0;
 
   // Storage for comparison
-  vip_axi4s_item #(axi4s_cfg) master_items [$];
-  vip_axi4s_item #(axi4s_cfg) slave_items  [$];
+  vip_axi4s_item #(VIP_AXI4S_CFG_C) master_items [$];
+  vip_axi4s_item #(VIP_AXI4S_CFG_C) slave_items  [$];
 
   // Debug storage
-  vip_axi4s_item #(axi4s_cfg) all_master_items [$];
-  vip_axi4s_item #(axi4s_cfg) all_slave_items  [$];
+  vip_axi4s_item #(VIP_AXI4S_CFG_C) all_master_items [$];
+  vip_axi4s_item #(VIP_AXI4S_CFG_C) all_slave_items  [$];
 
   // For raising objections
   uvm_phase current_phase;
@@ -55,34 +55,23 @@ class vec_scoreboard extends uvm_scoreboard;
   endfunction
 
 
-
   virtual function void build_phase(uvm_phase phase);
-
     super.build_phase(phase);
-
     collected_port_mst0 = new("collected_port_mst0", this);
     collected_port_slv0 = new("collected_port_slv0", this);
-
   endfunction
-
 
 
   function void connect_phase(uvm_phase phase);
-
     current_phase = phase;
     super.connect_phase(current_phase);
-
   endfunction
 
 
-
   virtual task run_phase(uvm_phase phase);
-
     current_phase = phase;
     super.run_phase(current_phase);
-
   endtask
-
 
 
   function void check_phase(uvm_phase phase);
@@ -100,46 +89,39 @@ class vec_scoreboard extends uvm_scoreboard;
 
     if (number_of_failed != 0) begin
       `uvm_error(get_name(), $sformatf("Test failed! (%0d) mismatches", number_of_failed))
-    end
-    else begin
+    end else begin
       `uvm_info(get_name(), $sformatf("Test passed (%0d)/(%0d) finished transfers", number_of_passed, number_of_compared), UVM_LOW)
     end
-
   endfunction
 
   //----------------------------------------------------------------------------
   // Master Agents
   //----------------------------------------------------------------------------
 
-  virtual function void write_collected_port_mst0(vip_axi4s_item #(axi4s_cfg) trans);
-
+  virtual function void write_collected_port_mst0(vip_axi4s_item #(VIP_AXI4S_CFG_C) trans);
     number_of_master_items++;
     master_items.push_back(trans);
     all_master_items.push_back(trans);
     current_phase.raise_objection(this);
-
   endfunction
-
 
   //----------------------------------------------------------------------------
   // Slave Agent
   //----------------------------------------------------------------------------
 
-  virtual function void write_collected_port_slv0(vip_axi4s_item #(axi4s_cfg) trans);
-
+  virtual function void write_collected_port_slv0(vip_axi4s_item #(VIP_AXI4S_CFG_C) trans);
     number_of_slave_items++;
     slave_items.push_back(trans);
     all_slave_items.push_back(trans);
     compare();
     current_phase.drop_objection(this);
-
   endfunction
 
 
   virtual function void compare();
 
-    vip_axi4s_item #(axi4s_cfg) current_master_item;
-    vip_axi4s_item #(axi4s_cfg) current_slave_item;
+    vip_axi4s_item #(VIP_AXI4S_CFG_C) current_master_item;
+    vip_axi4s_item #(VIP_AXI4S_CFG_C) current_slave_item;
 
     int compare_ok = 1;
 
@@ -155,16 +137,13 @@ class vec_scoreboard extends uvm_scoreboard;
       end
     end
 
-
     if (compare_ok) begin
       number_of_passed++;
-    end
-    else begin
+    end else begin
       number_of_failed++;
     end
 
     number_of_compared++;
 
   endfunction
-
 endclass

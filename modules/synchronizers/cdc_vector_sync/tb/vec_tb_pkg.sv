@@ -28,23 +28,25 @@ package vec_tb_pkg;
   import uvm_pkg::*;
   `include "uvm_macros.svh"
 
-  import vip_axi4s_types_pkg::*;
-  import vip_axi4s_pkg::*;
-
+  import bool_pkg::*;
   import clk_rst_types_pkg::*;
   import clk_rst_pkg::*;
+  import vip_axi4s_types_pkg::*;
+  import vip_axi4s_agent_pkg::*;
+
+  localparam CDC_DATA_WIDTH_C = 25;
 
   // Configuration of the AXI4-S VIP
-  localparam vip_axi4s_cfg_t axi4s_cfg = '{
-    AXI_DATA_WIDTH_P : 24,
-    AXI_STRB_WIDTH_P : 0,
-    AXI_KEEP_WIDTH_P : 0,
-    AXI_ID_WIDTH_P   : 0,
-    AXI_DEST_WIDTH_P : 0,
-    AXI_USER_WIDTH_P : 0
+  localparam vip_axi4s_cfg_t VIP_AXI4S_CFG_C = '{
+    VIP_AXI4S_TDATA_WIDTH_P : 24,
+    VIP_AXI4S_TSTRB_WIDTH_P : 3,
+    VIP_AXI4S_TKEEP_WIDTH_P : 0,
+    VIP_AXI4S_TID_WIDTH_P   : 0,
+    VIP_AXI4S_TDEST_WIDTH_P : 0,
+    VIP_AXI4S_TUSER_WIDTH_P : 0
   };
 
-  `include "vec_config.sv"
+  `include "vip_axi4s_seq_lib.sv"
   `include "vec_scoreboard.sv"
   `include "vec_virtual_sequencer.sv"
   `include "vec_env.sv"

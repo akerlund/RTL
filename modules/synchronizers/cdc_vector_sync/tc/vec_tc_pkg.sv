@@ -26,18 +26,17 @@
 package vec_tc_pkg;
 
   `include "uvm_macros.svh"
+
+  import vec_tb_pkg::*;
+
   import uvm_pkg::*;
-
+  import bool_pkg::*;
+  import report_server_pkg::*;
   import vip_axi4s_types_pkg::*;
-  import vip_axi4s_pkg::*;
-
+  import vip_axi4s_agent_pkg::*;
   import clk_rst_types_pkg::*;
   import clk_rst_pkg::*;
 
-  // Import testbench and agent packages here
-  import vec_tb_pkg::*;
-
-  // Include testcase files here
   `include "vec_base_test.sv"
   `include "tc_vec_slow_to_fast.sv"
   `include "tc_vec_fast_to_slow.sv"
