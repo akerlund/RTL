@@ -81,8 +81,8 @@ class mix_env extends uvm_env;
 
     super.connect_phase(phase);
 
-    vip_axi4s_agent_mst0.monitor.collected_port.connect(scoreboard0.collected_port_mst0);
-    vip_axi4s_agent_slv0.monitor.collected_port.connect(scoreboard0.collected_port_slv0);
+    vip_axi4s_agent_mst0.monitor.tdata_port.connect(scoreboard0.collected_port_mst0);
+    vip_axi4s_agent_slv0.monitor.tdata_port.connect(scoreboard0.collected_port_slv0);
 
     virtual_sequencer.mst0_sequencer = vip_axi4s_agent_mst0.sequencer;
 
