@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2020 Fredrik Åkerlund
+// Copyright (C) 2021 Fredrik Åkerlund
 // https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
@@ -20,27 +20,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-`ifndef MIX_TC_PKG
-`define MIX_TC_PKG
+`ifndef MIX_IF
+`define MIX_IF
 
-package mix_tc_pkg;
+import mix_tb_pkg::*;
 
-  `include "uvm_macros.svh"
-  import uvm_pkg::*;
-
-  import mix_tb_pkg::*;
-  import bool_pkg::*;
-  import clk_rst_types_pkg::*;
-  import clk_rst_pkg::*;
-  import vip_axi4s_types_pkg::*;
-  import vip_axi4s_agent_pkg::*;
-  import report_server_pkg::*;
-  import vip_fixed_point_pkg::*;
-
-  `include "mix_base_test.sv"
-  `include "tc_positive_signals.sv"
-  `include "tc_random_signals.sv"
-
-endpackage
+interface mix_if(input clk, input rst_n);
+  logic [NR_OF_CHANNELS_C-1 : 0] [GAIN_WIDTH_C-1 : 0] cr_channel_gain;
+  logic [NR_OF_CHANNELS_C-1 : 0]                      cr_channel_pan;
+  logic                          [GAIN_WIDTH_C-1 : 0] cr_output_gain;
+endinterface
 
 `endif

@@ -24,6 +24,7 @@ class mix_virtual_sequencer extends uvm_virtual_sequencer;
 
   `uvm_component_utils(mix_virtual_sequencer)
 
+  clk_rst_sequencer                      clk_rst_sequencer0;
   vip_axi4s_sequencer #(VIP_AXI4S_CFG_C) mst0_sequencer;
 
   function new(string name = "virtual_sequencer", uvm_component parent = null);

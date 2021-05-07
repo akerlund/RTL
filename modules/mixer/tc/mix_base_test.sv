@@ -24,10 +24,36 @@ class mix_base_test extends uvm_test;
 
   `uvm_component_utils(mix_base_test)
 
+  // ---------------------------------------------------------------------------
+  // UVM variables
+  // ---------------------------------------------------------------------------
+
+  uvm_table_printer uvm_table_printer0;
+  report_server     report_server0;
+
+  // ---------------------------------------------------------------------------
+  // Testbench variables
+  // ---------------------------------------------------------------------------
+
   mix_env               tb_env;
   mix_virtual_sequencer v_sqr;
+  protected virtual mix_if mix_vif;
 
-  uvm_table_printer printer;
+  // ---------------------------------------------------------------------------
+  // VIP Agent configurations
+  // ---------------------------------------------------------------------------
+
+  clk_rst_config   clk_rst_config0;
+  vip_axi4s_config axi4s_mst_cfg0;
+  vip_axi4s_config axi4s_slv_cfg0;
+
+  // ---------------------------------------------------------------------------
+  // Sequences
+  // ---------------------------------------------------------------------------
+
+  reset_sequence                    reset_seq0;
+  //vip_axi4s_seq  #(VIP_AXI4S_CFG_C) vip_axi4s_seq0;
+
 
   function new(string name = "mix_base_test", uvm_component parent = null);
     super.new(name, parent);
@@ -38,19 +64,57 @@ class mix_base_test extends uvm_test;
 
     super.build_phase(phase);
 
-    printer = new();
-    printer.knobs.depth = 3;
+    if (!uvm_config_db #(virtual mix_if)::get(this, "", "mix_vif", mix_vif)) begin
+      `uvm_fatal("NOVIF", {"Virtual interface must be set for: ", get_full_name(), ".mix_vif"});
+    end
 
+    // UVM
     uvm_config_db #(uvm_verbosity)::set(this, "*", "recording_detail", UVM_FULL);
 
-    tb_env = mix_env::type_id::create("tb_env", this);
+    report_server0 = new("report_server0");
+    uvm_report_server::set_server(report_server0);
+
+    uvm_table_printer0                     = new();
+    uvm_table_printer0.knobs.depth         = 3;
+    uvm_table_printer0.knobs.default_radix = UVM_DEC;
+
+    tb_env          = mix_env::type_id::create("tb_env", this);
+    clk_rst_config0 = clk_rst_config::type_id::create("clk_rst_config0",  this);
+    axi4s_mst_cfg0  = vip_axi4s_config::type_id::create("axi4s_mst_cfg0", this);
+    axi4s_slv_cfg0  = vip_axi4s_config::type_id::create("axi4s_slv_cfg0", this);
+
+    axi4s_slv_cfg0.vip_axi4s_agent_type = VIP_AXI4S_SLAVE_AGENT_E;
+
+    uvm_config_db #(vip_axi4s_config)::set(this, {"tb_env.mst_agent0",     "*"}, "cfg", axi4s_mst_cfg0);
+    uvm_config_db #(vip_axi4s_config)::set(this, {"tb_env.slv_agent0",     "*"}, "cfg", axi4s_slv_cfg0);
+    uvm_config_db #(clk_rst_config)::set(this,   {"tb_env.clk_rst_agent0", "*"}, "cfg", clk_rst_config0);
 
   endfunction
 
 
   function void end_of_elaboration_phase(uvm_phase phase);
-    `uvm_info(get_type_name(), $sformatf("Topology of the test:\n%s", this.sprint(printer)), UVM_LOW)
+    super.end_of_elaboration_phase(phase);
     v_sqr = tb_env.virtual_sequencer;
   endfunction
+
+
+  function void start_of_simulation_phase(uvm_phase phase);
+    super.start_of_simulation_phase(phase);
+    reset_seq0     = reset_sequence::type_id::create("reset_seq0");
+    //vip_axi4s_seq0 = vip_axi4s_seq #(VIP_AXI4S_CFG_C)::type_id::create("vip_axi4s_seq0");
+  endfunction
+
+
+  task run_phase(uvm_phase phase);
+    super.run_phase(phase);
+    phase.raise_objection(this);
+    reset_seq0.start(v_sqr.clk_rst_sequencer0);
+    phase.drop_objection(this);
+  endtask
+
+
+  task clk_delay(int delay);
+    #(delay*clk_rst_config0.clock_period);
+  endtask
 
 endclass

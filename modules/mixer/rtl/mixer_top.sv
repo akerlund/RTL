@@ -103,7 +103,6 @@ module mixer_top #(
             dac_data  <= mix_out_right_r0;
             dac_last  <= '1;
           end
-
         end
 
         DAC_SEND_RIGHT_E: begin

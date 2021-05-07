@@ -22,12 +22,7 @@
 
 class tc_positive_signals extends mix_base_test;
 
-  mix_positive_signals_seq #(VIP_AXI4S_CFG_C) mix_positive_signals_seq0;
-
   `uvm_component_utils(tc_positive_signals)
-
-  int nr_of_signals = 10;
-
 
   function new(string name = "tc_positive_signals", uvm_component parent = null);
     super.new(name, parent);
@@ -42,12 +37,22 @@ class tc_positive_signals extends mix_base_test;
 
   task run_phase(uvm_phase phase);
 
+    mix_vif.cr_channel_gain[0] = float_to_fixed_point(1.00, Q_BITS_C);
+    mix_vif.cr_channel_pan[0]  = float_to_fixed_point(1.00, Q_BITS_C);
+    mix_vif.cr_output_gain[0]  = float_to_fixed_point(1.00, Q_BITS_C);
+
     super.run_phase(phase);
     phase.raise_objection(this);
 
-    mix_positive_signals_seq0 = new();
-    mix_positive_signals_seq0.nr_of_signals = nr_of_signals;
-    mix_positive_signals_seq0.start(v_sqr.mst0_sequencer);
+    clk_delay(10);
+    mix_vif.cr_channel_gain[0] = float_to_fixed_point(1.25, Q_BITS_C);
+    mix_vif.cr_channel_pan[0]  = float_to_fixed_point(0.25, Q_BITS_C);
+    mix_vif.cr_output_gain[0]  = float_to_fixed_point(0.80, Q_BITS_C);
+
+    clk_delay(10);
+    mix_vif.cr_channel_gain[0] = float_to_fixed_point(0.80, Q_BITS_C);
+    mix_vif.cr_channel_pan[0]  = float_to_fixed_point(0.75, Q_BITS_C);
+    mix_vif.cr_output_gain[0]  = float_to_fixed_point(1.25, Q_BITS_C);
 
     phase.drop_objection(this);
 
