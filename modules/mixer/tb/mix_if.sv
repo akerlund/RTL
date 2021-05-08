@@ -26,9 +26,11 @@
 import mix_tb_pkg::*;
 
 interface mix_if(input clk, input rst_n);
-  logic [NR_OF_CHANNELS_C-1 : 0] [GAIN_WIDTH_C-1 : 0] cr_channel_gain;
-  logic [NR_OF_CHANNELS_C-1 : 0]                      cr_channel_pan;
-  logic                          [GAIN_WIDTH_C-1 : 0] cr_output_gain;
+  logic                                                fs_strobe;
+  logic [NR_OF_CHANNELS_C-1 : 0] [AUDIO_WIDTH_C-1 : 0] channel_data;
+  logic  [NR_OF_CHANNELS_C-1 : 0] [GAIN_WIDTH_C-1 : 0] cr_channel_gain;
+  logic  [NR_OF_CHANNELS_C-1 : 0] [GAIN_WIDTH_C-1 : 0] cr_channel_pan;
+  logic                           [GAIN_WIDTH_C-1 : 0] cr_output_gain;
 endinterface
 
 `endif

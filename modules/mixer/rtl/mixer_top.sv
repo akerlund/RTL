@@ -36,8 +36,8 @@ module mixer_top #(
     output logic                                                      clip_led,
 
     // Data of channels and sampling enable strobe
-    input  wire                                                       fs_strobe,
-    input  wire signed [NR_OF_CHANNELS_P-1 : 0] [AUDIO_WIDTH_P-1 : 0] channel_data,
+    input  wire                                                       x_valid,
+    input  wire signed [NR_OF_CHANNELS_P-1 : 0] [AUDIO_WIDTH_P-1 : 0] x_data,
 
     // DAC
     output logic                                             [23 : 0] dac_data,
@@ -48,7 +48,7 @@ module mixer_top #(
     // Registers
     input  wire                                                       cmd_mix_clear_dac_min_max,
     input  wire         [NR_OF_CHANNELS_P-1 : 0] [GAIN_WIDTH_P-1 : 0] cr_mix_channel_gain,
-    input  wire                              [NR_OF_CHANNELS_P-1 : 0] cr_mix_channel_pan,
+    input  wire         [NR_OF_CHANNELS_P-1 : 0] [GAIN_WIDTH_P-1 : 0] cr_mix_channel_pan,
     input  wire                                  [GAIN_WIDTH_P-1 : 0] cr_mix_output_gain,
     output logic                                                      sr_mix_out_clip,
     output logic                             [NR_OF_CHANNELS_P-1 : 0] sr_mix_channel_clip,
@@ -171,8 +171,8 @@ module mixer_top #(
   ) mixer_core_i0 (
     .clk                 ( clk                 ), // input
     .rst_n               ( rst_n               ), // input
-    .channel_data        ( channel_data        ), // input
-    .channel_valid       ( fs_strobe           ), // input
+    .x_data              ( x_data              ), // input
+    .x_valid             ( x_valid             ), // input
     .out_left            ( mix_out_left        ), // output
     .out_right           ( mix_out_right       ), // output
     .out_valid           ( mix_out_valid       ), // input

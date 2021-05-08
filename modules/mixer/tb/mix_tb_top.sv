@@ -53,7 +53,7 @@ module mix_tb_top;
   endgenerate
 
 
-  assign channel_valid    = mst0_vif.tvalid;
+  assign channel_valid  = mst0_vif.tvalid;
   assign out_ready      = '1;
   assign cr_output_gain =  (1 << Q_BITS_C);
 
@@ -66,8 +66,8 @@ module mix_tb_top;
     .clk                       ( clk_rst_vif.clk                  ), // input
     .rst_n                     ( clk_rst_vif.rst_n                ), // input
     .clip_led                  (                                  ), // output
-    .fs_strobe                 ( channel_valid                    ), // input
-    .channel_data              ( channel_data                     ), // input
+    .x_valid                   ( mix_vif.fs_strobe                ), // input
+    .x_data                    ( mix_vif.channel_data             ), // input
     .dac_data                  (                                  ), // output
     .dac_valid                 (                                  ), // output
     .dac_ready                 ( '1                               ), // input

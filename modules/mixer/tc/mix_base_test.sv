@@ -108,13 +108,53 @@ class mix_base_test extends uvm_test;
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     phase.raise_objection(this);
+    mix_vif.fs_strobe <= '0;
     reset_seq0.start(v_sqr.clk_rst_sequencer0);
+    fork
+      set_fs_strobe();
+    join_none
     phase.drop_objection(this);
   endtask
 
 
   task clk_delay(int delay);
     #(delay*clk_rst_config0.clock_period);
+  endtask
+
+
+  task set_fs_strobe();
+    forever begin
+      mix_vif.fs_strobe <= '0;
+      clk_delay(9);
+      mix_vif.fs_strobe <= '1;
+      clk_delay(1);
+    end
+  endtask
+
+
+  task set_channel_data(real val);
+    for (int i = 0; i < NR_OF_CHANNELS_C; i++) begin
+      mix_vif.channel_data[i] = float_to_fixed_point(val, Q_BITS_C);
+    end
+  endtask
+
+
+  task set_channel_gain(real val);
+    for (int i = 0; i < NR_OF_CHANNELS_C; i++) begin
+      mix_vif.cr_channel_gain[i] = float_to_fixed_point(val, Q_BITS_C);
+    end
+  endtask
+
+
+  task set_channel_pan(real val);
+    for (int i = 0; i < NR_OF_CHANNELS_C; i++) begin
+      mix_vif.cr_channel_pan[i] = float_to_fixed_point(val, Q_BITS_C);
+    end
+  endtask
+
+
+  task set_output_gain(real val);
+    mix_vif.cr_output_gain = float_to_fixed_point(val, Q_BITS_C);
   endtask
 
 endclass

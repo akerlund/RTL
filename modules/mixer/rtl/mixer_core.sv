@@ -33,8 +33,8 @@ module mixer_core #(
     input  wire                                                       rst_n,
 
     // Ingress
-    input  wire signed [NR_OF_CHANNELS_P-1 : 0] [AUDIO_WIDTH_P-1 : 0] channel_data,
-    input  wire                                                       channel_valid,
+    input  wire signed [NR_OF_CHANNELS_P-1 : 0] [AUDIO_WIDTH_P-1 : 0] x_data,
+    input  wire                                                       x_valid,
 
     // Egress
     output logic signed                         [AUDIO_WIDTH_P-1 : 0] out_left,
@@ -51,10 +51,10 @@ module mixer_core #(
   );
 
 
-  logic signed [NR_OF_CHANNELS_P-1 : 0]   [AUDIO_WIDTH_P-1 : 0] gain_left;
-  logic signed [NR_OF_CHANNELS_P-1 : 0]   [AUDIO_WIDTH_P-1 : 0] gain_right;
-  logic signed [NR_OF_CHANNELS_P-1 : 0]   [AUDIO_WIDTH_P-1 : 0] gain_valid;
-  logic signed [NR_OF_CHANNELS_P-1 : 0]                         gain_clip;
+  logic signed [NR_OF_CHANNELS_P-1 : 0]   [AUDIO_WIDTH_P-1 : 0] y_left;
+  logic signed [NR_OF_CHANNELS_P-1 : 0]   [AUDIO_WIDTH_P-1 : 0] y_right;
+  logic signed [NR_OF_CHANNELS_P-1 : 0]                         y_valid;
+  logic signed [NR_OF_CHANNELS_P-1 : 0]                         y_clip;
 
 
   logic signed                            [AUDIO_WIDTH_P-1 : 0] left_channel_sum;
@@ -85,7 +85,7 @@ module mixer_core #(
     else begin
 
       // Delaying output valid
-      valid_d0 <= {channel_valid, valid_d0[2 : 1]};
+      valid_d0 <= {x_valid, valid_d0[2 : 1]};
 
       if (valid_d0[2]) begin
         left_channel_sum_r0  <= left_channel_sum_c0;
@@ -104,9 +104,9 @@ module mixer_core #(
     if (valid_d0[2]) begin
       for (int i = 0; i < NR_OF_CHANNELS_P; i++) begin
         if (!cr_mix_channel_pan[i]) begin
-          left_channel_sum_c0  = left_channel_sum_c0  + {gain_left[i][AUDIO_WIDTH_P-1],  gain_left[i]};
+          left_channel_sum_c0  = left_channel_sum_c0  + {y_left[i][AUDIO_WIDTH_P-1],  y_left[i]};
         end else begin
-          right_channel_sum_c0 = right_channel_sum_c0 + {gain_right[i][AUDIO_WIDTH_P-1], gain_right[i]};
+          right_channel_sum_c0 = right_channel_sum_c0 + {y_right[i][AUDIO_WIDTH_P-1], y_right[i]};
         end
       end
     end
@@ -123,22 +123,22 @@ module mixer_core #(
         .Q_BITS_P      ( Q_BITS_P               )
       ) mixer_channel_i (
         // Clock and reset
-        .clk           ( clk                    ),
-        .rst_n         ( rst_n                  ),
+        .clk           ( clk                    ), // input
+        .rst_n         ( rst_n                  ), // input
 
         // Ingress
-        .x             ( channel_data[i]        ),
-        .x_valid       ( channel_valid          ),
+        .x             ( x_data[i]              ), // input
+        .x_valid       ( x_valid                ), // input
 
         // Egress
-        .y_left        ( gain_left[i]           ),
-        .y_right       ( gain_right[i]          ),
-        .y_valid       ( gain_valid[i]          ),
+        .y_left        ( y_left[i]              ), // output
+        .y_right       ( y_right[i]             ), // output
+        .y_valid       ( y_valid[i]             ), // output
 
         // Registers
-        .cr_gain       ( cr_mix_channel_gain[i] ),
-        .cr_pan        ( cr_mix_channel_pan[i]  ),
-        .sr_clip       ( gain_clip[i]           )
+        .cr_gain       ( cr_mix_channel_gain[i] ), // input
+        .cr_pan        ( cr_mix_channel_pan[i]  ), // input
+        .sr_clip       ( y_clip[i]              )  // output
       );
     end
   endgenerate

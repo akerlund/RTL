@@ -37,22 +37,37 @@ class tc_positive_signals extends mix_base_test;
 
   task run_phase(uvm_phase phase);
 
-    mix_vif.cr_channel_gain[0] = float_to_fixed_point(1.00, Q_BITS_C);
-    mix_vif.cr_channel_pan[0]  = float_to_fixed_point(1.00, Q_BITS_C);
-    mix_vif.cr_output_gain[0]  = float_to_fixed_point(1.00, Q_BITS_C);
+    set_channel_gain(0.00);
+    set_channel_pan(0.00);
+    set_output_gain(0.00);
+    set_channel_data(0.00);
 
     super.run_phase(phase);
     phase.raise_objection(this);
 
-    clk_delay(10);
-    mix_vif.cr_channel_gain[0] = float_to_fixed_point(1.25, Q_BITS_C);
-    mix_vif.cr_channel_pan[0]  = float_to_fixed_point(0.25, Q_BITS_C);
-    mix_vif.cr_output_gain[0]  = float_to_fixed_point(0.80, Q_BITS_C);
+    wait (mix_vif.fs_strobe === '1);
+    `uvm_info(get_name(), "1/3", UVM_LOW)
+    set_channel_gain(1.00);
+    set_channel_pan(1.00);
+    set_output_gain(1.00);
+    set_channel_data(2.00);
+    clk_delay(2);
+
+    wait (mix_vif.fs_strobe === '1);
+    `uvm_info(get_name(), "2/3", UVM_LOW)
+    set_channel_gain(1.25);
+    set_channel_pan(0.25);
+    set_output_gain(0.80);
+    clk_delay(2);
+
+
+    wait (mix_vif.fs_strobe === '1);
+    `uvm_info(get_name(), "3/3", UVM_LOW)
+    set_channel_gain(0.8);
+    set_channel_pan(0.75);
+    set_output_gain(1.25);
 
     clk_delay(10);
-    mix_vif.cr_channel_gain[0] = float_to_fixed_point(0.80, Q_BITS_C);
-    mix_vif.cr_channel_pan[0]  = float_to_fixed_point(0.75, Q_BITS_C);
-    mix_vif.cr_output_gain[0]  = float_to_fixed_point(1.25, Q_BITS_C);
 
     phase.drop_objection(this);
 
