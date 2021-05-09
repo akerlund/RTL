@@ -3,8 +3,8 @@
 git_root="$(git rev-parse --show-toplevel)"
 
 # Specify the top files
-rtl_top="axi4s_fifo"
-uvm_top="axi4s_fifo_top"
+rtl_top=axi4s_fifo
+uvm_top=axi4s_fifo_top
 
 # ------------------------------------------------------------------------------
 # Source submodules
@@ -43,5 +43,6 @@ parameters+=("MAX_REG_BYTES_P=256 ")
 # FPGA Project
 # ------------------------------------------------------------------------------
 
+FPGA_PART="7z020clg484-1"
 VIV_THREADS=12
-FCLK_T="5.0"
+FCLK_T="4.8"

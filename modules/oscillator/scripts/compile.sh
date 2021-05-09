@@ -55,3 +55,11 @@ parameters+=("APB_BASE_ADDR_P=0 ")
 parameters+=("APB_ADDR_WIDTH_P=8 ")
 parameters+=("APB_DATA_WIDTH_P=32 ")
 
+# ------------------------------------------------------------------------------
+# FPGA Project
+# ------------------------------------------------------------------------------
+
+FPGA_PART="7z020clg484-1"
+VIV_THREADS=12
+FCLK_T="10.5"
+

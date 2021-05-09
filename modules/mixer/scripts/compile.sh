@@ -3,7 +3,7 @@
 git_root="$(git rev-parse --show-toplevel)"
 
 # Specify the top files
-rtl_top=mixer
+rtl_top=mixer_top
 uvm_top=mix_tb_top
 
 # ------------------------------------------------------------------------------
@@ -35,3 +35,11 @@ parameters+="AUDIO_WIDTH_P=24 "
 parameters+="GAIN_WIDTH_P=24 "
 parameters+="NR_OF_CHANNELS_P=4 "
 parameters+="Q_BITS_P=7 "
+
+# ------------------------------------------------------------------------------
+# FPGA Project
+# ------------------------------------------------------------------------------
+
+FPGA_PART="7z020clg484-1"
+VIV_THREADS=12
+FCLK_T="2.0"
