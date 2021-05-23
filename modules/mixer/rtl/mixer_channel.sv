@@ -46,8 +46,6 @@ module mixer_channel #(
     output logic                              sr_clip
   );
 
-  localparam logic signed [AUDIO_WIDTH_P-1 : 0] ONE_C = 1 << Q_BITS_P;
-
   logic [AUDIO_WIDTH_P-1 : 0] x_gain;
   logic               [2 : 0] x_valid_d;
 
@@ -60,11 +58,12 @@ module mixer_channel #(
     end
     else begin
       x_valid_d <= {x_valid_d[1 : 0], x_valid};
-      y_right   <= ONE_C - y_left;
+      y_right   <= x_gain - y_left;
     end
   end
 
 
+  // Gain
   dsp48_nq_multiplier #(
     .N_BITS_P         ( AUDIO_WIDTH_P ),
     .Q_BITS_P         ( Q_BITS_P      )
@@ -77,7 +76,7 @@ module mixer_channel #(
     .egr_overflow     ( sr_clip       )  // output
   );
 
-
+  // Pan
   dsp48_nq_multiplier #(
     .N_BITS_P         ( AUDIO_WIDTH_P ),
     .Q_BITS_P         ( Q_BITS_P      )

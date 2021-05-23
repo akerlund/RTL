@@ -60,61 +60,25 @@ module mixer_core #(
   logic signed                            [AUDIO_WIDTH_P-1 : 0] left_channel_sum;
   logic signed                            [AUDIO_WIDTH_P-1 : 0] right_channel_sum;
 
-  logic signed                              [AUDIO_WIDTH_P : 0] left_channel_sum_r0;
-  logic signed                              [AUDIO_WIDTH_P : 0] right_channel_sum_r0;
+  logic signed [NR_OF_CHANNELS_P : 0]                          addition_valid;
+
+  logic signed [NR_OF_CHANNELS_P-1 : 0]     [AUDIO_WIDTH_P : 0] left_additions;
+  logic signed [NR_OF_CHANNELS_P-1 : 0]     [AUDIO_WIDTH_P : 0] right_additions;
   logic signed                              [AUDIO_WIDTH_P : 0] left_channel_sum_c0;
   logic signed                              [AUDIO_WIDTH_P : 0] right_channel_sum_c0;
 
-  logic [2 : 0] valid_d0;
+  logic signed                            [AUDIO_WIDTH_P-1 : 0] left_gain;
+  logic signed                            [AUDIO_WIDTH_P-1 : 0] right_gain;
+
+  logic         in_clip_left;
+  logic         in_clip_right;
   logic         out_clip_left;
   logic         out_clip_right;
 
-  assign out_valid = valid_d0[0];
 
-  assign sr_mix_out_clip   = out_clip_left || out_clip_right;
-  assign left_channel_sum  = left_channel_sum_r0[AUDIO_WIDTH_P-1 : 0];
-  assign right_channel_sum = right_channel_sum_r0[AUDIO_WIDTH_P-1 : 0];
-
-
-  always_ff @(posedge clk or negedge rst_n) begin : mixer_output_p0
-    if (!rst_n) begin
-      valid_d0             <= '0;
-      left_channel_sum_r0  <= '0;
-      right_channel_sum_r0 <= '0;
-    end
-    else begin
-
-      // Delaying output valid
-      valid_d0 <= {x_valid, valid_d0[2 : 1]};
-
-      if (valid_d0[2]) begin
-        left_channel_sum_r0  <= left_channel_sum_c0;
-        right_channel_sum_r0 <= right_channel_sum_c0;
-      end
-    end
-  end
-
-
-  // Summing up the output
-  always_comb begin
-
-    left_channel_sum_c0  = '0;
-    right_channel_sum_c0 = '0;
-
-    if (valid_d0[2]) begin
-      for (int i = 0; i < NR_OF_CHANNELS_P; i++) begin
-        if (!cr_mix_channel_pan[i]) begin
-          left_channel_sum_c0  = left_channel_sum_c0  + {y_left[i][AUDIO_WIDTH_P-1],  y_left[i]};
-        end else begin
-          right_channel_sum_c0 = right_channel_sum_c0 + {y_right[i][AUDIO_WIDTH_P-1], y_right[i]};
-        end
-      end
-    end
-  end
-
-
-  // Channels
   genvar i;
+
+  // Channels's input gain and pan
   generate
     for (i = 0; i < NR_OF_CHANNELS_P; i++) begin
       mixer_channel #(
@@ -143,6 +107,63 @@ module mixer_core #(
     end
   endgenerate
 
+  // Summing upp all channels, beginning with the first
+  always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      left_additions[0]  <= '0;
+      right_additions[0] <= '0;
+      addition_valid     <= '0;
+    end
+    else begin
+
+      addition_valid <= {addition_valid[NR_OF_CHANNELS_P-1 : 0], y_valid[0]};
+
+      if (y_valid[0]) begin
+        left_additions[0]  <= {'0, y_left[0]};
+        right_additions[0] <= {'0, y_right[0]};
+      end
+    end
+  end
+
+
+  // Sum of the rest
+  generate
+    for (i = 1; i < NR_OF_CHANNELS_P; i++) begin
+      always_ff @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+          left_additions[i]  <= '0;
+          right_additions[i] <= '0;
+        end
+        else begin
+          if (addition_valid[i-1]) begin
+            left_additions[i]  <= left_additions[i-1]  + y_left[i];
+            right_additions[i] <= right_additions[i-1] + y_right[i];
+          end
+        end
+      end
+    end
+  endgenerate
+
+  // The final sums
+  always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      left_channel_sum  <= '0;
+      right_channel_sum <= '0;
+      in_clip_left      <= '0;
+      in_clip_right     <= '0;
+      out_left          <= '0;
+      out_right         <= '0;
+    end
+    else begin
+      left_channel_sum  <= left_additions [NR_OF_CHANNELS_P-1] [AUDIO_WIDTH_P-1 : 0];
+      right_channel_sum <= right_additions[NR_OF_CHANNELS_P-1] [AUDIO_WIDTH_P-1 : 0];
+      in_clip_left      <= left_channel_sum[AUDIO_WIDTH_P-1]  ^ left_channel_sum[AUDIO_WIDTH_P-2];
+      in_clip_right     <= right_channel_sum[AUDIO_WIDTH_P-1] ^ right_channel_sum[AUDIO_WIDTH_P-2];
+      out_left          <= left_gain;
+      out_right         <= right_gain;
+    end
+  end
+
   // Left output gain
   dsp48_nq_multiplier #(
     .N_BITS_P         ( AUDIO_WIDTH_P      ),
@@ -152,7 +173,7 @@ module mixer_core #(
     .rst_n            ( rst_n              ), // input
     .ing_multiplicand ( left_channel_sum   ), // input
     .ing_multiplier   ( cr_mix_output_gain ), // input
-    .egr_product      ( out_left           ), // output
+    .egr_product      ( left_gain          ), // output
     .egr_overflow     ( out_clip_left      )  // output
   );
 
@@ -165,10 +186,14 @@ module mixer_core #(
     .rst_n            ( rst_n              ), // input
     .ing_multiplicand ( right_channel_sum  ), // input
     .ing_multiplier   ( cr_mix_output_gain ), // input
-    .egr_product      ( out_right          ), // output
+    .egr_product      ( right_gain         ), // output
     .egr_overflow     ( out_clip_right     )  // output
   );
 
+  always_comb begin
+    out_valid       = addition_valid[NR_OF_CHANNELS_P];
+    sr_mix_out_clip = in_clip_left || in_clip_right || out_clip_left || out_clip_right;
+  end
 
 endmodule
 
