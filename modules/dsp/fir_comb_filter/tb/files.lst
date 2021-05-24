@@ -1,0 +1,13 @@
+module_path=$git_root/modules/dsp/fir_comb_filter
+
+uvm_dirs+="
+  +incdir+$module_path/tb/uvm_reg
+  +incdir+$module_path/tb/
+  +incdir+$module_path/tc/
+"
+
+uvm_files+="
+  $module_path/tb/fir_tb_pkg.sv
+  $module_path/tc/fir_tc_pkg.sv
+  $module_path/tb/fir_tb_top.sv
+"

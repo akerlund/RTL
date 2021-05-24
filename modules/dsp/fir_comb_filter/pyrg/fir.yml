@@ -1,0 +1,43 @@
+---
+fir:
+
+  bus_width: 64
+
+  rtl_path: "$GIT_ROOT/modules/dsp/fir_comb_filter/rtl"
+  uvm_path: "$GIT_ROOT/modules/dsp/fir_comb_filter/tb/uvm_reg"
+  sw_path:  "$GIT_ROOT/modules/dsp/fir_comb_filter/sw"
+
+  parameters:
+    - N_BITS_C
+
+  registers:
+
+    - name:   fir_delay_time
+      desc:   Sets the delay time and command bit for calculating it
+      access: WO
+      bit_fields:
+        - field: {
+          name:        cmd_fir_calculate_delay,
+          description: Calculate the time,
+          size:        1,
+          lsb_pos:     0
+        }
+        - field: {
+          name:        cr_delay_time,
+          description: Sets the time,
+          size:        16,
+          lsb_pos:     8,
+          reset_value: 0x0
+        }
+
+    - name:   fir_delay_gain
+      desc:   Sampling frequency
+      access: WO
+      bit_fields:
+        - field: {
+          name:        cr_fir_delay_gain,
+          description: The delay gain,
+          size:        32,
+          lsb_pos:     0,
+          reset_value: 0x0
+        }
