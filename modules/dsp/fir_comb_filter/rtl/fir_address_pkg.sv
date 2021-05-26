@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2021 Fredrik Åkerlund
-// https://github.com/akerlund/RTL
+// Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/PYRG
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -20,26 +20,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-`ifndef FIR_TC_PKG
-`define FIR_TC_PKG
+`ifndef FIR_ADDRESS_PKG
+`define FIR_ADDRESS_PKG
 
-package fir_tc_pkg;
+package fir_address_pkg;
 
-  `include "uvm_macros.svh"
-  import uvm_pkg::*;
-
-  import fir_tb_pkg::*;
-
-  import bool_pkg::*;
-  import report_server_pkg::*;
-  import clk_rst_types_pkg::*;
-  import clk_rst_pkg::*;
-  import vip_axi4s_types_pkg::*;
-  import vip_axi4s_agent_pkg::*;
-  import vip_axi4_types_pkg::*;
-  import vip_axi4_agent_pkg::*;
-
-  `include "fir_base_test.sv"
+  localparam logic [15 : 0] FIR_HIGH_ADDRESS    = 16'h0010;
+  localparam logic [15 : 0] FIR_DELAY_TIME_ADDR = 16'h0000;
+  localparam logic [15 : 0] FIR_DELAY_GAIN_ADDR = 16'h0008;
 
 endpackage
 

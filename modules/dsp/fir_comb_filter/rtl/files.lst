@@ -1,0 +1,12 @@
+module_path=$git_root/modules/dsp/fir_comb_filter
+
+rtl_dirs+="
+  +incdir+$module_path/rtl
+"
+
+rtl_files+="
+  $module_path/rtl/fir_address_pkg.sv
+  $module_path/rtl/fir_axi_slave.sv
+  $module_path/rtl/fir_comb_core.sv
+  $module_path/rtl/fir_comb_top.sv
+"

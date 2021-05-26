@@ -23,7 +23,7 @@ fir:
           lsb_pos:     0
         }
         - field: {
-          name:        cr_delay_time,
+          name:        cr_fir_delay_time,
           description: Sets the time,
           size:        16,
           lsb_pos:     8,

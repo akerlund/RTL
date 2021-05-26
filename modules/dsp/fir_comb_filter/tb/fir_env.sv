@@ -20,9 +20,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-class iir_env extends uvm_env;
+class fir_env extends uvm_env;
 
-  `uvm_component_utils_begin(iir_env)
+  `uvm_component_utils_begin(fir_env)
   `uvm_component_utils_end
 
   protected virtual clk_rst_if vif;
@@ -31,8 +31,7 @@ class iir_env extends uvm_env;
   vip_axi4_agent    #(VIP_REG_CFG_C) reg_agent0;
   vip_axi4s_agent #(VIP_AXI4S_CFG_C) mst_agent0;
 
-  iir_scoreboard        scoreboard0;
-  iir_virtual_sequencer virtual_sequencer;
+  fir_virtual_sequencer virtual_sequencer;
 
 
   register_model                    reg_model;
@@ -67,10 +66,8 @@ class iir_env extends uvm_env;
     uvm_config_db #(int)::set(this, {"mst_agent0",     "*"}, "id", 1);
     uvm_config_db #(int)::set(this, {"reg_agent0",     "*"}, "id", 2);
 
-    scoreboard0 = iir_scoreboard::type_id::create("scoreboard0", this);
-
-    virtual_sequencer = iir_virtual_sequencer::type_id::create("virtual_sequencer", this);
-    uvm_config_db #(iir_virtual_sequencer)::set(this, {"virtual_sequencer", "*"}, "virtual_sequencer", virtual_sequencer);
+    virtual_sequencer = fir_virtual_sequencer::type_id::create("virtual_sequencer", this);
+    uvm_config_db #(fir_virtual_sequencer)::set(this, {"virtual_sequencer", "*"}, "virtual_sequencer", virtual_sequencer);
 
   endfunction
 
@@ -87,9 +84,6 @@ class iir_env extends uvm_env;
     virtual_sequencer.clk_rst_sequencer0 = clk_rst_agent0.sequencer;
     virtual_sequencer.reg_sequencer      = reg_agent0.sequencer;
     virtual_sequencer.mst_sequencer      = mst_agent0.sequencer;
-
-    reg_agent0.monitor.wdata_port.connect(scoreboard0.wdata_port);
-    reg_agent0.monitor.rdata_port.connect(scoreboard0.rdata_port);
 
   endfunction
 

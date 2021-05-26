@@ -30,6 +30,10 @@ source $git_sub_root/submodules/PYRG/rtl/files.lst
 # Restoring the git root
 git_root="$(git rev-parse --show-toplevel)"
 
+source $git_root/modules/interfaces/axi4/rtl/files.lst
+source $git_root/modules/memory/reg/rtl/files.lst
+source $git_root/modules/fifo/rtl/files.lst
+
 # Source the module's file lists
 source ./rtl/files.lst
 source ./tb/files.lst

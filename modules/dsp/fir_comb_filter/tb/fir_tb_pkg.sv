@@ -28,6 +28,7 @@ package fir_tb_pkg;
   import uvm_pkg::*;
   `include "uvm_macros.svh"
 
+  import fir_address_pkg::*;
 
   import vip_fixed_point_pkg::*;
   import bool_pkg::*;
@@ -38,6 +39,14 @@ package fir_tb_pkg;
   import vip_axi4_types_pkg::*;
   import vip_axi4_agent_pkg::*;
 
+  localparam int N_BITS_C         = 32;
+  localparam int Q_BITS_C         = 11;
+  localparam int MEM_BASE_ADDR_C  = 0;
+  localparam int MEM_HIGH_ADDR_C  = 2**8;
+  localparam int MEM_ADDR_WIDTH_C = 10;
+  localparam int MEM_DATA_WIDTH_C = 128;
+  localparam int AXI4_ID_C        = 0;
+
   localparam int VIP_AXI4S_TDATA_WIDTH_C = 32;
   localparam int VIP_AXI4S_TSTRB_WIDTH_C = VIP_AXI4S_TDATA_WIDTH_C/8;
   localparam int VIP_AXI4S_TKEEP_WIDTH_C = 0;
@@ -45,10 +54,6 @@ package fir_tb_pkg;
   localparam int VIP_AXI4S_TDEST_WIDTH_C = 0;
   localparam int VIP_AXI4S_TUSER_WIDTH_C = 0;
 
-
-  localparam int N_BITS_C         = 32;
-  localparam int Q_BITS_C         = 11;
-  localparam int AXI_ID_WIDTH_C   = 3;
   localparam int CFG_DATA_WIDTH_C = 64;
 
   // Configuration of the VIP (Data)
@@ -59,6 +64,15 @@ package fir_tb_pkg;
     VIP_AXI4S_TID_WIDTH_P   : 0,
     VIP_AXI4S_TDEST_WIDTH_P : 0,
     VIP_AXI4S_TUSER_WIDTH_P : 0
+  };
+
+  // Configuration of the VIP (Data)
+  localparam vip_axi4_cfg_t VIP_MEM_CFG_C = '{
+    VIP_AXI4_ID_WIDTH_P   : 2,
+    VIP_AXI4_ADDR_WIDTH_P : MEM_ADDR_WIDTH_C,
+    VIP_AXI4_DATA_WIDTH_P : MEM_DATA_WIDTH_C,
+    VIP_AXI4_STRB_WIDTH_P : MEM_DATA_WIDTH_C/8,
+    VIP_AXI4_USER_WIDTH_P : 0
   };
 
   // Configuration of the VIP (Registers)
@@ -75,7 +89,7 @@ package fir_tb_pkg;
   `include "register_model.sv"
   `include "vip_axi4_adapter.sv"
 
-  `include "fir_scoreboard.sv"
+  //`include "fir_scoreboard.sv"
   `include "fir_virtual_sequencer.sv"
   `include "fir_env.sv"
   `include "vip_axi4s_seq_lib.sv"
