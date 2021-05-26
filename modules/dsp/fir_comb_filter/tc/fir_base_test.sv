@@ -48,6 +48,7 @@ class fir_base_test extends uvm_test;
   clk_rst_config   clk_rst_config0;
   vip_axi4s_config axi4s_mst_cfg0;
   vip_axi4_config  axi4_reg_cfg;
+  vip_axi4_config  axi4_mem_cfg0;
 
   // ---------------------------------------------------------------------------
   // Sequences
@@ -87,14 +88,24 @@ class fir_base_test extends uvm_test;
     clk_rst_config0 = clk_rst_config::type_id::create("clk_rst_config0",  this);
     axi4s_mst_cfg0  = vip_axi4s_config::type_id::create("axi4s_mst_cfg0", this);
     axi4_reg_cfg    = vip_axi4_config::type_id::create("axi4_reg_cfg",    this);
+    axi4_mem_cfg0   = vip_axi4_config::type_id::create("axi4_mem_cfg0",   this);
 
     axi4s_mst_cfg0.tvalid_delay_enabled = FALSE;
     axi4_reg_cfg.wvalid_delay_enabled   = FALSE;
     axi4_reg_cfg.rready_delay_enabled   = FALSE;
 
+    axi4_mem_cfg0.vip_axi4_agent_type     = VIP_AXI4_SLAVE_AGENT_E;
+    axi4_mem_cfg0.mem_slave               = TRUE;
+    axi4_mem_cfg0.mem_addr_width          = MEM_ADDR_WIDTH_C;
+    axi4_mem_cfg0.min_wready_delay_period = 8;
+    axi4_mem_cfg0.max_wready_delay_period = 8;
+    axi4_mem_cfg0.min_rvalid_delay_period = 8;
+    axi4_mem_cfg0.max_rvalid_delay_period = 8;
+
     uvm_config_db #(clk_rst_config)::set(this,   {"tb_env.clk_rst_agent0", "*"}, "cfg", clk_rst_config0);
     uvm_config_db #(vip_axi4s_config)::set(this, {"tb_env.mst_agent0",     "*"}, "cfg", axi4s_mst_cfg0);
     uvm_config_db #(vip_axi4_config)::set(this,  {"tb_env.reg_agent0",     "*"}, "cfg", axi4_reg_cfg);
+    uvm_config_db #(vip_axi4_config)::set(this,  {"tb_env.mem_agent0",     "*"}, "cfg", axi4_mem_cfg0);
 
   endfunction
 
@@ -108,6 +119,7 @@ class fir_base_test extends uvm_test;
     v_sqr = tb_env.virtual_sequencer;
     `uvm_info(get_type_name(), $sformatf("Topology of the test:\n%s", this.sprint(uvm_table_printer0)), UVM_LOW)
     `uvm_info(get_name(), {"VIP AXI4S Agent (Master):\n", axi4s_mst_cfg0.sprint()}, UVM_LOW)
+    `uvm_info(get_name(), {"VIP AXI4 Agent (Memory):\n",  axi4_mem_cfg0.sprint()},  UVM_LOW)
   endfunction
 
 

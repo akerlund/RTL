@@ -20,28 +20,38 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-`ifndef FIR_TC_PKG
-`define FIR_TC_PKG
+class tc_basic extends fir_base_test;
 
-package fir_tc_pkg;
+  `uvm_component_utils(tc_basic)
 
-  `include "uvm_macros.svh"
-  import uvm_pkg::*;
 
-  import fir_tb_pkg::*;
+  function new(string name = "tc_basic", uvm_component parent = null);
+    super.new(name, parent);
+  endfunction
 
-  import bool_pkg::*;
-  import report_server_pkg::*;
-  import clk_rst_types_pkg::*;
-  import clk_rst_pkg::*;
-  import vip_axi4s_types_pkg::*;
-  import vip_axi4s_agent_pkg::*;
-  import vip_axi4_types_pkg::*;
-  import vip_axi4_agent_pkg::*;
 
-  `include "fir_base_test.sv"
-  `include "tc_basic.sv"
+  function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
+  endfunction
 
-endpackage
 
-`endif
+  task run_phase(uvm_phase phase);
+
+    super.run_phase(phase);
+    phase.raise_objection(this);
+
+    vip_axi4s_seq0.set_nr_of_bursts(64);
+    vip_axi4s_seq0.set_data_type(VIP_AXI4S_TDATA_COUNTER_E);
+    vip_axi4s_seq0.set_burst_length(1);
+    vip_axi4s_seq0.set_tstrb(VIP_AXI4S_TSTRB_ALL_E);
+    vip_axi4s_seq0.set_burst_delay_enabled(TRUE);
+    vip_axi4s_seq0.set_burst_delay_min(32);
+    vip_axi4s_seq0.set_burst_delay_max(32);
+    vip_axi4s_seq0.set_clock_period(clk_rst_config0.clock_period);
+    vip_axi4s_seq0.start(v_sqr.mst_sequencer);
+
+    phase.drop_objection(this);
+
+  endtask
+
+endclass

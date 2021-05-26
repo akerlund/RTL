@@ -36,7 +36,7 @@ module fir_tb_top;
     .AXI4_ADDR_WIDTH_P ( VIP_REG_CFG_C.VIP_AXI4_ADDR_WIDTH_P ),
     .AXI4_DATA_WIDTH_P ( VIP_REG_CFG_C.VIP_AXI4_DATA_WIDTH_P ),
     .AXI4_STRB_WIDTH_P ( VIP_REG_CFG_C.VIP_AXI4_STRB_WIDTH_P )
-  ) osc_cfg_if (clk_rst_vif.clk, clk_rst_vif.rst_n);
+  ) fir_cfg_if (clk_rst_vif.clk, clk_rst_vif.rst_n);
 
   axi4_if  #(
     .ID_WIDTH_P   ( 4   ),
@@ -44,28 +44,33 @@ module fir_tb_top;
     .DATA_WIDTH_P ( 128 )
   ) fir_axi4_if();
 
+  logic [63 : 0] cr_fir_delay_time;
+  logic [63 : 0] cr_fir_delay_gain;
+
+  // AXI4S Master
+  assign mst_vif.tready = '1;
 
   // Register slave
-  assign osc_cfg_if.awaddr  = reg_vif.awaddr;
-  assign osc_cfg_if.awvalid = reg_vif.awvalid;
-  assign reg_vif.awready    = osc_cfg_if.awready;
-  assign osc_cfg_if.wdata   = reg_vif.wdata;
-  assign osc_cfg_if.wstrb   = reg_vif.wstrb;
-  assign osc_cfg_if.wlast   = reg_vif.wlast;
-  assign osc_cfg_if.wvalid  = reg_vif.wvalid;
-  assign reg_vif.wready     = osc_cfg_if.wready;
-  assign reg_vif.bresp      = osc_cfg_if.bresp;
-  assign reg_vif.bvalid     = osc_cfg_if.bvalid;
-  assign osc_cfg_if.bready  = reg_vif.bready;
-  assign osc_cfg_if.araddr  = reg_vif.araddr;
-  assign osc_cfg_if.arlen   = reg_vif.arlen;
-  assign osc_cfg_if.arvalid = reg_vif.arvalid;
-  assign reg_vif.arready    = osc_cfg_if.arready;
-  assign reg_vif.rdata      = osc_cfg_if.rdata;
-  assign reg_vif.rresp      = osc_cfg_if.rresp;
-  assign reg_vif.rlast      = osc_cfg_if.rlast;
-  assign reg_vif.rvalid     = osc_cfg_if.rvalid;
-  assign osc_cfg_if.rready  = reg_vif.rready;
+  assign fir_cfg_if.awaddr  = reg_vif.awaddr;
+  assign fir_cfg_if.awvalid = reg_vif.awvalid;
+  assign reg_vif.awready    = fir_cfg_if.awready;
+  assign fir_cfg_if.wdata   = reg_vif.wdata;
+  assign fir_cfg_if.wstrb   = reg_vif.wstrb;
+  assign fir_cfg_if.wlast   = reg_vif.wlast;
+  assign fir_cfg_if.wvalid  = reg_vif.wvalid;
+  assign reg_vif.wready     = fir_cfg_if.wready;
+  assign reg_vif.bresp      = fir_cfg_if.bresp;
+  assign reg_vif.bvalid     = fir_cfg_if.bvalid;
+  assign fir_cfg_if.bready  = reg_vif.bready;
+  assign fir_cfg_if.araddr  = reg_vif.araddr;
+  assign fir_cfg_if.arlen   = reg_vif.arlen;
+  assign fir_cfg_if.arvalid = reg_vif.arvalid;
+  assign reg_vif.arready    = fir_cfg_if.arready;
+  assign reg_vif.rdata      = fir_cfg_if.rdata;
+  assign reg_vif.rresp      = fir_cfg_if.rresp;
+  assign reg_vif.rlast      = fir_cfg_if.rlast;
+  assign reg_vif.rvalid     = fir_cfg_if.rvalid;
+  assign fir_cfg_if.rready  = reg_vif.rready;
 
   // Memory controller
   assign mem_vif.awid        = fir_axi4_if.awid;
@@ -133,7 +138,7 @@ module fir_tb_top;
     .AXI_ID_P                ( 0                       ),
     .N_BITS_C                ( N_BITS_C                )
   ) fir_axi_slave_i0 (
-    .cif                     ( osc_cfg_if              ), // interface
+    .cif                     ( fir_cfg_if              ), // interface
     .cmd_fir_calculate_delay ( cmd_fir_calculate_delay ), // output
     .cr_fir_delay_time       ( cr_fir_delay_time       ), // output
     .cr_fir_delay_gain       ( cr_fir_delay_gain       )  // output
@@ -143,6 +148,7 @@ module fir_tb_top;
     uvm_config_db #(virtual clk_rst_if)::set(uvm_root::get(),                      "uvm_test_top.tb_env*",            "vif", clk_rst_vif);
     uvm_config_db #(virtual vip_axi4_if  #(VIP_REG_CFG_C))::set(uvm_root::get(),   "uvm_test_top.tb_env.reg_agent0*", "vif", reg_vif);
     uvm_config_db #(virtual vip_axi4s_if #(VIP_AXI4S_CFG_C))::set(uvm_root::get(), "uvm_test_top.tb_env.mst_agent0*", "vif", mst_vif);
+    uvm_config_db #(virtual vip_axi4_if  #(VIP_MEM_CFG_C))::set(uvm_root::get(),   "uvm_test_top.tb_env.mem_agent0*", "vif", mem_vif);
     run_test();
     $stop();
   end

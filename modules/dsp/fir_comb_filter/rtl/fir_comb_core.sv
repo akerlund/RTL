@@ -161,6 +161,8 @@ module iir_comb_core #(
       mem_rd_addr   <= '0;
       mem_rd_avalid <= '0;
       mem_rd_dready <= '0;
+      y             <= '0;
+      y_valid       <= '0;
     end
     else begin
 
