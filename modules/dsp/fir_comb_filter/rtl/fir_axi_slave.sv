@@ -30,7 +30,7 @@ module fir_axi_slave #(
   )(
     axi4_reg_if.slave cif,
     output logic          cmd_fir_calculate_delay,
-    output logic [15 : 0] cr_fir_delay_time,
+    output logic [31 : 0] cr_fir_delay_time,
     output logic [31 : 0] cr_fir_delay_gain
   );
 

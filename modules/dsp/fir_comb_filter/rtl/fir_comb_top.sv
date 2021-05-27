@@ -53,7 +53,7 @@ module iir_comb_top #(
 
   localparam int WORDS_IN_BUFFER_C    = MEM_DATA_WIDTH_P / N_BITS_P;
   localparam int PREFETCH_BYTE_SIZE_C = 2**6;
-  localparam int FIFO_ADDR_WIDTH_C    = $clog2(PREFETCH_BYTE_SIZE_C / N_BITS_P);
+  localparam int FIFO_ADDR_WIDTH_C    = $clog2(PREFETCH_BYTE_SIZE_C / (N_BITS_P / 8));
 
   typedef enum {
     WR_WAIT_MEM_WR_REQ_E,
@@ -129,8 +129,9 @@ module iir_comb_top #(
       wr_state   <= WR_WAIT_MEM_WR_REQ_E;
       wr_r0      <= '0;
       wr_counter <= '0;
-      mc.awvalid    <= '0;
-      mc.wvalid     <= '0;
+      mc.awaddr  <= '0;
+      mc.awvalid <= '0;
+      mc.wvalid  <= '0;
     end
     else begin
 
@@ -138,6 +139,7 @@ module iir_comb_top #(
 
         WR_WAIT_MEM_WR_REQ_E: begin
           if (mem_wr_valid) begin
+            wr_counter <= wr_counter + 1;
             wr_r0[wr_counter] <= mem_wr_data;
             if (wr_counter == '0) begin
               mc.awaddr <= MEM_ADDR_WIDTH_P + mem_wr_addr;
@@ -145,18 +147,15 @@ module iir_comb_top #(
               wr_counter <= '0;
               wr_state   <= WR_HS_WITH_MC_E;
               mc.awvalid <= '1;
-            end else begin
-              wr_counter <= wr_counter + 1;
             end
           end
         end
 
         WR_HS_WITH_MC_E: begin
           if (mc.awready) begin
-            wr_state    <= WR_DATA_TRANSFER_E;
-            mc.awvalid  <= '0;
-            mc.wdata    <= wr_r0;
-            mc.wvalid   <= '1;
+            wr_state   <= WR_DATA_TRANSFER_E;
+            mc.awvalid <= '0;
+            mc.wvalid  <= '1;
           end
         end
 

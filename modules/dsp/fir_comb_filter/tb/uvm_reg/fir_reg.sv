@@ -31,7 +31,7 @@ class fir_delay_time_reg extends uvm_reg;
 
 
   function new (string name = "fir_delay_time_reg");
-    super.new(name, 1+16, UVM_NO_COVERAGE);
+    super.new(name, 1+32, UVM_NO_COVERAGE);
   endfunction
 
 
@@ -61,7 +61,7 @@ class fir_delay_time_reg extends uvm_reg;
     cr_fir_delay_time = uvm_reg_field::type_id::create("cr_fir_delay_time");
     cr_fir_delay_time.configure(
       .parent(this),
-      .size(16),
+      .size(32),
       .lsb_pos(8),
       .access("WO"),
       .volatile(0),
@@ -70,7 +70,7 @@ class fir_delay_time_reg extends uvm_reg;
       .is_rand(0),
       .individually_accessible(0)
     );
-    add_hdl_path_slice("cr_fir_delay_time", 0, 16);
+    add_hdl_path_slice("cr_fir_delay_time", 0, 32);
 
   endfunction
 

@@ -44,8 +44,8 @@ module fir_tb_top;
     .DATA_WIDTH_P ( 128 )
   ) fir_axi4_if();
 
-  logic [63 : 0] cr_fir_delay_time;
-  logic [63 : 0] cr_fir_delay_gain;
+  logic [31 : 0] cr_fir_delay_time;
+  logic [31 : 0] cr_fir_delay_gain;
 
   // AXI4S Master
   assign mst_vif.tready = '1;
@@ -95,10 +95,10 @@ module fir_tb_top;
   assign mem_vif.arsize      = fir_axi4_if.arsize;
   assign mem_vif.arvalid     = fir_axi4_if.arvalid;
   assign fir_axi4_if.arready = mem_vif.arready;
-  assign mem_vif.rid         = fir_axi4_if.rid;
-  assign mem_vif.rdata       = fir_axi4_if.rdata;
-  assign mem_vif.rresp       = fir_axi4_if.rresp;
-  assign mem_vif.rlast       = fir_axi4_if.rlast;
+  assign fir_axi4_if.rid     = mem_vif.rid;
+  assign fir_axi4_if.rdata   = mem_vif.rdata;
+  assign fir_axi4_if.rresp   = mem_vif.rresp;
+  assign fir_axi4_if.rlast   = mem_vif.rlast;
   assign fir_axi4_if.rvalid  = mem_vif.rvalid;
   assign mem_vif.rready      = fir_axi4_if.rready;
 

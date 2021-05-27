@@ -55,7 +55,7 @@ module iir_comb_core #(
 
     // Configuration
     input  wire                           cmd_fir_calculate_delay,
-    input  wire          [N_BITS_P-1 : 0] cr_fir_delay_time,
+    input  wire                  [15 : 0] cr_fir_delay_time,
     input  wire          [N_BITS_P-1 : 0] cr_fir_delay_gain
   );
 
@@ -78,9 +78,9 @@ module iir_comb_core #(
   fir_state_t   fir_state;
 
   // Delay calculation
-  logic                [N_BITS_P-1 : 0] cr_fir_delay_time_r0;
+  logic                        [15 : 0] cr_fir_delay_time_r0;
   logic          [MEM_ADDR_WIDTH_P : 0] rd_addr_r0;
-  logic signed           [N_BITS_P : 0] delay_delta;
+  logic signed                 [15 : 0] delay_delta;
   logic signed           [N_BITS_P : 0] delay_diff;
 
   // FIR calculation
@@ -91,12 +91,12 @@ module iir_comb_core #(
   // Delay calculation
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-      delay_state      <= DELAY_CALC_IDLE_E;
+      delay_state          <= DELAY_CALC_IDLE_E;
       cr_fir_delay_time_r0 <= '0;
-      rd_addr          <= '0;
-      rd_addr_r0       <= '0;
-      delay_delta      <= '0;
-      delay_diff       <= '0;
+      rd_addr              <= '0;
+      rd_addr_r0           <= '0;
+      delay_delta          <= '0;
+      delay_diff           <= '0;
     end
     else begin
 
@@ -108,8 +108,8 @@ module iir_comb_core #(
 
         DELAY_CALC_IDLE_E: begin
           if (cmd_fir_calculate_delay) begin
-            delay_state      <= DELAY_CALC_DIFF_E;
-            delay_delta      <= cr_fir_delay_time_r0 - cr_fir_delay_time;
+            delay_state          <= DELAY_CALC_DIFF_E;
+            delay_delta          <= cr_fir_delay_time_r0 - cr_fir_delay_time;
             cr_fir_delay_time_r0 <= cr_fir_delay_time;
           end
         end

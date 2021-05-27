@@ -25,7 +25,7 @@ fir:
         - field: {
           name:        cr_fir_delay_time,
           description: Sets the time,
-          size:        16,
+          size:        32,
           lsb_pos:     8,
           reset_value: 0x0
         }
