@@ -57,10 +57,11 @@ module fifo #(
   assign write_enable = ing_enable && (!ing_full || egr_enable);
   assign read_enable  = egr_enable && !egr_empty;
 
+  assign ing_almost_full = (sr_fill_level >= cr_almost_full_level);
 
   generate
 
-    if (GENERATE_FIFO_REG_C) begin : register_based_fifo
+    if (GENERATE_FIFO_REG_C) begin: register_based_fifo
 
       // Generate with registers
       fifo_register #(
@@ -86,7 +87,19 @@ module fifo #(
         .sr_fill_level ( sr_fill_level )  // output
       );
 
-    end else begin : memory_based_fifo
+      // Status process
+      always_ff @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+          sr_max_fill_level <= '0;
+        end
+        else begin
+          if (sr_fill_level >= sr_max_fill_level) begin
+            sr_max_fill_level <= sr_fill_level;
+          end
+        end
+      end
+
+    end else begin: memory_based_fifo
 
       localparam int REG_ADDR_WIDTH_C = 2;
 
@@ -103,8 +116,7 @@ module fifo #(
       logic [REG_ADDR_WIDTH_C : 0] fifo_fill_level;
 
       // Ports
-      assign ing_full        = sr_fill_level[ADDR_WIDTH_P];
-      assign ing_almost_full = (sr_fill_level >= cr_almost_full_level);
+      assign ing_full = sr_fill_level[ADDR_WIDTH_P];
 
       // RAM read
       assign ram_read_enable = ram_fill_level   > 0 &&
