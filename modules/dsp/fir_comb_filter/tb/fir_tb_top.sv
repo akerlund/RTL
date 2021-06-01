@@ -38,10 +38,10 @@ module fir_tb_top;
     .AXI4_STRB_WIDTH_P ( VIP_REG_CFG_C.VIP_AXI4_STRB_WIDTH_P )
   ) fir_cfg_if (clk_rst_vif.clk, clk_rst_vif.rst_n);
 
-  axi4_if  #(
-    .ID_WIDTH_P   ( 4   ),
-    .ADDR_WIDTH_P ( 10  ),
-    .DATA_WIDTH_P ( 128 )
+  axi4_if #(
+    .ID_WIDTH_P   ( VIP_MEM_CFG_C.VIP_AXI4_ID_WIDTH_P   ),
+    .ADDR_WIDTH_P ( VIP_MEM_CFG_C.VIP_AXI4_ADDR_WIDTH_P ),
+    .DATA_WIDTH_P ( VIP_MEM_CFG_C.VIP_AXI4_DATA_WIDTH_P )
   ) fir_axi4_if();
 
   logic [31 : 0] cr_fir_delay_time;
@@ -106,9 +106,9 @@ module fir_tb_top;
   iir_comb_top #(
     .N_BITS_P                ( N_BITS_C                ),
     .Q_BITS_P                ( Q_BITS_C                ),
-    .MEM_BASE_ADDR_P         ( MEM_BASE_ADDR_C         ),
-    .MEM_HIGH_ADDR_P         ( MEM_HIGH_ADDR_C         ),
-    .MEM_ADDR_WIDTH_P        ( MEM_ADDR_WIDTH_C        ),
+    .IIR_BASE_ADDR_P         ( IIR_BASE_ADDR_C         ),
+    .IIR_HIGH_ADDR_P         ( IIR_HIGH_ADDR_C         ),
+    .MEM_ADDR_WIDTH_P        ( IIR_ADDR_WIDTH_C        ),
     .MEM_DATA_WIDTH_P        ( MEM_DATA_WIDTH_C        ),
     .AXI4_ID_P               ( AXI4_ID_C               )
   ) iir_comb_top_i0 (

@@ -41,9 +41,10 @@ package fir_tb_pkg;
 
   localparam int N_BITS_C         = 32;
   localparam int Q_BITS_C         = 11;
-  localparam int MEM_BASE_ADDR_C  = 0;
-  localparam int MEM_HIGH_ADDR_C  = 2**8;
-  localparam int MEM_ADDR_WIDTH_C = 10;
+  localparam int IIR_BASE_ADDR_C  = 0;
+  localparam int IIR_HIGH_ADDR_C  = 2**8 - 1;
+  localparam int IIR_ADDR_WIDTH_C = 10;
+  localparam int MEM_ADDR_WIDTH_C = 16;
   localparam int MEM_DATA_WIDTH_C = 128;
   localparam int AXI4_ID_C        = 0;
 
@@ -66,7 +67,7 @@ package fir_tb_pkg;
     VIP_AXI4S_TUSER_WIDTH_P : 0
   };
 
-  // Configuration of the VIP (Data)
+  // Configuration of the VIP (Memory)
   localparam vip_axi4_cfg_t VIP_MEM_CFG_C = '{
     VIP_AXI4_ID_WIDTH_P   : 2,
     VIP_AXI4_ADDR_WIDTH_P : MEM_ADDR_WIDTH_C,

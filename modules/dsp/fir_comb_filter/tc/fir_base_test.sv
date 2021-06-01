@@ -141,4 +141,23 @@ class fir_base_test extends uvm_test;
   task clk_delay(int delay);
     #(delay*clk_rst_config0.clock_period);
   endtask
+
+
+  task init_memory(int data_offset);
+
+    logic [3 : 0] [N_BITS_C-1 : 0] _data_r0;
+    logic [VIP_MEM_CFG_C.VIP_AXI4_DATA_WIDTH_P-1 : 0] _data [$];
+    logic [VIP_MEM_CFG_C.VIP_AXI4_ADDR_WIDTH_P-1 : 0] _addr = '0;
+
+    `uvm_info(get_name(), "Initializing the memory",  UVM_LOW)
+    for (int i = 0; i < (2**axi4_mem_cfg0.mem_addr_width)/VIP_MEM_CFG_C.VIP_AXI4_STRB_WIDTH_P; i++) begin
+      for (int j = 0; j < 4; j++) begin
+        _data_r0[j] = data_offset + i*4 + j;
+        `uvm_info(get_name(), $sformatf("%0d", _data_r0[j]),  UVM_LOW)
+      end
+      _data.push_back(_data_r0);
+    end
+
+    tb_env.mem_agent0.memory_write(_addr, _data);
+  endtask
 endclass

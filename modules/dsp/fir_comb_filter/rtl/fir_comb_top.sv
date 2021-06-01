@@ -26,8 +26,8 @@
 module iir_comb_top #(
     parameter int N_BITS_P         = -1,
     parameter int Q_BITS_P         = -1,
-    parameter int MEM_BASE_ADDR_P  = -1,
-    parameter int MEM_HIGH_ADDR_P  = -1,
+    parameter int IIR_BASE_ADDR_P  = -1,
+    parameter int IIR_HIGH_ADDR_P  = -1,
     parameter int MEM_ADDR_WIDTH_P = -1,
     parameter int MEM_DATA_WIDTH_P = -1,
     parameter int AXI4_ID_P        = -1
@@ -51,9 +51,14 @@ module iir_comb_top #(
     input  wire          [N_BITS_P-1 : 0] cr_fir_delay_gain
   );
 
-  localparam int WORDS_IN_BUFFER_C    = MEM_DATA_WIDTH_P / N_BITS_P;
-  localparam int PREFETCH_BYTE_SIZE_C = 2**6;
-  localparam int FIFO_ADDR_WIDTH_C    = $clog2(PREFETCH_BYTE_SIZE_C / (N_BITS_P / 8));
+  localparam int PREFETCH_BYTE_SIZE_C  = 2**6;
+  localparam int PREFETCH_WORDS_C      = PREFETCH_BYTE_SIZE_C / (N_BITS_P / 8);
+
+  localparam int WORDS_PER_BEAT_C      = MEM_DATA_WIDTH_P / N_BITS_P;
+  localparam int PREFETCH_ARLEN_C      = PREFETCH_BYTE_SIZE_C / (MEM_DATA_WIDTH_P/8) - 1;
+  localparam int FIFO_ADDR_WIDTH_C     = $clog2(PREFETCH_BYTE_SIZE_C / (N_BITS_P / 8));
+  localparam int CORE_MEM_ADDR_WIDTH_C = (IIR_HIGH_ADDR_P - IIR_BASE_ADDR_P) / (N_BITS_P / 8);
+  localparam int RD_ADDR_SHIFT_C       = $clog2(WORDS_PER_BEAT_C);
 
   typedef enum {
     WR_WAIT_MEM_WR_REQ_E,
@@ -86,13 +91,13 @@ module iir_comb_top #(
   logic                          mem_rd_dready;
 
   // Write process
-  logic [WORDS_IN_BUFFER_C-1 : 0] [N_BITS_P-1 : 0] wr_r0;
-  logic          [$clog2(WORDS_IN_BUFFER_C)-1 : 0] wr_counter;
+  logic [WORDS_PER_BEAT_C-1 : 0] [N_BITS_P-1 : 0] wr_r0;
+  logic          [$clog2(WORDS_PER_BEAT_C)-1 : 0] wr_counter;
 
   // Read process
-  logic [1 : 0] rd_counter; // TODO: Width
-  logic [WORDS_IN_BUFFER_C-1 : 0] [N_BITS_P-1 : 0] rdata_r0;
-  logic                                            rlast_r0;
+  logic          [$clog2(PREFETCH_ARLEN_C)-1 : 0] rd_counter;
+  logic [WORDS_PER_BEAT_C-1 : 0] [N_BITS_P-1 : 0] rdata_r0;
+  logic                                           rlast_r0;
 
   // FIFO
   logic                  ing_enable;
@@ -118,7 +123,7 @@ module iir_comb_top #(
 
   // Memory read response input
   assign mem_rd_data   = egr_data;
-  assign mem_rd_dvalid = egr_enable;
+  assign mem_rd_dvalid = !egr_empty;
 
   // FIFO
   assign egr_enable = !egr_empty && mem_rd_dready;
@@ -139,10 +144,10 @@ module iir_comb_top #(
 
         WR_WAIT_MEM_WR_REQ_E: begin
           if (mem_wr_valid) begin
-            wr_counter <= wr_counter + 1;
+            wr_counter        <= wr_counter + 1;
             wr_r0[wr_counter] <= mem_wr_data;
             if (wr_counter == '0) begin
-              mc.awaddr <= MEM_ADDR_WIDTH_P + mem_wr_addr;
+              mc.awaddr <= IIR_BASE_ADDR_P + {mem_wr_addr, {$clog2(MEM_DATA_WIDTH_P/8){1'b0}}};
             end else if (wr_counter == '1) begin
               wr_counter <= '0;
               wr_state   <= WR_HS_WITH_MC_E;
@@ -179,7 +184,9 @@ module iir_comb_top #(
       mc.araddr  <= '0;
       mc.arvalid <= '0;
       mc.rready  <= '0;
+      rdata_r0   <= '0;
       rlast_r0   <= '0;
+      ing_data   <= '0;
     end
     else begin
 
@@ -189,9 +196,9 @@ module iir_comb_top #(
 
         RD_WAIT_MEM_RD_REQ_E: begin
           if (mem_rd_avalid) begin
-            if (mem_rd_addr[3 : 0] == '0) begin // TODO: Hmm?
+            if (mem_rd_addr[$clog2(PREFETCH_WORDS_C)-1 : 0] == '0) begin
               rd_state   <= RD_HS_WITH_MC_E;
-              mc.araddr  <= mem_rd_addr;
+              mc.araddr  <= mem_rd_addr << RD_ADDR_SHIFT_C;
               mc.arvalid <= '1;
             end
           end
@@ -219,7 +226,7 @@ module iir_comb_top #(
           ing_enable <= '1;
           ing_data   <= rdata_r0[rd_counter];
 
-          if (rd_counter == 3) begin // TODO: Hmm?
+          if (rd_counter == PREFETCH_ARLEN_C) begin
             rd_counter <= '0;
             if (rlast_r0) begin
               rlast_r0 <= '0;
@@ -241,9 +248,7 @@ module iir_comb_top #(
   iir_comb_core #(
     .N_BITS_P                ( N_BITS_P                ),
     .Q_BITS_P                ( Q_BITS_P                ),
-    .MEM_BASE_ADDR_P         ( MEM_BASE_ADDR_P         ),
-    .MEM_HIGH_ADDR_P         ( MEM_HIGH_ADDR_P         ),
-    .MEM_ADDR_WIDTH_P        ( MEM_ADDR_WIDTH_P        ),
+    .MEM_ADDR_WIDTH_P        ( CORE_MEM_ADDR_WIDTH_C   ),
     .AXI4_ID_P               ( AXI4_ID_P               )
   ) iir_comb_core_i0 (
 

@@ -26,8 +26,6 @@
 module iir_comb_core #(
     parameter int N_BITS_P         = -1,
     parameter int Q_BITS_P         = -1,
-    parameter int MEM_BASE_ADDR_P  = -1,
-    parameter int MEM_HIGH_ADDR_P  = -1,
     parameter int MEM_ADDR_WIDTH_P = -1,
     parameter int AXI4_ID_P        = -1
   )(
@@ -60,6 +58,7 @@ module iir_comb_core #(
   );
 
   typedef enum {
+    DELAY_CALC_INIT_E,
     DELAY_CALC_IDLE_E,
     DELAY_CALC_DIFF_E,
     DELAY_CALC_ADDR_NEG_E,
@@ -79,38 +78,36 @@ module iir_comb_core #(
 
   // Delay calculation
   logic                        [15 : 0] cr_fir_delay_time_r0;
-  logic          [MEM_ADDR_WIDTH_P : 0] rd_addr_r0;
+  logic          [MEM_ADDR_WIDTH_P : 0] rd_addr;
   logic signed                 [15 : 0] delay_delta;
   logic signed           [N_BITS_P : 0] delay_diff;
 
   // FIR calculation
   logic        [MEM_ADDR_WIDTH_P-1 : 0] wr_addr;
-  logic        [MEM_ADDR_WIDTH_P-1 : 0] rd_addr;
   logic signed         [N_BITS_P-1 : 0] y_delay;
 
   // Delay calculation
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-      delay_state          <= DELAY_CALC_IDLE_E;
+      delay_state          <= DELAY_CALC_INIT_E;
       cr_fir_delay_time_r0 <= '0;
       rd_addr              <= '0;
-      rd_addr_r0           <= '0;
       delay_delta          <= '0;
       delay_diff           <= '0;
     end
     else begin
 
-      if (fir_state == MEMORY_RD_REQ_E) begin
-        rd_addr <= rd_addr + 1;
-      end
-
       case (delay_state)
 
-        DELAY_CALC_IDLE_E: begin
+        DELAY_CALC_INIT_E, DELAY_CALC_IDLE_E: begin
           if (cmd_fir_calculate_delay) begin
             delay_state          <= DELAY_CALC_DIFF_E;
             delay_delta          <= cr_fir_delay_time_r0 - cr_fir_delay_time;
             cr_fir_delay_time_r0 <= cr_fir_delay_time;
+          end
+
+          if (fir_state == MEMORY_WR_REQ_E) begin
+            rd_addr <= rd_addr + 1;
           end
         end
 
@@ -118,7 +115,7 @@ module iir_comb_core #(
           // More delay, decrease the read pointer
           if (delay_delta < 0) begin
             delay_state <= DELAY_CALC_ADDR_NEG_E;
-            delay_diff  <= {1'b0, rd_addr} - {'0, delay_delta};
+            delay_diff  <= {1'b0, rd_addr} + {'1, delay_delta};
           end
           // Less delay, increase the read pointer
           else begin
@@ -130,18 +127,18 @@ module iir_comb_core #(
         DELAY_CALC_ADDR_NEG_E: begin
           delay_state <= DELAY_CALC_IDLE_E;
           if (delay_diff < 0) begin
-            rd_addr_r0 <= {1'b0, {MEM_ADDR_WIDTH_P{1'b1}}} + {'1, delay_diff};
+            rd_addr <= {1'b0, {MEM_ADDR_WIDTH_P{1'b1}}} + {'1, delay_diff};
           end else begin
-            rd_addr_r0 <= {'0, delay_diff};
+            rd_addr <= {'0, delay_diff};
           end
         end
 
         DELAY_CALC_ADDR_POS_E: begin
           delay_state <= DELAY_CALC_IDLE_E;
           if (delay_diff >= 0) begin
-            rd_addr_r0 <= {'0, delay_diff} - {1'b0, {MEM_ADDR_WIDTH_P{1'b1}}};
+            rd_addr <= {'0, delay_diff} - {1'b0, {MEM_ADDR_WIDTH_P{1'b1}}};
           end else begin
-            rd_addr_r0 <= {'0, delay_diff};
+            rd_addr <= {'0, delay_diff};
           end
         end
 
@@ -154,7 +151,7 @@ module iir_comb_core #(
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
       fir_state     <= MEMORY_RD_REQ_E;
-      wr_addr       <= MEM_BASE_ADDR_P;
+      wr_addr       <= '0;
       mem_wr_addr   <= '0;
       mem_wr_valid  <= '0;
       mem_wr_data   <= '0;
@@ -163,20 +160,23 @@ module iir_comb_core #(
       mem_rd_dready <= '0;
       y             <= '0;
       y_valid       <= '0;
+      y_delay       <= '0;
     end
     else begin
 
-      mem_rd_avalid  <= '0;
-      y_valid      <= '0;
-      mem_wr_valid <= '0;
+      mem_rd_avalid <= '0;
+      y_valid       <= '0;
+      mem_wr_valid  <= '0;
 
       case (fir_state)
 
         MEMORY_RD_REQ_E: begin
-          fir_state     <= MEMORY_RD_RES_E;
-          mem_rd_addr   <= rd_addr;
-          mem_rd_avalid <= '1;
-          mem_rd_dready <= '1;
+          if (delay_state == DELAY_CALC_IDLE_E) begin
+            fir_state     <= MEMORY_RD_RES_E;
+            mem_rd_addr   <= rd_addr[MEM_ADDR_WIDTH_P : 0];
+            mem_rd_avalid <= '1;
+            mem_rd_dready <= '1;
+          end
         end
 
         MEMORY_RD_RES_E: begin
