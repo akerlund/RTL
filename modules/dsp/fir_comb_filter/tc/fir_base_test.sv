@@ -35,6 +35,7 @@ class fir_base_test extends uvm_test;
   // Testbench variables
   // ---------------------------------------------------------------------------
 
+  fir_config            tb_cfg;
   fir_env               tb_env;
   fir_virtual_sequencer v_sqr;
   register_model        reg_model;
@@ -86,6 +87,7 @@ class fir_base_test extends uvm_test;
     tb_env = fir_env::type_id::create("tb_env", this);
 
     // Configurations
+    tb_cfg          = fir_config::type_id::create("tb_cfg",               this);
     clk_rst_config0 = clk_rst_config::type_id::create("clk_rst_config0",  this);
     axi4s_mst_cfg0  = vip_axi4s_config::type_id::create("axi4s_mst_cfg0", this);
     axi4s_slv_cfg0  = vip_axi4s_config::type_id::create("axi4s_slv_cfg0", this);
@@ -107,6 +109,7 @@ class fir_base_test extends uvm_test;
     axi4_mem_cfg0.min_rvalid_delay_period = 8;
     axi4_mem_cfg0.max_rvalid_delay_period = 8;
 
+    uvm_config_db #(fir_config)::set(null,        "",                        "tb_cfg", tb_cfg);
     uvm_config_db #(clk_rst_config)::set(this,   {"tb_env.clk_rst_agent0", "*"}, "cfg", clk_rst_config0);
     uvm_config_db #(vip_axi4s_config)::set(this, {"tb_env.mst_agent0",     "*"}, "cfg", axi4s_mst_cfg0);
     uvm_config_db #(vip_axi4s_config)::set(this, {"tb_env.slv_agent0",     "*"}, "cfg", axi4s_slv_cfg0);
@@ -160,11 +163,11 @@ class fir_base_test extends uvm_test;
     for (int i = 0; i < (2**axi4_mem_cfg0.mem_addr_width)/VIP_MEM_CFG_C.VIP_AXI4_STRB_WIDTH_P; i++) begin
       for (int j = 0; j < 4; j++) begin
         _data_r0[j] = data_offset + i*4 + j;
-        `uvm_info(get_name(), $sformatf("%0d", _data_r0[j]),  UVM_LOW)
       end
       _data.push_back(_data_r0);
     end
 
     tb_env.mem_agent0.memory_write(_addr, _data);
   endtask
+
 endclass

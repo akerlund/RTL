@@ -40,12 +40,15 @@ class tc_basic extends fir_base_test;
     super.run_phase(phase);
     phase.raise_objection(this);
 
+    tb_cfg.fir_delay_time = 2**6;
+    tb_cfg.fir_delay_gain = 1 << Q_BITS_C;
+
     init_memory(1000);
 
-    reg_model.fir.fir_delay_time.write(uvm_status, (2**6<<1) + 1);
-    reg_model.fir.fir_delay_gain.write(uvm_status, 1 << Q_BITS_C);
+    reg_model.fir.fir_delay_time.write(uvm_status, tb_cfg.fir_delay_time);
+    reg_model.fir.fir_delay_gain.write(uvm_status, tb_cfg.fir_delay_gain);
 
-    vip_axi4s_seq0.set_nr_of_bursts(64);
+    vip_axi4s_seq0.set_nr_of_bursts(128);
     vip_axi4s_seq0.set_data_type(VIP_AXI4S_TDATA_COUNTER_E);
     vip_axi4s_seq0.set_burst_length(1);
     vip_axi4s_seq0.set_tstrb(VIP_AXI4S_TSTRB_ALL_E);

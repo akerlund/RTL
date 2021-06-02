@@ -30,6 +30,9 @@ class fir_scoreboard extends uvm_scoreboard;
   uvm_analysis_imp_x_port #(vip_axi4s_item #(VIP_AXI4S_CFG_C), fir_scoreboard) x_port;
   uvm_analysis_imp_y_port #(vip_axi4s_item #(VIP_AXI4S_CFG_C), fir_scoreboard) y_port;
 
+  // The testbench configuration
+  fir_config tb_cfg;
+
   // For raising objections
   uvm_phase current_phase;
 
@@ -54,6 +57,10 @@ class fir_scoreboard extends uvm_scoreboard;
   virtual task run_phase(uvm_phase phase);
     current_phase = phase;
     super.run_phase(current_phase);
+
+    if (!uvm_config_db #(fir_config)::get(null, "*", "tb_cfg", tb_cfg)) begin
+      `uvm_fatal("NOCFG", "No config in the factory")
+    end
   endtask
 
 

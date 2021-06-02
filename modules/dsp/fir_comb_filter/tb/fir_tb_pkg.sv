@@ -90,6 +90,7 @@ package fir_tb_pkg;
   `include "register_model.sv"
   `include "vip_axi4_adapter.sv"
 
+  `include "fir_config.sv"
   `include "fir_scoreboard.sv"
   `include "fir_virtual_sequencer.sv"
   `include "fir_env.sv"
