@@ -24,7 +24,9 @@ fir:
         }
         - field: {
           name:        cr_fir_delay_time,
-          description: Sets the time,
+          description: "Sets the delay time with a unit corresponding to the
+                       sampling frequency, e.g., writing the Fs to this register
+                       corresponds to a one second delay",
           size:        32,
           lsb_pos:     8,
           reset_value: 0x0
@@ -37,7 +39,7 @@ fir:
         - field: {
           name:        cr_fir_delay_gain,
           description: The delay gain,
-          size:        32,
+          size:        N_BITS_C,
           lsb_pos:     0,
           reset_value: 0x0
         }

@@ -24,13 +24,13 @@
 `default_nettype none
 
 module iir_comb_top #(
-    parameter int N_BITS_P         = -1,
-    parameter int Q_BITS_P         = -1,
-    parameter int IIR_BASE_ADDR_P  = -1,
-    parameter int IIR_HIGH_ADDR_P  = -1,
-    parameter int MEM_ADDR_WIDTH_P = -1,
-    parameter int MEM_DATA_WIDTH_P = -1,
-    parameter int AXI4_ID_P        = -1
+    parameter int N_BITS_P         = -1, // Total data width
+    parameter int Q_BITS_P         = -1, // Decimal bits of the total bits
+    parameter int IIR_BASE_ADDR_P  = -1, // Memory base address for the IIR
+    parameter int IIR_HIGH_ADDR_P  = -1, // Memory high address for the IIR
+    parameter int MEM_ADDR_WIDTH_P = -1, // Memory address width
+    parameter int MEM_DATA_WIDTH_P = -1, // Memory data width
+    parameter int AXI4_ID_P        = -1  // The IIR's constant AXI4 id
   )(
     // Clock and reset
     input  wire                           clk,
@@ -51,14 +51,38 @@ module iir_comb_top #(
     input  wire          [N_BITS_P-1 : 0] cr_fir_delay_gain
   );
 
+  // Sets how many bytes are prefetched from memory on each read in order to
+  // decrease the amount of memory read accesses.
   localparam int PREFETCH_BYTE_SIZE_C  = 2**6;
-  localparam int PREFETCH_WORDS_C      = PREFETCH_BYTE_SIZE_C / (N_BITS_P / 8);
 
+  // We store the number of words we get per beat and how long the arlen should
+  // be in order to calculate counter widths and some of the following
+  // constants, too.
   localparam int WORDS_PER_BEAT_C      = MEM_DATA_WIDTH_P / N_BITS_P;
   localparam int PREFETCH_ARLEN_C      = PREFETCH_BYTE_SIZE_C / (MEM_DATA_WIDTH_P/8) - 1;
-  localparam int FIFO_ADDR_WIDTH_C     = $clog2(PREFETCH_BYTE_SIZE_C / (N_BITS_P / 8));
-  localparam int CORE_MEM_ADDR_WIDTH_C = (IIR_HIGH_ADDR_P - IIR_BASE_ADDR_P) / (N_BITS_P / 8);
+
+  // We write (MEM_DATA_WIDTH_P/8) bytes to each memory row, e.g., 16 bytes, so
+  // the requested addresses must be multiplied in order to get the awaddr.
+  // Because we write (WORDS_PER_BEAT_C) words on every write access, we must
+  // divide, too, and we get (WR_ADDR_SHIFT_C) to be:
+  localparam int WR_ADDR_SHIFT_C       = $clog2(MEM_DATA_WIDTH_P/8) - $clog2(WORDS_PER_BEAT_C);
+
+  // We must know how many words there are in one prefetch from memory because
+  // only some requested addresses should be fetched from memory, e.g., 0, 16,
+  // ..., and so on.
+  localparam int PREFETCH_WORDS_C      = PREFETCH_BYTE_SIZE_C / (N_BITS_P / 8);
+
+  // For each read request, we read (WORDS_PER_BEAT_C) number of words from
+  // memory so we must increase each address by this factor in order to get the
+  // correct araddr.
   localparam int RD_ADDR_SHIFT_C       = $clog2(WORDS_PER_BEAT_C);
+
+  // This constant will decide the core's address width.
+  localparam int CORE_MEM_ADDR_WIDTH_C = (IIR_HIGH_ADDR_P - IIR_BASE_ADDR_P) / (N_BITS_P / 8);
+
+  // The address width needed by the FIFO to hold the prefetched data.
+  localparam int FIFO_ADDR_WIDTH_C     = $clog2(PREFETCH_BYTE_SIZE_C / (N_BITS_P / 8));
+
 
   typedef enum {
     WR_WAIT_MEM_WR_REQ_E,
@@ -73,10 +97,9 @@ module iir_comb_top #(
     RD_WRITE_TO_FIFO_E
   } rd_state_t;
 
+  // State
   wr_state_t wr_state;
   rd_state_t rd_state;
-
-
 
   // Memory write
   logic [MEM_ADDR_WIDTH_P-1 : 0] mem_wr_addr;
@@ -147,7 +170,7 @@ module iir_comb_top #(
             wr_counter        <= wr_counter + 1;
             wr_r0[wr_counter] <= mem_wr_data;
             if (wr_counter == '0) begin
-              mc.awaddr <= IIR_BASE_ADDR_P + {mem_wr_addr, {$clog2(MEM_DATA_WIDTH_P/8){1'b0}}};
+              mc.awaddr <= IIR_BASE_ADDR_P + MEM_DATA_WIDTH_P/8 + mem_wr_addr;
             end else if (wr_counter == '1) begin
               wr_counter <= '0;
               wr_state   <= WR_HS_WITH_MC_E;
@@ -198,7 +221,7 @@ module iir_comb_top #(
           if (mem_rd_avalid) begin
             if (mem_rd_addr[$clog2(PREFETCH_WORDS_C)-1 : 0] == '0) begin
               rd_state   <= RD_HS_WITH_MC_E;
-              mc.araddr  <= mem_rd_addr << RD_ADDR_SHIFT_C;
+              mc.araddr  <= IIR_BASE_ADDR_P + mem_rd_addr << RD_ADDR_SHIFT_C;
               mc.arvalid <= '1;
             end
           end
