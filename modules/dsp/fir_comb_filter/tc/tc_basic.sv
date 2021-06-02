@@ -41,11 +41,11 @@ class tc_basic extends fir_base_test;
     phase.raise_objection(this);
 
     tb_cfg.fir_delay_time = 2**6;
-    tb_cfg.fir_delay_gain = 1 << Q_BITS_C;
+    tb_cfg.fir_delay_gain = float_to_fixed_point(1.0, Q_BITS_C);
 
     init_memory(1000);
 
-    reg_model.fir.fir_delay_time.write(uvm_status, tb_cfg.fir_delay_time);
+    reg_model.fir.fir_delay_time.write(uvm_status, (tb_cfg.fir_delay_time << 1) + 1);
     reg_model.fir.fir_delay_gain.write(uvm_status, tb_cfg.fir_delay_gain);
 
     vip_axi4s_seq0.set_nr_of_bursts(128);

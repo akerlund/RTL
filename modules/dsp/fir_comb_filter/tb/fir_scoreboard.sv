@@ -72,7 +72,7 @@ class fir_scoreboard extends uvm_scoreboard;
     if (number_of_failed != 0) begin
       `uvm_error(get_name(), $sformatf("Test failed! (%0d) mismatches", number_of_failed))
     end else begin
-      `uvm_info(get_name(), $sformatf("Test passed (%0d)/(%0d) finished transfers", number_of_passed, number_of_compared), UVM_LOW)
+      `uvm_info(get_name(), $sformatf("Test passed (%0d/%0d) finished transfers", number_of_passed, number_of_compared), UVM_LOW)
     end
   endfunction
 

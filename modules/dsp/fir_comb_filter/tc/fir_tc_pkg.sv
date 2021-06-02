@@ -30,6 +30,7 @@ package fir_tc_pkg;
 
   import fir_tb_pkg::*;
 
+  import vip_fixed_point_pkg::*;
   import bool_pkg::*;
   import report_server_pkg::*;
   import clk_rst_types_pkg::*;
