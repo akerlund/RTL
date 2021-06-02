@@ -25,13 +25,13 @@ class fir_env extends uvm_env;
   `uvm_component_utils_begin(fir_env)
   `uvm_component_utils_end
 
-  protected virtual clk_rst_if vif;
-
   clk_rst_agent                      clk_rst_agent0;
   vip_axi4_agent    #(VIP_REG_CFG_C) reg_agent0;
   vip_axi4s_agent #(VIP_AXI4S_CFG_C) mst_agent0;
+  vip_axi4s_agent #(VIP_AXI4S_CFG_C) slv_agent0;
   vip_axi4_agent    #(VIP_MEM_CFG_C) mem_agent0;
 
+  fir_scoreboard        scoreboard0;
   fir_virtual_sequencer virtual_sequencer;
 
 
@@ -49,10 +49,6 @@ class fir_env extends uvm_env;
 
     super.build_phase(phase);
 
-    if (!uvm_config_db #(virtual clk_rst_if)::get(this, "", "vif", vif)) begin
-      `uvm_fatal("NOVIF", {"Virtual interface must be set for: ", get_full_name(), ".vif"});
-    end
-
     reg_model = register_model::type_id::create("reg_model");
     reg_model.build();
     reg_model.reset();
@@ -62,12 +58,16 @@ class fir_env extends uvm_env;
     clk_rst_agent0 = clk_rst_agent::type_id::create("clk_rst_agent0", this);
     reg_agent0     = vip_axi4_agent  #(VIP_REG_CFG_C)::type_id::create("reg_agent0",   this);
     mst_agent0     = vip_axi4s_agent #(VIP_AXI4S_CFG_C)::type_id::create("mst_agent0", this);
+    slv_agent0     = vip_axi4s_agent #(VIP_AXI4S_CFG_C)::type_id::create("slv_agent0", this);
     mem_agent0     = vip_axi4_agent  #(VIP_MEM_CFG_C)::type_id::create("mem_agent0",   this);
 
     uvm_config_db #(int)::set(this, {"clk_rst_agent0", "*"}, "id", 0);
     uvm_config_db #(int)::set(this, {"mst_agent0",     "*"}, "id", 1);
-    uvm_config_db #(int)::set(this, {"reg_agent0",     "*"}, "id", 2);
-    uvm_config_db #(int)::set(this, {"mem_agent0",     "*"}, "id", 3);
+    uvm_config_db #(int)::set(this, {"slv_agent0",     "*"}, "id", 2);
+    uvm_config_db #(int)::set(this, {"reg_agent0",     "*"}, "id", 3);
+    uvm_config_db #(int)::set(this, {"mem_agent0",     "*"}, "id", 4);
+
+    scoreboard0 = fir_scoreboard::type_id::create("scoreboard0", this);
 
     virtual_sequencer = fir_virtual_sequencer::type_id::create("virtual_sequencer", this);
     uvm_config_db #(fir_virtual_sequencer)::set(this, {"virtual_sequencer", "*"}, "virtual_sequencer", virtual_sequencer);
@@ -83,6 +83,9 @@ class fir_env extends uvm_env;
 
     reg_model.default_map.set_sequencer(.sequencer(reg_agent0.sequencer), .adapter(vip_axi4_adapter0));
     reg_model.default_map.set_base_addr('h00000000);
+
+    mst_agent0.monitor.tdata_port.connect(scoreboard0.x_port);
+    slv_agent0.monitor.tdata_port.connect(scoreboard0.y_port);
 
     virtual_sequencer.clk_rst_sequencer0 = clk_rst_agent0.sequencer;
     virtual_sequencer.reg_sequencer      = reg_agent0.sequencer;

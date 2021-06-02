@@ -47,6 +47,7 @@ class fir_base_test extends uvm_test;
 
   clk_rst_config   clk_rst_config0;
   vip_axi4s_config axi4s_mst_cfg0;
+  vip_axi4s_config axi4s_slv_cfg0;
   vip_axi4_config  axi4_reg_cfg;
   vip_axi4_config  axi4_mem_cfg0;
 
@@ -87,10 +88,14 @@ class fir_base_test extends uvm_test;
     // Configurations
     clk_rst_config0 = clk_rst_config::type_id::create("clk_rst_config0",  this);
     axi4s_mst_cfg0  = vip_axi4s_config::type_id::create("axi4s_mst_cfg0", this);
+    axi4s_slv_cfg0  = vip_axi4s_config::type_id::create("axi4s_slv_cfg0", this);
     axi4_reg_cfg    = vip_axi4_config::type_id::create("axi4_reg_cfg",    this);
     axi4_mem_cfg0   = vip_axi4_config::type_id::create("axi4_mem_cfg0",   this);
 
     axi4s_mst_cfg0.tvalid_delay_enabled = FALSE;
+    axi4s_slv_cfg0.vip_axi4s_agent_type = VIP_AXI4S_SLAVE_AGENT_E;
+    axi4s_slv_cfg0.tready_delay_enabled = FALSE;
+
     axi4_reg_cfg.wvalid_delay_enabled   = FALSE;
     axi4_reg_cfg.rready_delay_enabled   = FALSE;
 
@@ -104,6 +109,7 @@ class fir_base_test extends uvm_test;
 
     uvm_config_db #(clk_rst_config)::set(this,   {"tb_env.clk_rst_agent0", "*"}, "cfg", clk_rst_config0);
     uvm_config_db #(vip_axi4s_config)::set(this, {"tb_env.mst_agent0",     "*"}, "cfg", axi4s_mst_cfg0);
+    uvm_config_db #(vip_axi4s_config)::set(this, {"tb_env.slv_agent0",     "*"}, "cfg", axi4s_slv_cfg0);
     uvm_config_db #(vip_axi4_config)::set(this,  {"tb_env.reg_agent0",     "*"}, "cfg", axi4_reg_cfg);
     uvm_config_db #(vip_axi4_config)::set(this,  {"tb_env.mem_agent0",     "*"}, "cfg", axi4_mem_cfg0);
 
@@ -119,6 +125,7 @@ class fir_base_test extends uvm_test;
     v_sqr = tb_env.virtual_sequencer;
     `uvm_info(get_type_name(), $sformatf("Topology of the test:\n%s", this.sprint(uvm_table_printer0)), UVM_LOW)
     `uvm_info(get_name(), {"VIP AXI4S Agent (Master):\n", axi4s_mst_cfg0.sprint()}, UVM_LOW)
+    `uvm_info(get_name(), {"VIP AXI4S Agent (Master):\n", axi4s_slv_cfg0.sprint()}, UVM_LOW)
     `uvm_info(get_name(), {"VIP AXI4 Agent (Memory):\n",  axi4_mem_cfg0.sprint()},  UVM_LOW)
   endfunction
 
@@ -149,7 +156,7 @@ class fir_base_test extends uvm_test;
     logic [VIP_MEM_CFG_C.VIP_AXI4_DATA_WIDTH_P-1 : 0] _data [$];
     logic [VIP_MEM_CFG_C.VIP_AXI4_ADDR_WIDTH_P-1 : 0] _addr = '0;
 
-    `uvm_info(get_name(), "Initializing the memory",  UVM_LOW)
+    `uvm_info(get_name(), "Initializing the memory with counter values",  UVM_LOW)
     for (int i = 0; i < (2**axi4_mem_cfg0.mem_addr_width)/VIP_MEM_CFG_C.VIP_AXI4_STRB_WIDTH_P; i++) begin
       for (int j = 0; j < 4; j++) begin
         _data_r0[j] = data_offset + i*4 + j;

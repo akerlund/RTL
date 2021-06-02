@@ -30,6 +30,7 @@ module fir_tb_top;
   vip_axi4_if    #(VIP_REG_CFG_C) reg_vif(clk_rst_vif.clk, clk_rst_vif.rst_n);
   vip_axi4_if    #(VIP_MEM_CFG_C) mem_vif(clk_rst_vif.clk, clk_rst_vif.rst_n);
   vip_axi4s_if #(VIP_AXI4S_CFG_C) mst_vif(clk_rst_vif.clk, clk_rst_vif.rst_n);
+  vip_axi4s_if #(VIP_AXI4S_CFG_C) slv_vif(clk_rst_vif.clk, clk_rst_vif.rst_n);
 
   axi4_reg_if #(
     .AXI4_ID_WIDTH_P   ( VIP_REG_CFG_C.VIP_AXI4_ID_WIDTH_P   ),
@@ -119,8 +120,8 @@ module fir_tb_top;
     // Data
     .x                       ( mst_vif.tdata           ), // input
     .x_valid                 ( mst_vif.tvalid          ), // input
-    .y                       (                         ), // output
-    .y_valid                 (                         ), // output
+    .y                       ( slv_vif.tdata           ), // output
+    .y_valid                 ( slv_vif.tvalid          ), // output
 
     // AXI4 memory
     .mc                      ( fir_axi4_if             ), // interface
@@ -148,6 +149,7 @@ module fir_tb_top;
     uvm_config_db #(virtual clk_rst_if)::set(uvm_root::get(),                      "uvm_test_top.tb_env*",            "vif", clk_rst_vif);
     uvm_config_db #(virtual vip_axi4_if  #(VIP_REG_CFG_C))::set(uvm_root::get(),   "uvm_test_top.tb_env.reg_agent0*", "vif", reg_vif);
     uvm_config_db #(virtual vip_axi4s_if #(VIP_AXI4S_CFG_C))::set(uvm_root::get(), "uvm_test_top.tb_env.mst_agent0*", "vif", mst_vif);
+    uvm_config_db #(virtual vip_axi4s_if #(VIP_AXI4S_CFG_C))::set(uvm_root::get(), "uvm_test_top.tb_env.slv_agent0*", "vif", slv_vif);
     uvm_config_db #(virtual vip_axi4_if  #(VIP_MEM_CFG_C))::set(uvm_root::get(),   "uvm_test_top.tb_env.mem_agent0*", "vif", mem_vif);
     run_test();
     $stop();
