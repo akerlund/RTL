@@ -49,7 +49,7 @@ module mixer_top #(
     input  wire        [NR_OF_CHANNELS_P-1 : 0] [AUDIO_WIDTH_P-1 : 0] cr_mix_channel_gain,
     input  wire        [NR_OF_CHANNELS_P-1 : 0] [AUDIO_WIDTH_P-1 : 0] cr_mix_channel_pan,
     input  wire                                 [AUDIO_WIDTH_P-1 : 0] cr_mix_output_gain,
-    output logic                                                      sr_mix_out_clip,
+    output logic                                              [1 : 0] sr_mix_out_clip,
     output logic                             [NR_OF_CHANNELS_P-1 : 0] sr_mix_channel_clip,
     output logic                                [AUDIO_WIDTH_P-1 : 0] sr_mix_max_dac_amplitude,
     output logic                                [AUDIO_WIDTH_P-1 : 0] sr_mix_min_dac_amplitude
@@ -66,7 +66,6 @@ module mixer_top #(
   logic signed [AUDIO_WIDTH_P-1 : 0] mix_out_left;
   logic signed [AUDIO_WIDTH_P-1 : 0] mix_out_right;
   logic                              mix_out_valid;
-  logic                              mix_out_ready;
   logic signed [AUDIO_WIDTH_P-1 : 0] mix_out_right_r0;
 
   logic                              clip_detected;
@@ -76,7 +75,6 @@ module mixer_top #(
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
       dac_state        <= DAC_WAIT_MIX_VALID_E;
-      mix_out_ready    <= '1;
       mix_out_right_r0 <= '0;
       dac_data         <= '0;
       dac_last         <= '0;
@@ -147,7 +145,7 @@ module mixer_top #(
 
       clip_led <= clip_counter[25]; // 2**25 = 67108864/2
 
-      if ((|sr_mix_channel_clip) || sr_mix_out_clip) begin
+      if ((|sr_mix_channel_clip) || (|sr_mix_out_clip)) begin
         clip_detected <= '1;
       end
 
@@ -175,8 +173,7 @@ module mixer_top #(
     .channel_ready       (                     ), // output
     .out_left            ( mix_out_left        ), // output
     .out_right           ( mix_out_right       ), // output
-    .out_valid           ( mix_out_valid       ), // input
-    .out_ready           ( mix_out_ready       ), // input
+    .out_valid           ( mix_out_valid       ), // output
     .cr_mix_channel_gain ( cr_mix_channel_gain ), // input
     .cr_mix_channel_pan  ( cr_mix_channel_pan  ), // input
     .cr_mix_output_gain  ( cr_mix_output_gain  ), // input
