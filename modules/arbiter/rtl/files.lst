@@ -1,0 +1,10 @@
+module_path=$git_root/modules/arbiter
+
+rtl_dirs+="
+  +incdir+$module_path/rtl
+"
+
+rtl_files+="
+  $module_path/rtl/arbiter_m2s.sv
+  $module_path/rtl/arbiter_s2m.sv
+"
