@@ -1,1 +1,12 @@
 `verilator_config
+lint_off -rule DECLFILENAME -file "*/math/multiplication/rtl/dsp48_nq_multiplier_axi4s_if.sv" -match "Filename 'dsp48_nq_multiplier_axi4s_if' does not match MODULE name: 'dsp48_multiplier_axi4s_if'"
+
+lint_off -rule PINCONNECTEMPTY -file "*/mixer/rtl/mixer_core.sv" -match "Cell pin connected by name with empty reference: 'slv_last'"
+lint_off -rule PINCONNECTEMPTY -file "*/mixer/rtl/mixer_core.sv" -match "Cell pin connected by name with empty reference: 'mst_last'"
+lint_off -rule PINCONNECTEMPTY -file "*/mixer/rtl/mixer_core.sv" -match "Cell pin connected by name with empty reference: 'mst_id'"
+lint_off -rule PINCONNECTEMPTY -file "*/mixer/rtl/mixer_top.sv" -match "Cell pin connected by name with empty reference: 'channel_ready'"
+
+lint_off -rule WIDTH -file "*/arbiter/rtl/arbiter_m2s.sv" -match "Operator VAR 'NR_OF_MASTERS_C' expects * bits on the Initial value, but Initial value's VARREF 'NR_OF_MASTERS_P' generates 32 bits."
+lint_off -rule WIDTH -file "*/multiplication/rtl/nq_multiplier.sv" -match "Operator ASSIGNDLY expects 47 bits on the Assign RHS, but Assign RHS's REPLICATE generates 24 bits."
+lint_off -rule WIDTH -file "*/multiplication/rtl/nq_multiplier.sv" -match "Operator EQ expects 32 bits on the LHS, but LHS's VARREF 'counter' generates 5 bits."
+lint_off -rule WIDTH -file "*/multiplication/rtl/nq_multiplier.sv" -match "Operator EQ expects 32 bits on the LHS, but LHS's VARREF 'counter' generates 5 bits."

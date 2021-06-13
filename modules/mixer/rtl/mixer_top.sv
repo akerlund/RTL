@@ -24,7 +24,6 @@
 
 module mixer_top #(
     parameter int AUDIO_WIDTH_P    = -1,
-    parameter int GAIN_WIDTH_P     = -1,
     parameter int NR_OF_CHANNELS_P = -1,
     parameter int Q_BITS_P         = -1
   )(
@@ -47,9 +46,9 @@ module mixer_top #(
 
     // Registers
     input  wire                                                       cmd_mix_clear_dac_min_max,
-    input  wire         [NR_OF_CHANNELS_P-1 : 0] [GAIN_WIDTH_P-1 : 0] cr_mix_channel_gain,
-    input  wire                              [NR_OF_CHANNELS_P-1 : 0] cr_mix_channel_pan,
-    input  wire                                  [GAIN_WIDTH_P-1 : 0] cr_mix_output_gain,
+    input  wire        [NR_OF_CHANNELS_P-1 : 0] [AUDIO_WIDTH_P-1 : 0] cr_mix_channel_gain,
+    input  wire        [NR_OF_CHANNELS_P-1 : 0] [AUDIO_WIDTH_P-1 : 0] cr_mix_channel_pan,
+    input  wire                                 [AUDIO_WIDTH_P-1 : 0] cr_mix_output_gain,
     output logic                                                      sr_mix_out_clip,
     output logic                             [NR_OF_CHANNELS_P-1 : 0] sr_mix_channel_clip,
     output logic                                [AUDIO_WIDTH_P-1 : 0] sr_mix_max_dac_amplitude,
@@ -166,7 +165,6 @@ module mixer_top #(
 
   mixer_core #(
     .AUDIO_WIDTH_P       ( AUDIO_WIDTH_P       ),
-    .GAIN_WIDTH_P        ( GAIN_WIDTH_P        ),
     .NR_OF_CHANNELS_P    ( NR_OF_CHANNELS_P    ),
     .Q_BITS_P            ( Q_BITS_P            )
   ) mixer_core_i0 (
@@ -174,6 +172,7 @@ module mixer_top #(
     .rst_n               ( rst_n               ), // input
     .channel_data        ( channel_data        ), // input
     .channel_valid       ( fs_strobe           ), // input
+    .channel_ready       (                     ), // output
     .out_left            ( mix_out_left        ), // output
     .out_right           ( mix_out_right       ), // output
     .out_valid           ( mix_out_valid       ), // input

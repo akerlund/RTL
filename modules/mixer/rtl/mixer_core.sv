@@ -24,7 +24,6 @@
 
 module mixer_core #(
     parameter int AUDIO_WIDTH_P    = -1,
-    parameter int GAIN_WIDTH_P     = -1,
     parameter int NR_OF_CHANNELS_P = -1,
     parameter int Q_BITS_P         = -1
   )(
@@ -35,6 +34,7 @@ module mixer_core #(
     // Ingress
     input  wire signed [NR_OF_CHANNELS_P-1 : 0] [AUDIO_WIDTH_P-1 : 0] channel_data,
     input  wire                                                       channel_valid,
+    output logic                                                      channel_ready,
 
     // Egress
     output logic signed                         [AUDIO_WIDTH_P-1 : 0] out_left,
@@ -43,22 +43,67 @@ module mixer_core #(
     input  wire                                                       out_ready,
 
     // Registers
-    input  wire         [NR_OF_CHANNELS_P-1 : 0] [GAIN_WIDTH_P-1 : 0] cr_mix_channel_gain,
-    input  wire                              [NR_OF_CHANNELS_P-1 : 0] cr_mix_channel_pan,
-    input  wire                                  [GAIN_WIDTH_P-1 : 0] cr_mix_output_gain,
+    input  wire        [NR_OF_CHANNELS_P-1 : 0] [AUDIO_WIDTH_P-1 : 0] cr_mix_channel_gain,
+    input  wire        [NR_OF_CHANNELS_P-1 : 0] [AUDIO_WIDTH_P-1 : 0] cr_mix_channel_pan,
+    input  wire                                 [AUDIO_WIDTH_P-1 : 0] cr_mix_output_gain,
     output logic                                                      sr_mix_out_clip,
     output logic                             [NR_OF_CHANNELS_P-1 : 0] sr_mix_channel_clip
   );
 
+  genvar i;
 
-  logic signed [NR_OF_CHANNELS_P-1 : 0]   [AUDIO_WIDTH_P-1 : 0] channel_products;
-  logic signed                            [AUDIO_WIDTH_P-1 : 0] left_channel_sum;
-  logic signed                            [AUDIO_WIDTH_P-1 : 0] right_channel_sum;
+  localparam int NR_OF_MASTERS_P = NR_OF_CHANNELS_P + 2;
+  localparam int ID_WIDTH_C      = $clog2(NR_OF_MASTERS_P);
 
-  logic signed                              [AUDIO_WIDTH_P : 0] left_channel_sum_r0;
-  logic signed                              [AUDIO_WIDTH_P : 0] right_channel_sum_r0;
-  logic signed                              [AUDIO_WIDTH_P : 0] left_channel_sum_c0;
-  logic signed                              [AUDIO_WIDTH_P : 0] right_channel_sum_c0;
+
+  typedef enum {
+    WAIT_FOR_CHANNEL_E,
+    FINISH_GAIN_E,
+    FINISH_PAN_E,
+    FINISH_SUM_E,
+    FINAL_GAIN_E
+  } mixer_state_t;
+
+  mixer_state_t mixer_state;
+
+
+  // Connections to the "arbiter_m2s"
+  logic [NR_OF_MASTERS_P-1 : 0]                         m2s_mst_valid;
+  logic [NR_OF_MASTERS_P-1 : 0]                         m2s_mst_ready;
+  logic [NR_OF_MASTERS_P-1 : 0] [2*AUDIO_WIDTH_P-1 : 0] m2s_mst_data;
+  logic [NR_OF_MASTERS_P-1 : 0]                         m2s_mst_last;
+  logic [NR_OF_MASTERS_P-1 : 0]      [ID_WIDTH_C-1 : 0] m2s_mst_id;
+
+  // Connections from the "arbiter_m2s" to "nq_multiplier_axi4s_if"
+  logic                                                 m2s_slv_valid;
+  logic                                                 m2s_slv_ready;
+  logic                         [2*AUDIO_WIDTH_P-1 : 0] m2s_slv_data;
+  logic                                                 m2s_slv_last;
+  logic                              [ID_WIDTH_C-1 : 0] m2s_slv_id;
+
+  // Connections from the "nq_multiplier_axi4s_if" to "arbiter_s2m"
+  logic                                               s2m_slv_valid;
+  logic                                               s2m_slv_ready;
+  logic                         [AUDIO_WIDTH_P-1 : 0] s2m_slv_data;
+  logic                                               s2m_slv_last;
+  logic                            [ID_WIDTH_C-1 : 0] s2m_slv_id;
+
+  // Connections from the "arbiter_m2s"
+  logic [NR_OF_MASTERS_P-1 : 0]                       s2m_mst_valid;
+  logic [NR_OF_MASTERS_P-1 : 0]                       s2m_mst_ready;
+  logic                         [AUDIO_WIDTH_P-1 : 0] s2m_mst_data;
+  logic                                               s2m_mst_last;
+  logic                            [ID_WIDTH_C-1 : 0] s2m_mst_id;
+
+
+  logic signed [NR_OF_CHANNELS_P-1 : 0] [AUDIO_WIDTH_P-1 : 0] channel_products;
+  logic signed                          [AUDIO_WIDTH_P-1 : 0] left_channel_sum;
+  logic signed                          [AUDIO_WIDTH_P-1 : 0] right_channel_sum;
+
+  logic signed                            [AUDIO_WIDTH_P : 0] left_channel_sum_r0;
+  logic signed                            [AUDIO_WIDTH_P : 0] right_channel_sum_r0;
+  logic signed                            [AUDIO_WIDTH_P : 0] left_channel_sum_c0;
+  logic signed                            [AUDIO_WIDTH_P : 0] right_channel_sum_c0;
 
   logic [2 : 0] valid_d0;
   logic         out_clip_left;
@@ -70,87 +115,232 @@ module mixer_core #(
   assign left_channel_sum  = left_channel_sum_r0[AUDIO_WIDTH_P-1 : 0];
   assign right_channel_sum = right_channel_sum_r0[AUDIO_WIDTH_P-1 : 0];
 
-  always_ff @(posedge clk or negedge rst_n) begin : mixer_output_p0
-    if (!rst_n) begin
-      valid_d0             <= '0;
-      left_channel_sum_r0  <= '0;
-      right_channel_sum_r0 <= '0;
-    end
-    else begin
 
-      // Delaying output valid
-      valid_d0 <= {channel_valid, valid_d0[2 : 1]};
-
-      if (valid_d0[2]) begin
-        left_channel_sum_r0  <= left_channel_sum_c0;
-        right_channel_sum_r0 <= right_channel_sum_c0;
-      end
-    end
-  end
-
-  // Summing up the output
-  always_comb begin
-
-    left_channel_sum_c0  = '0;
-    right_channel_sum_c0 = '0;
-
-    if (valid_d0[2]) begin
-      for (int i = 0; i < NR_OF_CHANNELS_P; i++) begin
-        if (!cr_mix_channel_pan[i]) begin
-          left_channel_sum_c0  = left_channel_sum_c0 + {channel_products[i][AUDIO_WIDTH_P-1], channel_products[i]};
-        end
-        else begin
-          right_channel_sum_c0 = right_channel_sum_c0 + {channel_products[i][AUDIO_WIDTH_P-1], channel_products[i]};
-        end
-      end
-    end
-
-  end
-
-  // Input channel gain
-  genvar i;
+  // Constant signals to the arbiters
   generate
-    for (i = 0; i < NR_OF_CHANNELS_P; i++) begin
-      dsp48_nq_multiplier #(
-        .N_BITS_P         ( AUDIO_WIDTH_P          ),
-        .Q_BITS_P         ( Q_BITS_P               )
-      ) dsp48_nq_multiplier_i (
-        .clk              ( clk                    ), // input
-        .rst_n            ( rst_n                  ), // input
-        .ing_multiplicand ( channel_data[i]        ), // input
-        .ing_multiplier   ( cr_mix_channel_gain[i] ), // input
-        .egr_product      ( channel_products[i]    ), // output
-        .egr_overflow     ( sr_mix_channel_clip[i] )  // output
-      );
+    for (i = 0; i < NR_OF_MASTERS_P; i++) begin
+      assign m2s_mst_last = '1;
+      assign m2s_mst_id   = i;
     end
   endgenerate
 
-  // Left output gain
-  dsp48_nq_multiplier #(
-    .N_BITS_P         ( AUDIO_WIDTH_P      ),
-    .Q_BITS_P         ( Q_BITS_P           )
-  ) dsp48_nq_multiplier_i0 (
-    .clk              ( clk                ), // input
-    .rst_n            ( rst_n              ), // input
-    .ing_multiplicand ( left_channel_sum   ), // input
-    .ing_multiplier   ( cr_mix_output_gain ), // input
-    .egr_product      ( out_left           ), // output
-    .egr_overflow     ( out_clip_left      )  // output
+  logic [$clog2(NR_OF_MASTERS_P)-1 : 0] finished_gains;
+
+  // This process registers all input registers
+  always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      mixer_state    <= WAIT_FOR_CHANNEL_E;
+      m2s_mst_valid  <= '0;
+      m2s_mst_data   <= '0;
+      channel_ready  <= '0;
+      finished_gains <= '0;
+    end
+    else begin
+
+      case (mixer_state)
+
+        WAIT_FOR_CHANNEL_E: begin
+          channel_ready <= '1;
+          if (channel_valid) begin
+            mixer_state                           <= FINISH_GAIN_E;
+            channel_ready                         <= '0;
+            m2s_mst_valid[NR_OF_CHANNELS_P-1 : 0] <= '1;
+            s2m_mst_ready[NR_OF_CHANNELS_P-1 : 0] <= '1;
+            for (int i = 0; i < NR_OF_CHANNELS_P; i++) begin
+              m2s_mst_data[i] <= {channel_data[i], cr_mix_channel_gain[i]};
+            end
+          end
+        end
+
+        FINISH_GAIN_E: begin
+          if (s2m_mst_ready == '0) begin
+            mixer_state                           <= FINISH_PAN_E;
+            m2s_mst_valid[NR_OF_CHANNELS_P-1 : 0] <= '1;
+            s2m_mst_ready[NR_OF_CHANNELS_P-1 : 0] <= '1;
+            for (int i = 0; i < NR_OF_CHANNELS_P; i++) begin
+              m2s_mst_data[i] <= {channel_products[i], cr_mix_channel_pan[i]};
+            end
+          end
+        end
+
+        FINISH_PAN_E: begin
+          if (s2m_mst_ready == '0) begin
+
+            mixer_state <= FINAL_GAIN_E;
+
+            //
+            m2s_mst_valid[NR_OF_MASTERS_P-1 : NR_OF_MASTERS_P-2] <= '1;
+            s2m_mst_ready[NR_OF_MASTERS_P-1 : NR_OF_MASTERS_P-2] <= '1;
+            m2s_mst_data[NR_OF_MASTERS_P-1] <= {left_channel_sum_r0[AUDIO_WIDTH_P-1 : 0],  cr_mix_output_gain};
+            m2s_mst_data[NR_OF_MASTERS_P-2] <= {right_channel_sum_r0[AUDIO_WIDTH_P-1 : 0], cr_mix_output_gain};
+          end
+        end
+
+        FINAL_GAIN_E: begin
+          if (s2m_mst_ready == '0) begin
+            mixer_state   <= FINAL_GAIN_E;
+            channel_ready <= '1;
+          end
+        end
+
+      endcase
+
+      // The arbiter input and output
+      for (int i = 0; i < NR_OF_MASTERS_P; i++) begin
+
+        // Set valid low if data is handshaked
+        if (m2s_mst_valid[i] && m2s_mst_ready[i]) begin
+          m2s_mst_valid[i] <= '0;
+        end
+
+        // Set ready low if data is received
+        if (s2m_mst_valid[i] && s2m_mst_ready[i]) begin
+          s2m_mst_ready[i]    <= '0;
+          channel_products[i] <= s2m_mst_data;
+        end
+
+      end
+
+    end
+  end
+
+
+  // This process registers the multiplier's product and forwards to the arbiter
+  always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      s2m_slv_valid <= '0;
+      s2m_slv_data  <= '0;
+      s2m_slv_last  <= '0;
+      s2m_slv_id    <= '0;
+    end
+    else begin
+
+      // Registering the ID of the first arbiter, used to route the product back again
+      if (m2s_slv_valid && m2s_slv_ready) begin
+        s2m_slv_id <= m2s_slv_id;
+      end
+
+      // Registering the product
+      if (mul_egr_valid) begin
+        s2m_slv_valid <= '1;
+        s2m_slv_data  <= mul_egr_product;
+      end
+
+      // Handshaking to the second arbiter
+      if (s2m_slv_valid && s2m_slv_ready) begin
+        s2m_slv_valid <= '0;
+      end
+
+    end
+  end
+
+
+  // Summing up the products
+  logic [AUDIO_WIDTH_P-1 : 0] m2s_slv_datad_d0;
+  always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      left_channel_sum_r0  <= '0;
+      right_channel_sum_r0 <= '0;
+      m2s_slv_datad_d0      <= '0;
+    end
+    else begin
+
+      if (mixer_state != FINISH_PAN_E) begin
+        left_channel_sum_r0  <= '0;
+        right_channel_sum_r0 <= '0;
+      end
+      else begin
+
+        // Save the signal as it is pre-gain
+        if (m2s_slv_valid && m2s_slv_ready) begin
+          m2s_slv_datad_d0 <= ing_multiplicand_c0;
+        end
+
+        // Add the products to the sums when the Master handshakes
+        if ((|s2m_mst_valid) && (|s2m_mst_ready)) begin
+          left_channel_sum_r0  <= left_channel_sum_r0  + ing_multiplicand_c0;
+          right_channel_sum_r0 <= right_channel_sum_r0 + (m2s_slv_datad_d0 - ing_multiplicand_c0);
+        end
+
+      end
+
+    end
+  end
+
+
+  // Input channel gain
+  arbiter_m2s #(
+    .NR_OF_MASTERS_P ( NR_OF_MASTERS_P ),
+    .DATA_WIDTH_P    ( 2*AUDIO_WIDTH_P ),
+    .ID_WIDTH_P      ( ID_WIDTH_C      )
+  ) arbiter_m2s_i0 (
+
+    .clk             ( clk             ), // input
+    .rst_n           ( rst_n           ), // input
+
+    .mst_valid       ( m2s_mst_valid   ), // input
+    .mst_ready       ( m2s_mst_ready   ), // output
+    .mst_data        ( m2s_mst_data    ), // input
+    .mst_last        ( '1              ), // input
+    .mst_id          ( m2s_mst_id      ), // input
+
+    .slv_valid       ( m2s_slv_valid   ), // output
+    .slv_ready       ( m2s_slv_ready   ), // input
+    .slv_data        ( m2s_slv_data    ), // output
+    .slv_last        (                 ), // output
+    .slv_id          ( m2s_slv_id      )  // output
   );
 
-  // Right output gain
-  dsp48_nq_multiplier #(
-    .N_BITS_P         ( AUDIO_WIDTH_P      ),
-    .Q_BITS_P         ( Q_BITS_P           )
-  ) dsp48_nq_multiplier_i1 (
-    .clk              ( clk                ), // input
-    .rst_n            ( rst_n              ), // input
-    .ing_multiplicand ( right_channel_sum  ), // input
-    .ing_multiplier   ( cr_mix_output_gain ), // input
-    .egr_product      ( out_right          ), // output
-    .egr_overflow     ( out_clip_right     )  // output
+
+  logic                       mul_egr_valid;
+  logic [AUDIO_WIDTH_P-1 : 0] mul_egr_product;
+  logic                       mul_egr_overflow;
+
+  // Splitting the arbited data channel
+  logic [AUDIO_WIDTH_P-1 : 0] ing_multiplicand_c0;
+  logic [AUDIO_WIDTH_P-1 : 0] ing_multiplier_c0;
+  assign ing_multiplicand_c0 = m2s_slv_data[AUDIO_WIDTH_P-1 : 0];
+  assign ing_multiplier_c0   = m2s_slv_data[2*AUDIO_WIDTH_P-1 : AUDIO_WIDTH_P];
+
+
+  nq_multiplier #(
+    .N_BITS_P         ( AUDIO_WIDTH_P       ),
+    .Q_BITS_P         ( Q_BITS_P            )
+  ) nq_multiplier_i0 (
+    .clk              ( clk                 ), // input
+    .rst_n            ( rst_n               ), // input
+    .ing_valid        ( m2s_slv_valid       ), // input
+    .ing_ready        ( m2s_slv_ready       ), // output
+    .ing_multiplicand ( ing_multiplicand_c0 ), // input
+    .ing_multiplier   ( ing_multiplier_c0   ), // input
+    .egr_valid        ( mul_egr_valid       ), // output
+    .egr_product      ( mul_egr_product     ), // output
+    .egr_overflow     ( mul_egr_overflow    )  // output
   );
 
+
+
+  arbiter_s2m #(
+    .NR_OF_MASTERS_P ( NR_OF_MASTERS_P ),
+    .DATA_WIDTH_P    ( AUDIO_WIDTH_P   ),
+    .ID_WIDTH_P      ( ID_WIDTH_C      )
+  ) arbiter_s2m_i0 (
+
+    .clk             ( clk             ), // input
+    .rst_n           ( rst_n           ), // input
+
+    .slv_valid       ( s2m_slv_valid   ), // input
+    .slv_ready       ( s2m_slv_ready   ), // output
+    .slv_data        ( s2m_slv_data    ), // input
+    .slv_last        ( '1              ), // input
+    .slv_id          ( s2m_slv_id      ), // input
+
+    .mst_valid       ( s2m_mst_valid   ), // output
+    .mst_ready       ( s2m_mst_ready   ), // input
+    .mst_data        ( s2m_mst_data    ), // output
+    .mst_last        (                 ), // output
+    .mst_id          (                 )  // output
+  );
 
 endmodule
 
