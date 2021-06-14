@@ -3,8 +3,8 @@
 git_root="$(git rev-parse --show-toplevel)"
 
 # Specify the top files
-rtl_top="axi4s_s2m_arbiter"
-uvm_top="arb_tb_top"
+rtl_top=axi4s_s2m_arbiter
+uvm_top=arb_tb_top
 
 # ------------------------------------------------------------------------------
 # Source submodules
@@ -38,3 +38,11 @@ parameters+=("AXI_KEEP_WIDTH_P=4 ")
 parameters+=("AXI_ID_WIDTH_P=4 ")
 parameters+=("AXI_DEST_WIDTH_P=4 ")
 parameters+=("AXI_USER_WIDTH_P=4 ")
+
+# ------------------------------------------------------------------------------
+# FPGA Project
+# ------------------------------------------------------------------------------
+
+FPGA_PART="7z020clg484-1"
+VIV_THREADS=12
+FCLK_T="2.5"

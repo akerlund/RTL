@@ -34,6 +34,8 @@ package mix_tc_pkg;
   import clk_rst_pkg::*;
   import vip_axi4s_types_pkg::*;
   import vip_axi4s_agent_pkg::*;
+  import report_server_pkg::*;
+  import vip_fixed_point_pkg::*;
 
   `include "mix_base_test.sv"
   `include "tc_positive_signals.sv"

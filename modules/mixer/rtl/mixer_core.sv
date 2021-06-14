@@ -325,6 +325,10 @@ module mixer_core #(
     .egr_overflow     ( mul_egr_overflow    )  // output
   );
 
+  always_comb begin
+    out_valid       = addition_valid[NR_OF_CHANNELS_P];
+    sr_mix_out_clip = in_clip_left || in_clip_right || out_clip_left || out_clip_right;
+  end
 
 
   arbiter_s2m #(

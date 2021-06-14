@@ -19,11 +19,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-
 `include "mix_tb_pkg.sv"
 `include "mix_tc_pkg.sv"
 `include "mix_tb_top.sv"
-
-`include "dsp48_nq_multiplier.sv"
-`include "mixer_core.sv"
-`include "mixer_top.sv"
+`include "mix_if.sv"

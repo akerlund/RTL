@@ -35,8 +35,8 @@ module mixer_top #(
     output logic                                                      clip_led,
 
     // Data of channels and sampling enable strobe
-    input  wire                                                       fs_strobe,
-    input  wire signed [NR_OF_CHANNELS_P-1 : 0] [AUDIO_WIDTH_P-1 : 0] channel_data,
+    input  wire                                                       x_valid,
+    input  wire signed [NR_OF_CHANNELS_P-1 : 0] [AUDIO_WIDTH_P-1 : 0] x_data,
 
     // DAC
     output logic                                             [23 : 0] dac_data,
@@ -100,7 +100,6 @@ module mixer_top #(
             dac_data  <= mix_out_right_r0;
             dac_last  <= '1;
           end
-
         end
 
         DAC_SEND_RIGHT_E: begin

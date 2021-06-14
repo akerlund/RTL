@@ -28,7 +28,6 @@ RTL modules which can be used between projects. This is an ongoing project and n
 ## MATH
  - CORDIC
  - Fixed Point Long Division
- - FFT
 ## Mechanics
  - Button
  - Rotary Encoder

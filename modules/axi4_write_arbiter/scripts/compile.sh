@@ -4,7 +4,7 @@ git_root="$(git rev-parse --show-toplevel)"
 
 # Specify the top files
 rtl_top=axi4_write_arbiter
-uvm_top="awa_tb_top"
+uvm_top=awa_tb_top
 
 # ------------------------------------------------------------------------------
 # Source submodules
@@ -34,3 +34,11 @@ parameters+="AXI_DATA_WIDTH_P=32 "
 parameters+="AXI_STRB_WIDTH_P=2 "
 parameters+="NR_OF_MASTERS_P=1 "
 parameters+="NR_OF_SLAVES_P=2 "
+
+# ------------------------------------------------------------------------------
+# FPGA Project
+# ------------------------------------------------------------------------------
+
+FPGA_PART="7z020clg484-1"
+VIV_THREADS=12
+FCLK_T="2.7"

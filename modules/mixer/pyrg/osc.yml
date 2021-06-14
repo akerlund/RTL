@@ -1,0 +1,108 @@
+---
+mix:
+
+  bus_width: 64
+
+  rtl_path: "$GIT_ROOT/modules/mixer/rtl"
+  uvm_path: "$GIT_ROOT/modules/mixer/tb/uvm_reg"
+  sw_path:  "$GIT_ROOT/modules/mixer/sw"
+
+  parameters:
+    - AUDIO_WIDTH_P
+    - NR_OF_CHANNELS_P
+
+  registers:
+
+    - name:   mix_clear_dac_min_max
+      desc:   "None"
+      access: WO
+      bit_fields:
+        - field: {
+          name:        cmd_mix_clear_dac_min_max,
+          description: "",
+          size:        1,
+          lsb_pos:     0,
+          reset_value: 0x0
+        }
+
+    - name:   mixer_channel_gain
+      desc:   Mixer's input gain of the channels
+      access: RW
+      repeat: 4
+      bit_fields:
+        - field: {
+          name:        cr_mix_channel_gain,
+          description: Mixer's input gain of the channels,
+          size:        AUDIO_WIDTH_P,
+          lsb_pos:     0,
+          reset_value: 1<<Q_BITS_C
+        }
+
+    - name:   mix_channel_pan
+      desc:   Mixer's pan of the channels
+      access: RW
+      repeat: 4
+      bit_fields:
+        - field: {
+          name:        cr_mix_channel_pan,
+          description: Mixer's pan of the channels,
+          size:        AUDIO_WIDTH_P,
+          lsb_pos:     0,
+          reset_value: 1<<Q_BITS_C
+        }
+
+    - name:   mixer_output_gain
+      desc:   Mixer's input gain of the output
+      access: RW
+      bit_fields:
+        - field: {
+          name:        cr_mix_output_gain,
+          description: Mixer's input gain of the output,
+          size:        AUDIO_WIDTH_P,
+          lsb_pos:     0,
+          reset_value: 1<<Q_BITS_C
+        }
+
+    - name:   mix_out_clip
+      desc:   "None"
+      access: RO
+      bit_fields:
+        - field: {
+          name:        sr_mix_out_clip,
+          description: "None",
+          size:        2,
+          lsb_pos:     0
+        }
+
+    - name:   mix_channel_clip
+      desc:   "None"
+      access: RO
+      bit_fields:
+        - field: {
+          name:        sr_mix_channel_clip,
+          description: "None",
+          size:        NR_OF_CHANNELS_P,
+          lsb_pos:     0
+        }
+
+    - name:   mix_max_dac_amplitude
+      desc:   "None"
+      access: RO
+      bit_fields:
+        - field: {
+          name:        sr_sr_mix_max_dac_amplitude,
+          description: "None",
+          size:        AUDIO_WIDTH_P,
+          lsb_pos:     0
+        }
+
+    - name:   mix_min_dac_amplitude
+      desc:   "None"
+      access: RO
+      bit_fields:
+        - field: {
+          name:        sr_sr_mix_min_dac_amplitude,
+          description: "None",
+          size:        AUDIO_WIDTH_P,
+          lsb_pos:     0
+        }

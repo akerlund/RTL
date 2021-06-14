@@ -4,7 +4,7 @@ git_root="$(git rev-parse --show-toplevel)"
 
 # Specify the top files
 rtl_top=iir_biquad_top
-uvm_top="iir_tb_top"
+uvm_top=iir_tb_top
 
 # ------------------------------------------------------------------------------
 # Source submodules
@@ -42,9 +42,17 @@ source ./rtl/files.lst
 source ./tb/files.lst
 
 # Parameter override
-#parameters+=("AXI_DATA_WIDTH_P=32 ")
-#parameters+=("AXI_ID_WIDTH_P=4 ")
-#parameters+=("AXI4S_ID_P=1 ")
-#parameters+=("APB_DATA_WIDTH_P=32 ")
-#parameters+=("N_BITS_P=32 ")
-#parameters+=("Q_BITS_P=17 ")
+parameters+=("AXI_DATA_WIDTH_P=32 ")
+parameters+=("AXI_ID_WIDTH_P=4 ")
+parameters+=("AXI4S_ID_P=1 ")
+parameters+=("APB_DATA_WIDTH_P=32 ")
+parameters+=("N_BITS_P=32 ")
+parameters+=("Q_BITS_P=17 ")
+
+# ------------------------------------------------------------------------------
+# FPGA Project
+# ------------------------------------------------------------------------------
+
+FPGA_PART="7z020clg484-1"
+VIV_THREADS=12
+FCLK_T="8.8"

@@ -4,7 +4,7 @@ git_root="$(git rev-parse --show-toplevel)"
 
 # Specify the top files
 rtl_top=cordic_axi4s_if
-uvm_top="cor_tb_top"
+uvm_top=cor_tb_top
 
 # ------------------------------------------------------------------------------
 # Source submodules
@@ -32,3 +32,11 @@ source ./tb/files.lst
 parameters+=("AXI_DATA_WIDTH_P=16 ")
 parameters+=("AXI_ID_WIDTH_P=4 ")
 parameters+=("NR_OF_STAGES_P=16 ")
+
+# ------------------------------------------------------------------------------
+# FPGA Project
+# ------------------------------------------------------------------------------
+
+FPGA_PART="7z020clg484-1"
+VIV_THREADS=12
+FCLK_T="2.8"

@@ -26,14 +26,10 @@ import mix_tc_pkg::*;
 
 module mix_tb_top;
 
-  bit clk;
-  bit rst_n;
-
-  time clk_period = 10ns;
-
-  // IF
-  vip_axi4s_if #(VIP_AXI4S_CFG_C) mst0_vif(clk, rst_n);
-  vip_axi4s_if #(VIP_AXI4S_CFG_C) slv0_vif(clk, rst_n);
+  clk_rst_if                      clk_rst_vif();
+  vip_axi4s_if #(VIP_AXI4S_CFG_C) mst0_vif(clk_rst_vif.clk, clk_rst_vif.rst_n);
+  vip_axi4s_if #(VIP_AXI4S_CFG_C) slv0_vif(clk_rst_vif.clk, clk_rst_vif.rst_n);
+  mix_if                          mix_vif();
 
 
   logic [NR_OF_CHANNELS_C-1 : 0] [AUDIO_WIDTH_C-1 : 0] channel_data;
@@ -50,88 +46,60 @@ module mix_tb_top;
   genvar i;
   generate
     for (i = 0; i < NR_OF_CHANNELS_C; i++) begin
-      assign channel_data[i]  = mst0_vif.tdata;
-      assign cr_channel_gain[i] = (2 << Q_BITS_C);
-      assign cr_channel_pan[i]  = i % 2;
+      assign channel_data[i]    = ONE_C;
+      //assign cr_channel_gain[i] = (2 << Q_BITS_C);
+      //assign cr_channel_pan[i]  = i % 2;
     end
   endgenerate
 
 
-  assign channel_valid    = mst0_vif.tvalid;
+  assign channel_valid  = mst0_vif.tvalid;
   assign out_ready      = '1;
   assign cr_output_gain =  (1 << Q_BITS_C);
 
   mixer_top #(
-    .AUDIO_WIDTH_P             ( AUDIO_WIDTH_C    ),
-    .GAIN_WIDTH_P              ( GAIN_WIDTH_C     ),
-    .NR_OF_CHANNELS_P          ( NR_OF_CHANNELS_C ),
-    .Q_BITS_P                  ( Q_BITS_C         )
+    .AUDIO_WIDTH_P             ( AUDIO_WIDTH_C                    ),
+    .GAIN_WIDTH_P              ( GAIN_WIDTH_C                     ),
+    .NR_OF_CHANNELS_P          ( NR_OF_CHANNELS_C                 ),
+    .Q_BITS_P                  ( Q_BITS_C                         )
   ) mixer_top_i0 (
-    .clk                       ( clk              ), // input
-    .rst_n                     ( rst_n            ), // input
-    .clip_led                  (                  ), // output
-    .fs_strobe                 ( channel_valid    ), // input
-    .channel_data              ( channel_data     ), // input
-    .dac_data                  (                  ), // output
-    .dac_valid                 (                  ), // output
-    .dac_ready                 ( '1               ), // input
-    .dac_last                  (                  ), // output
-    .cmd_mix_clear_dac_min_max ( '1               ), // input
-    .cr_mix_channel_gain       ( '1               ), // input
-    .cr_mix_channel_pan        ( '1               ), // input
-    .cr_mix_output_gain        ( '1               ), // input
-    .sr_mix_out_clip           (                  ), // output
-    .sr_mix_channel_clip       (                  ), // output
-    .sr_mix_max_dac_amplitude  (                  ), // output
-    .sr_mix_min_dac_amplitude  (                  )  // output
+    .clk                       ( clk_rst_vif.clk                  ), // input
+    .rst_n                     ( clk_rst_vif.rst_n                ), // input
+    .clip_led                  (                                  ), // output
+    .x_valid                   ( mix_vif.fs_strobe                ), // input
+    .x_data                    ( mix_vif.channel_data             ), // input
+    .dac_data                  (                                  ), // output
+    .dac_valid                 (                                  ), // output
+    .dac_ready                 ( '1                               ), // input
+    .dac_last                  (                                  ), // output
+    .cmd_mix_clear_dac_min_max ( '0                               ), // input
+    .cr_mix_channel_gain       ( mix_vif.cr_channel_gain          ), // input
+    .cr_mix_channel_pan        ( mix_vif.cr_channel_pan           ), // input
+    .cr_mix_output_gain        ( mix_vif.cr_output_gain           ), // input
+    .sr_mix_out_clip           ( /*mix_vif.sr_out_clip*/          ), // output
+    .sr_mix_channel_clip       ( /*mix_vif.sr_channel_clip*/      ), // output
+    .sr_mix_max_dac_amplitude  ( /*mix_vif.sr_max_dac_amplitude*/ ), // output
+    .sr_mix_min_dac_amplitude  ( /*mix_vif.sr_min_dac_amplitude*/ )  // output
   );
 
 
   initial begin
-
-    uvm_config_db #(virtual vip_axi4s_if #(VIP_AXI4S_CFG_C))::set(uvm_root::get(), "uvm_test_top.tb_env.vip_axi4s_agent_mst0*", "vif", mst0_vif);
-    uvm_config_db #(virtual vip_axi4s_if #(VIP_AXI4S_CFG_C))::set(uvm_root::get(), "uvm_test_top.tb_env.vip_axi4s_agent_slv0*", "vif", slv0_vif);
-
+    uvm_config_db #(virtual mix_if)::set(uvm_root::get(),                          "uvm_test_top*",                       "mix_vif", mix_vif);
+    uvm_config_db #(virtual clk_rst_if)::set(uvm_root::get(),                      "uvm_test_top.tb_env.clk_rst_agent0*", "vif", clk_rst_vif);
+    uvm_config_db #(virtual vip_axi4s_if #(VIP_AXI4S_CFG_C))::set(uvm_root::get(), "uvm_test_top.tb_env.mst_agent0*",     "vif", mst0_vif);
+    uvm_config_db #(virtual vip_axi4s_if #(VIP_AXI4S_CFG_C))::set(uvm_root::get(), "uvm_test_top.tb_env.slv_agent0*",     "vif", slv0_vif);
     run_test();
     $stop();
-
   end
 
 
-
   initial begin
-
-    // With recording detail you can switch on/off transaction recording.
+    $timeformat(-9, 0, "", 11);  // units, precision, suffix, min field width
     if ($test$plusargs("RECORD")) begin
       uvm_config_db #(uvm_verbosity)::set(null,"*", "recording_detail", UVM_FULL);
-    end
-    else begin
+    end else begin
       uvm_config_db #(uvm_verbosity)::set(null,"*", "recording_detail", UVM_NONE);
     end
-  end
-
-
-  // Generate reset
-  initial begin
-
-    rst_n = 1'b1;
-
-    #(clk_period*5)
-
-    rst_n = 1'b0;
-
-    #(clk_period*5)
-
-    @(posedge clk);
-
-    rst_n = 1'b1;
-
-  end
-
-  // Generate clock
-  always begin
-    #(clk_period/2)
-    clk = ~clk;
   end
 
 endmodule

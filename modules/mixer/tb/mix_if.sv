@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2020 Fredrik Åkerlund
+// Copyright (C) 2021 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,36 +20,17 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-`ifndef HSL_TB_PKG
-`define HSL_TB_PKG
+`ifndef MIX_IF
+`define MIX_IF
 
-package hsl_tb_pkg;
+import mix_tb_pkg::*;
 
-  import uvm_pkg::*;
-  `include "uvm_macros.svh"
-
-  import vip_axi4s_types_pkg::*;
-  import vip_axi4s_pkg::*;
-  import vip_math_pkg::*;
-
-  import gamma_12bit_lut_pkg::*;
-
-  // Configuration of the AXI4-S VIP
-  localparam vip_axi4s_cfg_t vip_axi4s_cfg = '{
-    AXI_DATA_WIDTH_P : 36,
-    AXI_STRB_WIDTH_P : 1,
-    AXI_KEEP_WIDTH_P : 1,
-    AXI_ID_WIDTH_P   : 1,
-    AXI_DEST_WIDTH_P : 1,
-    AXI_USER_WIDTH_P : 1
-  };
-
-  `include "hsl_config.sv"
-  `include "hsl_scoreboard.sv"
-  `include "hsl_virtual_sequencer.sv"
-  `include "hsl_env.sv"
-  `include "hsl_seq_lib.sv"
-
-endpackage
+interface mix_if(input clk, input rst_n);
+  logic                                                fs_strobe;
+  logic [NR_OF_CHANNELS_C-1 : 0] [AUDIO_WIDTH_C-1 : 0] channel_data;
+  logic  [NR_OF_CHANNELS_C-1 : 0] [GAIN_WIDTH_C-1 : 0] cr_channel_gain;
+  logic  [NR_OF_CHANNELS_C-1 : 0] [GAIN_WIDTH_C-1 : 0] cr_channel_pan;
+  logic                           [GAIN_WIDTH_C-1 : 0] cr_output_gain;
+endinterface
 
 `endif

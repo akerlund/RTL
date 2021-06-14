@@ -29,17 +29,17 @@ package mix_tb_pkg;
   `include "uvm_macros.svh"
 
   import bool_pkg::*;
-  import clk_rst_types_pkg::*;
-  import clk_rst_pkg::*;
   import vip_axi4s_types_pkg::*;
   import vip_axi4s_agent_pkg::*;
+  import clk_rst_types_pkg::*;
+  import clk_rst_pkg::*;
   import vip_fixed_point_pkg::*;
 
-  localparam int AUDIO_WIDTH_C    = 24;
-  localparam int GAIN_WIDTH_C     = 24;
-  localparam int NR_OF_CHANNELS_C = 4;
-  localparam int Q_BITS_C         = 7;
-
+  localparam int                         AUDIO_WIDTH_C    = 24;
+  localparam int                         GAIN_WIDTH_C     = 24;
+  localparam int                         NR_OF_CHANNELS_C = 4;
+  localparam int                         Q_BITS_C         = 7;
+  localparam logic [AUDIO_WIDTH_C-1 : 0] ONE_C            = 1 << Q_BITS_C;
 
   // Configuration of the AXI4-S VIP
   localparam vip_axi4s_cfg_t VIP_AXI4S_CFG_C = '{

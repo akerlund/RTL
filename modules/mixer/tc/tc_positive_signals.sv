@@ -22,12 +22,7 @@
 
 class tc_positive_signals extends mix_base_test;
 
-  mix_positive_signals_seq #(VIP_AXI4S_CFG_C) mix_positive_signals_seq0;
-
   `uvm_component_utils(tc_positive_signals)
-
-  int nr_of_signals = 10;
-
 
   function new(string name = "tc_positive_signals", uvm_component parent = null);
     super.new(name, parent);
@@ -42,12 +37,37 @@ class tc_positive_signals extends mix_base_test;
 
   task run_phase(uvm_phase phase);
 
+    set_channel_gain(0.00);
+    set_channel_pan(0.00);
+    set_output_gain(0.00);
+    set_channel_data(0.00);
+
     super.run_phase(phase);
     phase.raise_objection(this);
 
-    mix_positive_signals_seq0 = new();
-    mix_positive_signals_seq0.nr_of_signals = nr_of_signals;
-    mix_positive_signals_seq0.start(v_sqr.mst0_sequencer);
+    wait (mix_vif.fs_strobe === '1);
+    `uvm_info(get_name(), "1/3", UVM_LOW)
+    set_channel_gain(1.00);
+    set_channel_pan(1.00);
+    set_output_gain(1.00);
+    set_channel_data(2.00);
+    clk_delay(2);
+
+    wait (mix_vif.fs_strobe === '1);
+    `uvm_info(get_name(), "2/3", UVM_LOW)
+    set_channel_gain(1.25);
+    set_channel_pan(0.25);
+    set_output_gain(0.80);
+    clk_delay(2);
+
+
+    wait (mix_vif.fs_strobe === '1);
+    `uvm_info(get_name(), "3/3", UVM_LOW)
+    set_channel_gain(0.8);
+    set_channel_pan(0.75);
+    set_output_gain(1.25);
+
+    clk_delay(10);
 
     phase.drop_objection(this);
 
