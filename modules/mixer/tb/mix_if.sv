@@ -31,6 +31,10 @@ interface mix_if(input clk, input rst_n);
   logic  [NR_OF_CHANNELS_C-1 : 0] [GAIN_WIDTH_C-1 : 0] cr_channel_gain;
   logic  [NR_OF_CHANNELS_C-1 : 0] [GAIN_WIDTH_C-1 : 0] cr_channel_pan;
   logic                           [GAIN_WIDTH_C-1 : 0] cr_output_gain;
+  logic                                        [1 : 0] sr_out_clip;
+  logic                       [NR_OF_CHANNELS_C-1 : 0] sr_channel_clip;
+  logic                          [AUDIO_WIDTH_C-1 : 0] sr_max_dac_amplitude;
+  logic                          [AUDIO_WIDTH_C-1 : 0] sr_min_dac_amplitude;
 endinterface
 
 `endif

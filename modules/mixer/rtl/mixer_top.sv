@@ -167,8 +167,8 @@ module mixer_top #(
   ) mixer_core_i0 (
     .clk                 ( clk                 ), // input
     .rst_n               ( rst_n               ), // input
-    .channel_data        ( channel_data        ), // input
-    .channel_valid       ( fs_strobe           ), // input
+    .channel_data        ( x_data              ), // input
+    .channel_valid       ( x_valid             ), // input
     .channel_ready       (                     ), // output
     .out_left            ( mix_out_left        ), // output
     .out_right           ( mix_out_right       ), // output

@@ -46,9 +46,7 @@ module mix_tb_top;
   genvar i;
   generate
     for (i = 0; i < NR_OF_CHANNELS_C; i++) begin
-      assign channel_data[i]    = ONE_C;
-      //assign cr_channel_gain[i] = (2 << Q_BITS_C);
-      //assign cr_channel_pan[i]  = i % 2;
+      assign channel_data[i] = ONE_C;
     end
   endgenerate
 
@@ -59,7 +57,6 @@ module mix_tb_top;
 
   mixer_top #(
     .AUDIO_WIDTH_P             ( AUDIO_WIDTH_C                    ),
-    .GAIN_WIDTH_P              ( GAIN_WIDTH_C                     ),
     .NR_OF_CHANNELS_P          ( NR_OF_CHANNELS_C                 ),
     .Q_BITS_P                  ( Q_BITS_C                         )
   ) mixer_top_i0 (
@@ -76,10 +73,10 @@ module mix_tb_top;
     .cr_mix_channel_gain       ( mix_vif.cr_channel_gain          ), // input
     .cr_mix_channel_pan        ( mix_vif.cr_channel_pan           ), // input
     .cr_mix_output_gain        ( mix_vif.cr_output_gain           ), // input
-    .sr_mix_out_clip           ( /*mix_vif.sr_out_clip*/          ), // output
-    .sr_mix_channel_clip       ( /*mix_vif.sr_channel_clip*/      ), // output
-    .sr_mix_max_dac_amplitude  ( /*mix_vif.sr_max_dac_amplitude*/ ), // output
-    .sr_mix_min_dac_amplitude  ( /*mix_vif.sr_min_dac_amplitude*/ )  // output
+    .sr_mix_out_clip           ( mix_vif.sr_out_clip              ), // output
+    .sr_mix_channel_clip       ( mix_vif.sr_channel_clip          ), // output
+    .sr_mix_max_dac_amplitude  ( mix_vif.sr_max_dac_amplitude     ), // output
+    .sr_mix_min_dac_amplitude  ( mix_vif.sr_min_dac_amplitude     )  // output
   );
 
 

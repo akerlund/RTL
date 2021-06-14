@@ -96,10 +96,21 @@ module mixer_core #(
   logic signed                            [AUDIO_WIDTH_P : 0] right_channel_sum_r0;
 
 
+
+  logic                       mul_egr_valid;
+  logic [AUDIO_WIDTH_P-1 : 0] mul_egr_product;
+  logic                       mul_egr_overflow;
+
+  // Splitting the arbited data channel
+  logic [AUDIO_WIDTH_P-1 : 0] ing_multiplicand_c0;
+  logic [AUDIO_WIDTH_P-1 : 0] ing_multiplier_c0;
+  assign ing_multiplicand_c0 = m2s_slv_data[AUDIO_WIDTH_P-1 : 0];
+  assign ing_multiplier_c0   = m2s_slv_data[2*AUDIO_WIDTH_P-1 : AUDIO_WIDTH_P];
+
   // Constant signals to the arbiters
   generate
     for (i = 0; i < NR_OF_MASTERS_P; i++) begin
-      assign m2s_mst_id = i;
+      assign m2s_mst_id[i] = i;
     end
   endgenerate
 
@@ -299,16 +310,6 @@ module mixer_core #(
   );
 
 
-  logic                       mul_egr_valid;
-  logic [AUDIO_WIDTH_P-1 : 0] mul_egr_product;
-  logic                       mul_egr_overflow;
-
-  // Splitting the arbited data channel
-  logic [AUDIO_WIDTH_P-1 : 0] ing_multiplicand_c0;
-  logic [AUDIO_WIDTH_P-1 : 0] ing_multiplier_c0;
-  assign ing_multiplicand_c0 = m2s_slv_data[AUDIO_WIDTH_P-1 : 0];
-  assign ing_multiplier_c0   = m2s_slv_data[2*AUDIO_WIDTH_P-1 : AUDIO_WIDTH_P];
-
 
   nq_multiplier #(
     .N_BITS_P         ( AUDIO_WIDTH_P       ),
@@ -325,10 +326,6 @@ module mixer_core #(
     .egr_overflow     ( mul_egr_overflow    )  // output
   );
 
-  always_comb begin
-    out_valid       = addition_valid[NR_OF_CHANNELS_P];
-    sr_mix_out_clip = in_clip_left || in_clip_right || out_clip_left || out_clip_right;
-  end
 
 
   arbiter_s2m #(
