@@ -23,8 +23,8 @@
 `default_nettype none
 
 module nq_multiplier #(
-    parameter N_BITS_P = 32,
-    parameter Q_BITS_P = 15
+    parameter int N_BITS_P = 32,
+    parameter int Q_BITS_P = 15
   )(
     input  wire                   clk,
     input  wire                   rst_n,
@@ -42,7 +42,7 @@ module nq_multiplier #(
   logic       [2*N_BITS_P-2 : 0] multiplier_r0;
   logic         [N_BITS_P-1 : 0] multiplicand_r0;
   logic       [2*N_BITS_P-2 : 0] product_r0;
-  logic   [$clog2(N_BITS_P) : 0] counter;
+  logic [$clog2(N_BITS_P)-1 : 0] counter;
 
   logic                          sign_bit;
   logic                          is_multiplying;
@@ -83,8 +83,8 @@ module nq_multiplier #(
         product_r0 <= '0;
 
         // Remove sign bit
-        multiplicand_r0 <= ing_multiplicand[N_BITS_P-2 : 0];
-        multiplier_r0   <= ing_multiplier[N_BITS_P-2 : 0];
+        multiplicand_r0 <= {'0, ing_multiplicand[N_BITS_P-2 : 0]};
+        multiplier_r0   <= {'0, ing_multiplier[N_BITS_P-2 : 0]};
 
         if (!(|ing_multiplicand) || !(|ing_multiplier)) begin // Approximately 19 LUT logic
           egr_valid <= '1;
