@@ -1,4 +1,4 @@
-set design fifo
+set design fifo_register
 
 set_app_var fml_mode_on true
 read_file -top $design -format verilog -sva -vcs {-f files.lst}
