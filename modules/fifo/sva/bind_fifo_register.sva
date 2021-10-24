@@ -1,0 +1,140 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+// Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//
+// Description:
+//
+////////////////////////////////////////////////////////////////////////////////
+
+module bind_fifo_register #(
+    parameter int DATA_WIDTH_P = -1,
+    parameter int ADDR_WIDTH_P = -1
+  )(
+    input  wire                      clk,
+    input  wire                      rst_n,
+    input  wire                      ing_enable,
+    input  wire [DATA_WIDTH_P-1 : 0] ing_data,
+    input  wire                      ing_full,
+    input  wire                      egr_enable,
+    input  wire [DATA_WIDTH_P-1 : 0] egr_data,
+    input  wire                      egr_empty,
+    input  wire   [ADDR_WIDTH_P : 0] sr_fill_level,
+    input  wire                      write_enable,
+    input  wire [ADDR_WIDTH_P-1 : 0] write_address,
+    input  wire                      read_enable,
+    input  wire [ADDR_WIDTH_P-1 : 0] read_address
+  );
+
+  //`include "fifo_register_sva.sva"
+
+  localparam logic [ADDR_WIDTH_P : 0] FIFO_MAX_LEVEL_C = 2**ADDR_WIDTH_P;
+
+  // Asynchronous reset property:
+  property pr_reset_rptr0_wptr0_empty1_full0_cnt0;
+    @(posedge clk)
+      ($past(rst_n) == 0 && rst_n |->
+      ($past(read_address) == 0 && $past(write_address) == 0 && $past(egr_empty) == 1 && $past(ing_full) == 0 && $past(sr_fill_level) == 0));
+  endproperty
+
+  // FIFO full condition properties:
+  property pr_full_fifo_condition;
+    @(posedge clk) disable iff (!rst_n)
+      (sr_fill_level > FIFO_MAX_LEVEL_C-1 |-> ing_full);
+  endproperty
+
+  property pr_not_full_fifo_condition;
+    @(posedge clk) disable iff (!rst_n)
+      (sr_fill_level < FIFO_MAX_LEVEL_C |-> !ing_full);
+  endproperty
+
+  property pr_fifo_should_go_full;
+    @(posedge clk) disable iff (!rst_n)
+      (sr_fill_level == FIFO_MAX_LEVEL_C-1 && ing_enable && !egr_enable |=> ing_full);
+  endproperty
+
+  property pr_full_write_full;
+    @(posedge clk) disable iff (!rst_n)
+      (ing_full && ing_enable && !egr_enable |=> ing_full);
+  endproperty
+
+  property pr_full_write_wptr_no_change;
+    @(posedge clk) disable iff (!rst_n)
+      (ing_full && ing_enable && !egr_enable |=> $stable(write_address));
+  endproperty
+
+  // FIFO empty condition properties:
+  property pr_empty_fifo_condition;
+    @(posedge clk) disable iff (!rst_n)
+      (sr_fill_level == 0 |-> egr_empty);
+  endproperty
+
+  property pr_not_empty_fifo_condition;
+    @(posedge clk) disable iff (!rst_n)
+      (sr_fill_level > 0 |-> !egr_empty);
+  endproperty
+
+  property pr_fifo_should_go_empty;
+    @(posedge clk) disable iff (!rst_n)
+      (sr_fill_level == 1 && egr_enable && !ing_enable |=> egr_empty);
+  endproperty
+
+  property pr_empty_read_empty;
+    @(posedge clk) disable iff (!rst_n)
+      (egr_empty && egr_enable && !ing_enable |=> egr_empty);
+  endproperty
+
+  property pr_empty_read_rptr_no_change;
+    @(posedge clk) disable iff (!rst_n)
+      (egr_empty && egr_enable && !ing_enable |=> $stable(read_address));
+  endproperty
+
+  // Asynchronous reset assertion:
+  ERROR_FIFO_RESET_SHOULD_CAUSE_EMPTY1_FULL0_RPTR0_WPTR0_CNT0:
+    assert property (pr_reset_rptr0_wptr0_empty1_full0_cnt0);
+
+  // FIFO full condition assertions:
+  ERROR_FIFO_SHOULD_BE_FULL:
+    assert property (pr_full_fifo_condition);
+
+  ERROR_FIFO_SHOULD_NOT_BE_FULL:
+    assert property (pr_not_full_fifo_condition);
+
+  ERROR_FIFO_DID_NOT_GO_FULL:
+    assert property (pr_fifo_should_go_full);
+
+  ERROR_FIFO_FULL__WRITE_CAUSED_FULL_FLAG_TO_CHANGE:
+    assert property (pr_full_write_full);
+
+  ERROR_FIFO_FULL__WRITE_CAUSED_WPTR_TO_CHANGE:
+    assert property (pr_full_write_wptr_no_change);
+
+  // FIFO empty condition assertions:
+  ERROR_FIFO_SHOULD_BE_EMPTY:
+    assert property (pr_empty_fifo_condition);
+
+  ERROR_FIFO_SHOULD_NOT_BE_EMPTY:
+    assert property (pr_not_empty_fifo_condition);
+
+  ERROR_FIFO_DID_NOT_GO_EMPTY:
+    assert property (pr_fifo_should_go_empty);
+
+  ERROR_FIFO_EMPTY__READ_CAUSED_EMPTY_FLAG_TO_CHANGE:
+    assert property (pr_empty_read_empty);
+
+  ERROR_FIFO_EMPTY__READ_CAUSED_RPTR_TO_CHANGE:
+    assert property (pr_empty_read_rptr_no_change);
+endmodule

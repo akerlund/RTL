@@ -26,8 +26,8 @@ source $git_sub_root/submodules/VIP/report_server/files.lst
 git_root="$(git rev-parse --show-toplevel)"
 source $git_root/modules/memory/reg/rtl/files.lst
 source $git_root/modules/memory/ram/rtl/files.lst
-source $git_root/modules/memory/ram/rtl/files.lst
 source $git_root/modules/fifo/rtl/files.lst
+source $git_root/modules/fifo/sva/files.lst
 source ./rtl/files.lst
 source ./tb/files.lst
 

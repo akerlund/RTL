@@ -12,7 +12,8 @@ uvm_top="fifo"
 
 source $git_root/modules/memory/reg/rtl/files.lst
 source $git_root/modules/memory/ram/rtl/files.lst
-source ./rtl/files.lst
+source $git_root/modules/fifo/rtl/files.lst
+source $git_root/modules/fifo/sva/files.lst
 
 # ------------------------------------------------------------------------------
 # Parameter override
