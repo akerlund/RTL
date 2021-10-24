@@ -23,8 +23,8 @@
 `default_nettype none
 
 module fifo_register #(
-    parameter int DATA_WIDTH_P = -1,
-    parameter int ADDR_WIDTH_P = -1
+    parameter int DATA_WIDTH_P = 64,
+    parameter int ADDR_WIDTH_P = 5
   )(
     input  wire                       clk,
     input  wire                       rst_n,
@@ -45,7 +45,7 @@ module fifo_register #(
   logic                      read_enable;
   logic [ADDR_WIDTH_P-1 : 0] read_address;
 
-  assign write_enable = ing_enable;// && !ing_full;
+  assign write_enable = ing_enable && !ing_full;
   assign read_enable  = egr_enable && !egr_empty;
 
   assign ing_full = sr_fill_level[ADDR_WIDTH_P];
@@ -88,17 +88,16 @@ module fifo_register #(
   end
 
   reg_sp_rf #(
-    .DATA_WIDTH_P    ( DATA_WIDTH_P    ),
-    .ADDR_WIDTH_P    ( ADDR_WIDTH_P    )
+    .DATA_WIDTH_P    ( DATA_WIDTH_P  ),
+    .ADDR_WIDTH_P    ( ADDR_WIDTH_P  )
   ) reg_sp_rf_i0 (
-    .clk             ( clk             ), // input
-    .port_a_write_en ( write_enable    ), // input
-    .port_a_address  ( write_address   ), // input
-    .port_a_data_in  ( ing_data        ), // input
-    .port_b_address  ( read_address    ), // input
-    .port_b_data_out ( egr_data        )  // output
+    .clk             ( clk           ), // input
+    .port_a_write_en ( write_enable  ), // input
+    .port_a_address  ( write_address ), // input
+    .port_a_data_in  ( ing_data      ), // input
+    .port_b_address  ( read_address  ), // input
+    .port_b_data_out ( egr_data      )  // output
   );
-
 
 endmodule
 
