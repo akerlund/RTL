@@ -1,0 +1,296 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+// Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//
+// Description:
+//
+////////////////////////////////////////////////////////////////////////////////
+
+module bind_afifo #(
+    parameter int DATA_WIDTH_P = -1,
+    parameter int ADDR_WIDTH_P = -1
+  )(
+    input wire                      wclk,
+    input wire                      rst_w_n,
+    input wire                      wclk_wr_en,
+    input wire [DATA_WIDTH_P-1 : 0] wclk_data,
+    input wire                      wclk_full,
+    input wire                      rclk,
+    input wire                      rst_r_n,
+    input wire                      rclk_rd_en,
+    input wire [DATA_WIDTH_P-1 : 0] rclk_data,
+    input wire                      rclk_empty,
+    input wire   [ADDR_WIDTH_P : 0] sr_wclk_fill_level,
+    input wire   [ADDR_WIDTH_P : 0] sr_rclk_fill_level,
+    input wire   [ADDR_WIDTH_P : 0] wclk_wr_bin,
+    input wire   [ADDR_WIDTH_P : 0] wclk_rd_bin,
+    input wire   [ADDR_WIDTH_P : 0] wclk_wr_gray,
+    input wire   [ADDR_WIDTH_P : 0] wclk_wr_gray_next,
+    input wire [ADDR_WIDTH_P-1 : 0] wclk_wr_addr,
+    input wire   [ADDR_WIDTH_P : 0] rclk_rd_gray,
+    input wire   [ADDR_WIDTH_P : 0] rclk_rd_bin,
+    input wire   [ADDR_WIDTH_P : 0] rclk_rd_gray_next,
+    input wire [ADDR_WIDTH_P-1 : 0] rclk_rd_addr
+  );
+
+  localparam logic [ADDR_WIDTH_P : 0] FIFO_MAX_LEVEL_C = 2**ADDR_WIDTH_P;
+
+  logic  [ADDR_WIDTH_P : 0] sva_fill_level;
+  assign sva_fill_level = wclk_wr_bin - wclk_rd_bin;
+
+  `ifdef FPV
+
+  initial assume (rst_w_n != rst_r_n);
+
+  // Synchronous write reset
+  always @(posedge wclk) begin
+    if (!$rose(wclk)) begin
+      assume (!$rose(rst_w_n));
+    end
+  end
+
+  // Synchronous read reset
+  always @(posedge rclk) begin
+    if (!$rose(rclk)) begin
+      assume (!$rose(rst_r_n));
+    end
+  end
+
+  // Write inputs only change when the clock does
+  if (!$rose(wclk)) begin
+    assume $stable(wclk_wr_en);
+    assume $stable(wclk_data);
+  end
+
+  // Read input only change when the clock does
+  if (!$rose(rclk)) begin
+    assume $stable(rclk_rd_en);
+  end
+
+  `endif
+
+  // Asynchronous reset property:
+  //property pr_reset_rptr0_wptr0_empty1_full0_cnt0;
+  //  @(posedge clk)
+  //    ($past(rst_n) == 0 && rst_n |->
+  //    ($past(rclk_rd_addr) == 0 && $past(wclk_wr_addr) == 0 && $past(rclk_empty) == 1 && $past(wclk_full) == 0 && $past(sr_fill_level) == 0));
+  //endproperty
+
+  // AFIFO gray encodings
+  property pr_async_gray_wr;
+    @(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+     (wclk_wr_gray == ((wclk_wr_bin >> 1) ^ wclk_wr_bin));
+  endproperty
+
+  property pr_async_gray_rd;
+    @(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+    (rclk_rd_gray == ((rclk_rd_bin >> 1) ^ rclk_rd_bin));
+  endproperty
+
+  property pr_async_gray_wr;
+    @(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+    (rclk_rd_gray == {~wclk_wr_gray[ADDR_WIDTH_P : ADDR_WIDTH_P-1], wclk_wr_gray[ADDR_WIDTH_P-2 : 0]}) ==
+    (sva_fill_level == {1'b1, {(ADDR_WIDTH_P){1'b0}}});
+  endproperty
+
+  property pr_async_gray_counters_are_zero;
+    @(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+    (wclk_wr_gray == rclk_rd_gray) == (sva_fill_level == 0)
+  endproperty
+
+  property pr_async_gray_wr_counters_onehot;
+    @(posedge wclk) disable iff (!rst_w_n)
+    (wclk_wr_gray == wclk_wr_gray_next) || $onehot(wclk_wr_gray ^ wclk_wr_gray_next)
+  endproperty
+
+  property pr_async_gray_rd_counters_onehot;
+    @(posedge rclk) disable iff (!rst_r_n)
+    (rclk_rd_gray == rclk_rd_gray_next) || $onehot(rclk_rd_gray ^ rclk_rd_gray_next)
+  endproperty
+
+  // AFIFO full condition properties:
+  property pr_full_fifo_condition;
+    @(posedge wclk) disable iff (!rst_w_n)
+    (sr_wclk_fill_level > FIFO_MAX_LEVEL_C-1 |-> wclk_full);
+  endproperty
+
+  property pr_not_full_fifo_condition;
+    @(posedge wclk) disable iff (!rst_w_n)
+    (sr_wclk_fill_level < FIFO_MAX_LEVEL_C |-> !wclk_full);
+  endproperty
+
+  property pr_fifo_should_go_full;
+    @(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+    (sr_wclk_fill_level == FIFO_MAX_LEVEL_C-1 && wclk_wr_en && !rclk_rd_en |=> wclk_full);
+  endproperty
+
+  property pr_full_write_full;
+    @(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+    (wclk_full && wclk_wr_en && !rclk_rd_en |=> wclk_full);
+  endproperty
+
+  property pr_full_write_wptr_no_change;
+    @(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+    (wclk_full && wclk_wr_en && !rclk_rd_en |=> $stable(wclk_wr_addr));
+  endproperty
+
+  // ASYNC
+  property pr_async_fifo_full;
+    @(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+    (sva_fill_level == FIFO_MAX_LEVEL_C |=> wclk_full);
+  endproperty
+
+  property pr_async_about_to_be_fifo_full;
+    @(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+    (sva_fill_level == FIFO_MAX_LEVEL_C-1 |-> (wclk_full_next || wclk_full || !wclk_wr_en));
+  endproperty
+
+  // AFIFO empty condition properties:
+  property pr_empty_fifo_condition;
+    @(posedge rclk) disable iff (!rst_r_n)
+    (sr_rclk_fill_level == 0 |-> rclk_empty);
+  endproperty
+
+  property pr_not_empty_fifo_condition;
+    @(posedge rclk) disable iff (!rst_r_n)
+    (sr_rclk_fill_level > 0 |-> !rclk_empty);
+  endproperty
+
+  property pr_fifo_should_go_empty;
+    @(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+    (sr_rclk_fill_level == 1 && rclk_rd_en && !wclk_wr_en |=> rclk_empty);
+  endproperty
+
+  property pr_empty_read_empty;
+    @(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+    (rclk_empty && rclk_rd_en && !wclk_wr_en |=> rclk_empty);
+  endproperty
+
+  property pr_empty_read_rptr_no_change;
+    @(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+    (rclk_empty && rclk_rd_en && !wclk_wr_en |=> $stable(rclk_rd_addr));
+  endproperty
+
+  // ASYNC
+  property pr_async_fifo_empty;
+    @(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+    (sva_fill_level == 0 |=> rclk_empty);
+  endproperty
+
+  property pr_async_about_to_be_fifo_empty;
+    @(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+    (sva_fill_level == 1 |-> (rclk_empty_next || rclk_empty || !rclk_rd_en));
+  endproperty
+
+  // ---------------------------------------------------------------------------
+  // Coverage properties
+  // ---------------------------------------------------------------------------
+
+  property pr_cov_rd_can_be_not_empty;
+    @(posedge rclk) disable iff (!rst_r_n)
+    (rclk_empty |-> !$past(rclk_empty));
+  endproperty
+
+  property pr_cov_wr_can_full;
+    @(posedge rclk) disable iff (!rst_r_n)
+    (wclk_full);
+  endproperty
+
+  property pr_cov_wr_can_full_and_then_not;
+    @(posedge rclk) disable iff (!rst_r_n)
+    ($past(wclk_full) && !wclk_full);
+  endproperty
+
+  property pr_cov_wr_full_wr_en_no_change;
+    @(posedge rclk) disable iff (!rst_r_n)
+    ($past(wclk_full) && $past(wclk_wr_en) && wclk_full);
+  endproperty
+
+
+  ERROR_PR_ASYNC_GRAY_WR:
+  assert property (pr_async_gray_wr);
+
+  ERROR_PR_ASYNC_GRAY_RD:
+  assert property (pr_async_gray_rd);
+
+  ERROR_PR_ASYNC_GRAY_WR:
+  assert property (pr_async_gray_wr);
+
+  ERROR_PR_ASYNC_GRAY_COUNTERS_ARE_ZERO:
+  assert property (pr_async_gray_counters_are_zero);
+
+  ERROR_PR_ASYNC_GRAY_WR_COUNTERS_ONEHOT:
+  assert property (pr_async_gray_wr_counters_onehot);
+
+  ERROR_PR_ASYNC_GRAY_RD_COUNTERS_ONEHOT:
+  assert property (pr_async_gray_rd_counters_onehot);
+
+  ERROR_PR_FULL_FIFO_CONDITION:
+  assert property (pr_full_fifo_condition);
+
+  ERROR_PR_NOT_FULL_FIFO_CONDITION:
+  assert property (pr_not_full_fifo_condition);
+
+  ERROR_PR_FIFO_SHOULD_GO_FULL:
+  assert property (pr_fifo_should_go_full);
+
+  ERROR_PR_FULL_WRITE_FULL:
+  assert property (pr_full_write_full);
+
+  ERROR_PR_FULL_WRITE_WPTR_NO_CHANGE:
+  assert property (pr_full_write_wptr_no_change);
+
+  ERROR_PR_ASYNC_FIFO_FULL:
+  assert property (pr_async_fifo_full);
+
+  ERROR_PR_ASYNC_ABOUT_TO_BE_FIFO_FULL:
+  assert property (pr_async_about_to_be_fifo_full);
+
+  ERROR_PR_EMPTY_FIFO_CONDITION:
+  assert property (pr_empty_fifo_condition);
+
+  ERROR_PR_NOT_EMPTY_FIFO_CONDITION:
+  assert property (pr_not_empty_fifo_condition);
+
+  ERROR_PR_FIFO_SHOULD_GO_EMPTY:
+  assert property (pr_fifo_should_go_empty);
+
+  ERROR_PR_EMPTY_READ_EMPTY:
+  assert property (pr_empty_read_empty);
+
+  ERROR_PR_EMPTY_READ_RPTR_NO_CHANGE:
+  assert property (pr_empty_read_rptr_no_change);
+
+  ERROR_PR_ASYNC_FIFO_EMPTY:
+  assert property (pr_async_fifo_empty);
+
+  ERROR_PR_ASYNC_ABOUT_TO_BE_FIFO_EMPTY:
+  assert property (pr_async_about_to_be_fifo_empty);
+
+  COVER_PR_COV_RD_CAN_BE_NOT_EMPTY:
+  cover property (pr_cov_rd_can_be_not_empty);
+
+  COVER_PR_COV_WR_CAN_FULL:
+  cover property (pr_cov_wr_can_full);
+
+  COVER_PR_COV_WR_CAN_FULL_AND_THEN_NOT:
+  cover property (pr_cov_wr_can_full_and_then_not);
+
+  COVER_PR_COV_WR_FULL_WR_EN_NO_CHANGE:
+  cover property (pr_cov_wr_full_wr_en_no_change);
+
+endmodule

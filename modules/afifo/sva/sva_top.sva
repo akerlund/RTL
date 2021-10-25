@@ -1,0 +1,49 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+// Copyright (C) 2020 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//
+// Description:
+//
+////////////////////////////////////////////////////////////////////////////////
+
+bind afifo
+  bind_afifo #(
+    .DATA_WIDTH_P       ( DATA_WIDTH_P       ),
+    .ADDR_WIDTH_P       ( ADDR_WIDTH_P       )
+  ) bind_afifo_b0 (
+    .wclk               ( wclk               ),
+    .rst_w_n            ( rst_w_n            ),
+    .wclk_wr_en         ( wclk_wr_en         ),
+    .wclk_data          ( wclk_data          ),
+    .wclk_full          ( wclk_full          ),
+    .rclk               ( rclk               ),
+    .rst_r_n            ( rst_r_n            ),
+    .rclk_rd_en         ( rclk_rd_en         ),
+    .rclk_data          ( rclk_data          ),
+    .rclk_empty         ( rclk_empty         ),
+    .sr_wclk_fill_level ( sr_wclk_fill_level ),
+    .sr_rclk_fill_level ( sr_rclk_fill_level ),
+    .wclk_wr_bin        ( wclk_wr_bin        ),
+    .wclk_rd_bin        ( wclk_rd_bin        ),
+    .wclk_wr_gray       ( wclk_wr_gray       ),
+    .wclk_wr_gray_next  ( wclk_wr_gray_next  ),
+    .wclk_wr_addr       ( wclk_wr_addr       ),
+    .rclk_rd_gray       ( rclk_rd_gray       ),
+    .rclk_rd_bin        ( rclk_rd_bin        ),
+    .rclk_rd_gray_next  ( rclk_rd_gray_next  ),
+    .rclk_rd_addr       ( rclk_rd_addr       )
+  );

@@ -1,0 +1,10 @@
+module_path=$git_root/modules/afifo
+
+sva_dirs+="\
+  +incdir+$module_path/sva \
+"
+
+sva_files+="\
+  $module_path/sva/bind_afifo.sva
+  $module_path/sva/sva_top.sva
+"
