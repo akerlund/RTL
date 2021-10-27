@@ -28,8 +28,9 @@ source $git_root/modules/synchronizers/cdc_bit_sync/rtl/files.lst
 source $git_root/modules/memory/reg/rtl/files.lst
 source $git_root/modules/memory/ram/rtl/files.lst
 source $git_root/modules/fifo/rtl/files.lst
-source ./rtl/files.lst
-source ./tb/files.lst
+source $git_root/modules/afifo/rtl/files.lst
+source $git_root/modules/afifo/tb/files.lst
+source $git_root/modules/afifo/sva/files.lst
 
 # ------------------------------------------------------------------------------
 # Parameter override

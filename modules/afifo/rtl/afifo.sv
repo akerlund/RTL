@@ -23,8 +23,8 @@
 `default_nettype none
 
 module afifo #(
-    parameter int DATA_WIDTH_P = -1,
-    parameter int ADDR_WIDTH_P = -1
+    parameter int DATA_WIDTH_P = 64,
+    parameter int ADDR_WIDTH_P = 5
   )(
     input  wire                       clk_wp,
     input  wire                       rst_wp_n,

@@ -20,7 +20,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-bind afifo
+bind afifo_core
   bind_afifo #(
     .DATA_WIDTH_P       ( DATA_WIDTH_P       ),
     .ADDR_WIDTH_P       ( ADDR_WIDTH_P       )
@@ -42,8 +42,10 @@ bind afifo
     .wclk_wr_gray       ( wclk_wr_gray       ),
     .wclk_wr_gray_next  ( wclk_wr_gray_next  ),
     .wclk_wr_addr       ( wclk_wr_addr       ),
+    .wclk_full_next     ( wclk_full_next     ),
     .rclk_rd_gray       ( rclk_rd_gray       ),
     .rclk_rd_bin        ( rclk_rd_bin        ),
     .rclk_rd_gray_next  ( rclk_rd_gray_next  ),
-    .rclk_rd_addr       ( rclk_rd_addr       )
+    .rclk_rd_addr       ( rclk_rd_addr       ),
+    .rclk_empty_next    ( rclk_empty_next    )
   );

@@ -41,10 +41,12 @@ module bind_afifo #(
     input wire   [ADDR_WIDTH_P : 0] wclk_wr_gray,
     input wire   [ADDR_WIDTH_P : 0] wclk_wr_gray_next,
     input wire [ADDR_WIDTH_P-1 : 0] wclk_wr_addr,
+    input wire                      wclk_full_next,
     input wire   [ADDR_WIDTH_P : 0] rclk_rd_gray,
     input wire   [ADDR_WIDTH_P : 0] rclk_rd_bin,
     input wire   [ADDR_WIDTH_P : 0] rclk_rd_gray_next,
-    input wire [ADDR_WIDTH_P-1 : 0] rclk_rd_addr
+    input wire [ADDR_WIDTH_P-1 : 0] rclk_rd_addr,
+    input wire                      rclk_empty_next
   );
 
   localparam logic [ADDR_WIDTH_P : 0] FIFO_MAX_LEVEL_C = 2**ADDR_WIDTH_P;
@@ -92,34 +94,38 @@ module bind_afifo #(
 
   // AFIFO gray encodings
   property pr_async_gray_wr;
-    @(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+    //@(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+    @(posedge wclk or posedge rclk) disable iff (!rst_w_n || !rst_r_n)
      (wclk_wr_gray == ((wclk_wr_bin >> 1) ^ wclk_wr_bin));
   endproperty
 
   property pr_async_gray_rd;
-    @(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+    //@(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+    @(posedge wclk or posedge rclk) disable iff (!rst_w_n || !rst_r_n)
     (rclk_rd_gray == ((rclk_rd_bin >> 1) ^ rclk_rd_bin));
   endproperty
 
-  property pr_async_gray_wr;
-    @(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+  property pr_async_gray_wr2;
+    //@(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+    @(posedge wclk or posedge rclk) disable iff (!rst_w_n || !rst_r_n)
     (rclk_rd_gray == {~wclk_wr_gray[ADDR_WIDTH_P : ADDR_WIDTH_P-1], wclk_wr_gray[ADDR_WIDTH_P-2 : 0]}) ==
     (sva_fill_level == {1'b1, {(ADDR_WIDTH_P){1'b0}}});
   endproperty
 
   property pr_async_gray_counters_are_zero;
-    @(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
-    (wclk_wr_gray == rclk_rd_gray) == (sva_fill_level == 0)
+    //@(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+    @(posedge wclk or posedge rclk) disable iff (!rst_w_n || !rst_r_n)
+    (wclk_wr_gray == rclk_rd_gray) == (sva_fill_level == 0);
   endproperty
 
   property pr_async_gray_wr_counters_onehot;
     @(posedge wclk) disable iff (!rst_w_n)
-    (wclk_wr_gray == wclk_wr_gray_next) || $onehot(wclk_wr_gray ^ wclk_wr_gray_next)
+    (wclk_wr_gray == wclk_wr_gray_next) || $onehot(wclk_wr_gray ^ wclk_wr_gray_next);
   endproperty
 
   property pr_async_gray_rd_counters_onehot;
     @(posedge rclk) disable iff (!rst_r_n)
-    (rclk_rd_gray == rclk_rd_gray_next) || $onehot(rclk_rd_gray ^ rclk_rd_gray_next)
+    (rclk_rd_gray == rclk_rd_gray_next) || $onehot(rclk_rd_gray ^ rclk_rd_gray_next);
   endproperty
 
   // AFIFO full condition properties:
@@ -134,28 +140,33 @@ module bind_afifo #(
   endproperty
 
   property pr_fifo_should_go_full;
-    @(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+    //@(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+    @(posedge wclk or posedge rclk) disable iff (!rst_w_n || !rst_r_n)
     (sr_wclk_fill_level == FIFO_MAX_LEVEL_C-1 && wclk_wr_en && !rclk_rd_en |=> wclk_full);
   endproperty
 
   property pr_full_write_full;
-    @(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+    //@(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+    @(posedge wclk or posedge rclk) disable iff (!rst_w_n || !rst_r_n)
     (wclk_full && wclk_wr_en && !rclk_rd_en |=> wclk_full);
   endproperty
 
   property pr_full_write_wptr_no_change;
-    @(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+    //@(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+    @(posedge wclk or posedge rclk) disable iff (!rst_w_n || !rst_r_n)
     (wclk_full && wclk_wr_en && !rclk_rd_en |=> $stable(wclk_wr_addr));
   endproperty
 
   // ASYNC
   property pr_async_fifo_full;
-    @(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+    //@(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+    @(posedge wclk or posedge rclk) disable iff (!rst_w_n || !rst_r_n)
     (sva_fill_level == FIFO_MAX_LEVEL_C |=> wclk_full);
   endproperty
 
   property pr_async_about_to_be_fifo_full;
-    @(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+    //@(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+    @(posedge wclk or posedge rclk) disable iff (!rst_w_n || !rst_r_n)
     (sva_fill_level == FIFO_MAX_LEVEL_C-1 |-> (wclk_full_next || wclk_full || !wclk_wr_en));
   endproperty
 
@@ -171,28 +182,33 @@ module bind_afifo #(
   endproperty
 
   property pr_fifo_should_go_empty;
-    @(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+    //@(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+    @(posedge wclk or posedge rclk) disable iff (!rst_w_n || !rst_r_n)
     (sr_rclk_fill_level == 1 && rclk_rd_en && !wclk_wr_en |=> rclk_empty);
   endproperty
 
   property pr_empty_read_empty;
-    @(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+    //@(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+    @(posedge wclk or posedge rclk) disable iff (!rst_w_n || !rst_r_n)
     (rclk_empty && rclk_rd_en && !wclk_wr_en |=> rclk_empty);
   endproperty
 
   property pr_empty_read_rptr_no_change;
-    @(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+    //@(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+    @(posedge wclk or posedge rclk) disable iff (!rst_w_n || !rst_r_n)
     (rclk_empty && rclk_rd_en && !wclk_wr_en |=> $stable(rclk_rd_addr));
   endproperty
 
   // ASYNC
   property pr_async_fifo_empty;
-    @(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+    //@(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+    @(posedge wclk or posedge rclk) disable iff (!rst_w_n || !rst_r_n)
     (sva_fill_level == 0 |=> rclk_empty);
   endproperty
 
   property pr_async_about_to_be_fifo_empty;
-    @(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+    //@(posedge $global_clock) disable iff (!rst_w_n || !rst_r_n)
+    @(posedge wclk or posedge rclk) disable iff (!rst_w_n || !rst_r_n)
     (sva_fill_level == 1 |-> (rclk_empty_next || rclk_empty || !rclk_rd_en));
   endproperty
 
@@ -227,8 +243,8 @@ module bind_afifo #(
   ERROR_PR_ASYNC_GRAY_RD:
   assert property (pr_async_gray_rd);
 
-  ERROR_PR_ASYNC_GRAY_WR:
-  assert property (pr_async_gray_wr);
+  ERROR_PR_ASYNC_GRAY_WR2:
+  assert property (pr_async_gray_wr2);
 
   ERROR_PR_ASYNC_GRAY_COUNTERS_ARE_ZERO:
   assert property (pr_async_gray_counters_are_zero);
