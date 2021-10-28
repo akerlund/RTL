@@ -4,7 +4,7 @@ git_root="$(git rev-parse --show-toplevel)"
 
 # Specify the top files
 rtl_top=bch_encode
-uvm_top=axi4s_fifo_top
+uvm_top=bch_tb_top
 
 # ------------------------------------------------------------------------------
 # Source submodules

@@ -38,7 +38,10 @@ class tc_bch_basic extends bch_base_test;
 
     super.run_phase(phase);
     phase.raise_objection(this);
+    clk_delay(512);
+    phase.drop_objection(this);
 
+    /*
     vip_axi4s_seq0.set_data_type(VIP_AXI4S_TDATA_COUNTER_E);
     vip_axi4s_seq0.set_cfg_burst_length(128, 1);
     vip_axi4s_seq0.set_nr_of_bursts(2**16);
@@ -46,8 +49,7 @@ class tc_bch_basic extends bch_base_test;
     vip_axi4s_seq0.set_log_denominator(64);
     vip_axi4s_seq0.start(v_sqr.mst_sequencer);
 
-    phase.drop_objection(this);
-
+*/
   endtask
 
 endclass
