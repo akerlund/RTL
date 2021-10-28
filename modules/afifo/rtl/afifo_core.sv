@@ -101,9 +101,10 @@ module afifo_core #(
     end else begin
       if (wclk_wr_bin >= wclk_rd_bin) begin
         sr_wclk_fill_level <= wclk_wr_bin - wclk_rd_bin;
-      end else begin
-        sr_wclk_fill_level <= 2**ADDR_WIDTH_P - wclk_rd_bin - wclk_wr_bin;
       end
+      //else begin
+      //  sr_wclk_fill_level <= 2**ADDR_WIDTH_P - wclk_rd_bin - wclk_wr_bin;
+      //end
     end
   end
 
@@ -141,9 +142,10 @@ module afifo_core #(
     end else begin
       if (rclk_wr_bin >= rclk_rd_bin) begin
         sr_rclk_fill_level <= rclk_wr_bin - rclk_rd_bin;
-      end else begin
-        sr_rclk_fill_level <= 2**ADDR_WIDTH_P - rclk_rd_bin - rclk_wr_bin;
       end
+      // else begin
+      //  sr_rclk_fill_level <= 2**ADDR_WIDTH_P - rclk_rd_bin - rclk_wr_bin;
+      //end
     end
   end
 
