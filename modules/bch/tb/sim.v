@@ -9,10 +9,10 @@
 `include "bch_defs.vh"
 
 module sim #(
-    parameter [`BCH_PARAM_SZ-1:0] P = `BCH_SANE,
-    parameter OPTION                = "SERIAL",
-    parameter BITS                  = 1,
-    parameter REG_RATIO             = 1
+    parameter [`BCH_PARAM_SZ-1:0] P         = `BCH_SANE,
+    parameter                     OPTION    = "SERIAL",
+    parameter                     BITS      = 32,
+    parameter                     REG_RATIO = 1
   )(
     input                         clk,
     input                         reset,
@@ -21,17 +21,17 @@ module sim #(
     input                         encode_start,
     output                        ready,
     output reg                    wrong = 0
-);
+  );
 
   `include "bch.vh"
 
   localparam TCQ = 1;
-  localparam N = `BCH_N(P);
-  localparam E = `BCH_ECC_BITS(P);
-  localparam M = `BCH_M(P);
-  localparam T = `BCH_T(P);
-  localparam K = `BCH_K(P);
-  localparam B = `BCH_DATA_BITS(P);
+  localparam N   = `BCH_N(P);
+  localparam E   = `BCH_ECC_BITS(P);
+  localparam M   = `BCH_M(P);
+  localparam T   = `BCH_T(P);
+  localparam K   = `BCH_K(P);
+  localparam B   = `BCH_DATA_BITS(P);
 
   if (`BCH_DATA_BITS(P) % BITS)
     sim_only_supports_factors_of_BCH_DATA_BITS_for_BITS u_sosfobdbfb();

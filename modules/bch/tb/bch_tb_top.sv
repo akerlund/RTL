@@ -41,14 +41,17 @@ module bch_tb_top;
 
   `include "bch_params.vh"
 
-  parameter T         = 3;
+  parameter T         = 1;
+  parameter DATA_BITS = 31;
+
   parameter OPTION    = "SERIAL";
-  parameter DATA_BITS = 5;
-  parameter BITS      = 1;
   parameter REG_RATIO = 1;
   parameter SEED      = 1;
 
-  localparam BCH_PARAMS = bch_params(DATA_BITS, T);
+  // Syndrome, data_bits, t, k, n, p
+  localparam logic [`BCH_PARAM_SZ-1:0] BCH_PARAMS = bch_params(DATA_BITS, T);
+
+
   localparam TCQ        = 1;
 
   logic [DATA_BITS-1:0] din = 0;
@@ -102,7 +105,7 @@ module bch_tb_top;
   sim #(
     .P            ( BCH_PARAMS      ),
     .OPTION       ( OPTION          ),
-    .BITS         ( BITS            ),
+    .BITS         ( DATA_BITS       ),
     .REG_RATIO    ( REG_RATIO       )
   ) u_sim(
     .clk          ( clk_rst_vif.clk ),
@@ -136,9 +139,15 @@ module bch_tb_top;
 
 
   initial begin
-    $display("GF(2^%1d) (%1d, %1d/%1d, %1d) %s",
-      `BCH_M(BCH_PARAMS), `BCH_N(BCH_PARAMS), `BCH_K(BCH_PARAMS),
-      DATA_BITS, `BCH_T(BCH_PARAMS), OPTION);
+    $display("GF(2^M=2^%1d)\nN=%1d\nK=%1d\nT=%1d\nD=%1d\nECC=%1d\nS=%1d\nOPTION=%s",
+    `BCH_M(BCH_PARAMS),
+    `BCH_N(BCH_PARAMS),
+    `BCH_K(BCH_PARAMS),
+    `BCH_T(BCH_PARAMS),
+    `BCH_DATA_BITS(BCH_PARAMS),
+    `BCH_ECC_BITS(BCH_PARAMS),
+    `BCH_SYNDROMES_SZ(BCH_PARAMS),
+    OPTION);
   end
 
 

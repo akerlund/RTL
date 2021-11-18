@@ -104,10 +104,11 @@ class bch_base_test extends uvm_test;
     super.end_of_elaboration_phase(phase);
 
     v_sqr = tb_env.virtual_sequencer;
-
+    /*
     `uvm_info(get_type_name(), $sformatf("Topology of the test:\n%s", this.sprint(uvm_table_printer0)), UVM_LOW)
     `uvm_info(get_name(), {"VIP AXI4S Agent (Master):\n", axi4s_mst_cfg0.sprint()}, UVM_LOW)
     `uvm_info(get_name(), {"VIP AXI4S Agent (Slave):\n",  axi4s_slv_cfg0.sprint()}, UVM_LOW)
+    */
 
   endfunction
 

@@ -39,6 +39,7 @@ class tc_bch_basic extends bch_base_test;
     super.run_phase(phase);
     phase.raise_objection(this);
     clk_delay(512);
+    bch_calculations();
     phase.drop_objection(this);
 
     /*
@@ -51,5 +52,16 @@ class tc_bch_basic extends bch_base_test;
 
 */
   endtask
+
+
+  function bch_calculations();
+    `uvm_info(get_name(), $sformatf("m = %0d", bch_cfg.M),          UVM_LOW)
+    `uvm_info(get_name(), $sformatf("n = %0d", bch_cfg.N),          UVM_LOW)
+    `uvm_info(get_name(), $sformatf("k = %0d", bch_cfg.K),          UVM_LOW)
+    `uvm_info(get_name(), $sformatf("t = %0d", bch_cfg.T),          UVM_LOW)
+    `uvm_info(get_name(), $sformatf("e = %0d", bch_cfg.ECC_BITS),   UVM_LOW)
+    `uvm_info(get_name(), $sformatf("d = %0d", bch_cfg.DATA_WIDTH), UVM_LOW)
+    `uvm_info(get_name(), $sformatf("s = %0d", bch_cfg.S),          UVM_LOW)
+  endfunction
 
 endclass

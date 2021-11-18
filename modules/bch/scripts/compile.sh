@@ -26,6 +26,7 @@ source $git_sub_root/submodules/VIP/report_server/files.lst
 git_root="$(git rev-parse --show-toplevel)"
 
 source ./rtl/files.lst
+source ./rtl_2/files.lst
 source ./tb/files.lst
 
 # ------------------------------------------------------------------------------

@@ -38,6 +38,10 @@ package bch_tc_pkg;
   import clk_rst_types_pkg::*;
   import clk_rst_pkg::*;
 
+  import bch_types_pkg::*;
+  import bch_functions_pkg::*;
+  import bch_cfg_pkg::*;
+
   // Include testcase files here
   `include "bch_base_test.sv"
   `include "tc_bch_basic.sv"
