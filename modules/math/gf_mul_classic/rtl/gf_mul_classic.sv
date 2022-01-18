@@ -29,7 +29,7 @@ module gf_mul_classic #(
     input  wire              rst_n,
     input  wire  [M_P-1 : 0] x0,
     input  wire  [M_P-1 : 0] x1,
-    output logic [M_P-2 : 0] y
+    output logic [M_P-1 : 0] y
  );
 
  localparam logic [M_P - 1 : 0] POLY_C = 'b00011011;
@@ -131,13 +131,13 @@ module gf_mul_classic #(
   localparam mat_red_t MAT_RED_C = get_matrix_reduction();
 
   logic           xor_c1;
-  logic [M-2 : 0] y_c1;
+  logic [M-1 : 0] y_c1;
 
   // AND/XOR
   always_comb begin
     xor_c1 = '0;
     y_c1   = '0;
-    for (int i = 0; i < (M - 1); i++) begin
+    for (int i = 0; i < M; i++) begin
       xor_c1 = y_c0[i];
       for (int j = 0; j < (M - 1); j++) begin
         xor_c1 = xor_c1 ^ (y_c0[M + j] & MAT_RED_C[i][j]);
