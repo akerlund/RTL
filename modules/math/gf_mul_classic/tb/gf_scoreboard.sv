@@ -98,9 +98,6 @@ class gf_scoreboard extends uvm_scoreboard;
   //----------------------------------------------------------------------------
 
   virtual function void write_mst_port(vip_axi4s_item #(VIP_AXI4S_CFG_C) trans);
-    number_of_master_items++;
-    master_items.push_back(trans);
-    all_master_items.push_back(trans);
     current_phase.raise_objection(this);
   endfunction
 
@@ -126,11 +123,10 @@ class gf_scoreboard extends uvm_scoreboard;
     int compare_ok = 1;
     int gf_ref     = GF_MUL_C[ref_cnt++][2];
 
-    current_master_item = master_items.pop_front();
-    current_slave_item  = slave_items.pop_front();
+    current_slave_item = slave_items.pop_front();
 
-    if (current_master_item.tdata[0] != gf_ref) begin
-      `uvm_info(get_name(), $sformatf("out(%0d) != ref(%0d)", current_master_item.tdata[0], gf_ref), UVM_LOW)
+    if (current_slave_item.tdata[0] != gf_ref) begin
+      `uvm_info(get_name(), $sformatf("out(%0d) != ref(%0d)", current_slave_item.tdata[0], gf_ref), UVM_LOW)
       `uvm_error(get_name(), $sformatf("Packet number (%0d) mismatches", number_of_compared))
       compare_ok = 0;
     end

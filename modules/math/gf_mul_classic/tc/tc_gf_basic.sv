@@ -37,20 +37,20 @@ class tc_gf_basic extends gf_base_test;
   task run_phase(uvm_phase phase);
 
     logic [M_C*2-1 : 0] custom_data [$];
+    custom_data.push_back('0);
 
     super.run_phase(phase);
     phase.raise_objection(this);
 
-    for (int i = 0; i < REF_SIZE_C; i++) begin
-      custom_data.push_back({GF_MUL_C[i][0], GF_MUL_C[i][1]});
-    end
-
     vip_axi4s_seq0.set_data_type(VIP_AXI4S_TDATA_CUSTOM_E);
-    vip_axi4s_seq0.set_custom_data(custom_data);
     vip_axi4s_seq0.set_burst_length(1);
     vip_axi4s_seq0.set_tstrb(VIP_AXI4S_TSTRB_ALL_E);
-    vip_axi4s_seq0.set_log_denominator(4);
-    vip_axi4s_seq0.start(v_sqr.mst_sequencer);
+
+    for (int i = 0; i < REF_SIZE_C; i++) begin
+      custom_data[0] = ({GF_MUL_C[i][0], GF_MUL_C[i][1]});
+      vip_axi4s_seq0.set_custom_data(custom_data);
+      vip_axi4s_seq0.start(v_sqr.mst_sequencer);
+    end
 
     phase.drop_objection(this);
 

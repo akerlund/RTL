@@ -33,6 +33,7 @@ module gf_tb_top;
 
   logic [M_C-1 : 0] x0;
   logic [M_C-1 : 0] x1;
+  logic [M_C-1 : 0] y;
 
   assign x0 = mst_vif.tdata[M_C-1   : 0];
   assign x1 = mst_vif.tdata[2*M_C-1 : M_C];
@@ -41,14 +42,22 @@ module gf_tb_top;
   assign slv_vif.tvalid = mst_vif.tvalid;
   assign slv_vif.tlast  = mst_vif.tlast;
   assign {slv_vif.tstrb, slv_vif.tkeep, slv_vif.tid, slv_vif.tdest} = '0;
+  assign slv_vif.tdata = {'0, y};
 
   gf_mul_classic gf_mul_classic_i0 (
     .clk   ( clk_rst_vif.clk   ), // input
     .rst_n ( clk_rst_vif.rst_n ), // input
     .x0    ( x0                ), // input
     .x1    ( x1                ), // input
-    .y     ( slv_vif.tdata     )  // output
- );
+    .y     ( y                 )  // output
+  );
+
+
+  classic_multiplication classic_multiplication_i0 (
+    .a ( x0 ),
+    .b ( x1 ),
+    .c (    )
+  );
 
 
   initial begin
