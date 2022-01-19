@@ -44,7 +44,9 @@ module gf_tb_top;
   assign {slv_vif.tstrb, slv_vif.tkeep, slv_vif.tid, slv_vif.tdest} = '0;
   assign slv_vif.tdata = {'0, y};
 
-  gf_mul_classic gf_mul_classic_i0 (
+  gf_mul_classic #(
+    .M_P   ( M_C               )
+  ) gf_mul_classic_i0 (
     .clk   ( clk_rst_vif.clk   ), // input
     .rst_n ( clk_rst_vif.rst_n ), // input
     .x0    ( x0                ), // input
@@ -54,9 +56,9 @@ module gf_tb_top;
 
 
   classic_multiplication classic_multiplication_i0 (
-    .a ( x0 ),
-    .b ( x1 ),
-    .c (    )
+    .a ( x0 ), // input
+    .b ( x1 ), // input
+    .c (    )  // output
   );
 
 

@@ -17,10 +17,7 @@ use IEEE.std_logic_arith.all;
 use IEEE.std_logic_unsigned.all;
 package classic_multiplier_parameters is
   constant M: integer := 8;
-  --                             x^3 + x + 1 =    00001011
-  --               x^8 + x^4 + x^3 + x^2 + 1 =   100011101
-    constant F: std_logic_vector(M-1 downto 0):= "00011011";
-  --constant F: std_logic_vector(M-1 downto 0):= "00011011";
+  constant F: std_logic_vector(M-1 downto 0):= "00011011";
   --constant F: std_logic_vector(M-1 downto 0):= x"001B"; --for M=16 bits
   --constant F: std_logic_vector(M-1 downto 0):= x"0101001B"; --for M=32 bits
   --constant F: std_logic_vector(M-1 downto 0):= x"010100000101001B"; --for M=64 bits
