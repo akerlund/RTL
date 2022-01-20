@@ -84,9 +84,11 @@ class gf_base_test extends uvm_test;
     axi4s_slv_cfg0.tready_delay_enabled = FALSE;
     axi4s_slv_cfg0.vip_axi4s_agent_type = VIP_AXI4S_SLAVE_AGENT_E;
 
-    uvm_config_db #(clk_rst_config)::set(this,   {"tb_env.clk_rst_agent0", "*"}, "cfg", clk_rst_config0);
-    uvm_config_db #(vip_axi4s_config)::set(this, {"tb_env.mst_agent0",     "*"}, "cfg", axi4s_mst_cfg0);
-    uvm_config_db #(vip_axi4s_config)::set(this, {"tb_env.slv_agent0",     "*"}, "cfg", axi4s_slv_cfg0);
+    uvm_config_db #(clk_rst_config)::set(this,   {"tb_env.clk_rst_agent0",  "*"}, "cfg", clk_rst_config0);
+    uvm_config_db #(vip_axi4s_config)::set(this, {"tb_env.mst_mul0_agent0", "*"}, "cfg", axi4s_mst_cfg0);
+    uvm_config_db #(vip_axi4s_config)::set(this, {"tb_env.slv_mul0_agent0", "*"}, "cfg", axi4s_slv_cfg0);
+    uvm_config_db #(vip_axi4s_config)::set(this, {"tb_env.mst_div0_agent0", "*"}, "cfg", axi4s_mst_cfg0);
+    uvm_config_db #(vip_axi4s_config)::set(this, {"tb_env.slv_div0_agent0", "*"}, "cfg", axi4s_slv_cfg0);
   endfunction
 
 
@@ -103,6 +105,7 @@ class gf_base_test extends uvm_test;
 
 
   function void start_of_simulation_phase(uvm_phase phase);
+    `uvm_info(get_name(), "start_of_simulation_phase", UVM_LOW)
     super.start_of_simulation_phase(phase);
     reset_seq0     = reset_sequence::type_id::create("reset_seq0");
     vip_axi4s_seq0 = vip_axi4s_seq #(VIP_AXI4S_CFG_C)::type_id::create("vip_axi4s_seq0");
@@ -110,10 +113,14 @@ class gf_base_test extends uvm_test;
 
 
   task run_phase(uvm_phase phase);
+    `uvm_info(get_name(), "run_phase 0", UVM_LOW)
     super.run_phase(phase);
+    `uvm_info(get_name(), "run_phase 1", UVM_LOW)
     phase.raise_objection(this);
+    `uvm_info(get_name(), "run_phase 2", UVM_LOW)
     reset_seq0.start(v_sqr.clk_rst_sequencer0);
     phase.drop_objection(this);
+    `uvm_info(get_name(), "run_phase 3", UVM_LOW)
   endtask
 
 
