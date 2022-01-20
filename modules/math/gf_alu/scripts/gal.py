@@ -98,6 +98,8 @@ def gen_gf_reference(raw_args = None):
   for i in range(args.size):
     int0   = random.randint(0, order-1)
     int1   = random.randint(1, order-1)
+    gf0    = g_field([int0])
+    gf1    = g_field([int1])
     gf_div = gf0 / gf1
     gf_ref += "  '{%s,%s,%s}" % (int0, int1, gf_div.data[0])
     if i != args.size-1:
