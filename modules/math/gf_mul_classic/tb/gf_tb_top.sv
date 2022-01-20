@@ -88,8 +88,8 @@ module gf_tb_top;
   gf_div_bin_alg gf_div_bin_alg_i0 (
     .clk     ( clk_rst_vif.clk     ), // input
     .rst_n   ( clk_rst_vif.rst_n   ), // input
-    .x0      ( x0_div0             ), // input
-    .x1      ( x1_div0             ), // input
+    .x0      ( x1_div0             ), // input
+    .x1      ( x0_div0             ), // input
     .x_valid ( x_valid_div0        ), // input
     .x_ready ( mst_div0_vif.tready ), // output
     .y       ( y_div0              ), // output
@@ -100,8 +100,8 @@ module gf_tb_top;
     .clk     ( clk_rst_vif.clk     ), // input
     .reset   ( clk_rst_vif.rst     ), // input
     .start   ( x_valid_div0        ), // input
-    .g       ( x0_div0             ), // input
-    .h       ( x1_div0             ), // input
+    .g       ( x1_div0             ), // input
+    .h       ( x0_div0             ), // input
     .z       (                     ), // output
     .done    (                     )  // output
   );

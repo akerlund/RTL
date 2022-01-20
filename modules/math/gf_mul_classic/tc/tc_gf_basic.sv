@@ -63,6 +63,7 @@ class tc_gf_basic extends gf_base_test;
       custom_data[0] = ({GF_DIV_C[i][0], GF_DIV_C[i][1]});
       vip_axi4s_seq0.set_custom_data(custom_data);
       vip_axi4s_seq0.start(v_sqr.mst_div0_sequencer);
+      clk_delay(40);
     end
 
     phase.drop_objection(this);

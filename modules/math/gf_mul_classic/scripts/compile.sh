@@ -3,7 +3,7 @@
 git_root="$(git rev-parse --show-toplevel)"
 
 # Specify the top files
-rtl_top=gf_mul_classic
+rtl_top=gf_div_bin_alg
 uvm_top=gf_tb_top
 
 # ------------------------------------------------------------------------------
