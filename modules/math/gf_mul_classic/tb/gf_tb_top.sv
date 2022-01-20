@@ -73,25 +73,37 @@ module gf_tb_top;
   logic [M_C-1 : 0] x0_div0;
   logic [M_C-1 : 0] x1_div0;
   logic [M_C-1 : 0] y_div0;
+  logic             x_valid_div0;
   logic             y_valid_div0;
 
-  assign x0_div0 = mst_div0_vif.tdata[M_C-1   : 0];
-  assign x1_div0 = mst_div0_vif.tdata[2*M_C-1 : M_C];
+  assign x_valid_div0 = mst_div0_vif.tvalid & mst_div0_vif.tready;
+  assign x0_div0      = mst_div0_vif.tdata[M_C-1   : 0];
+  assign x1_div0      = mst_div0_vif.tdata[2*M_C-1 : M_C];
 
-  assign mst_div0_vif.tready = '1;
-  assign slv_div0_vif.tvalid = mst_div0_vif.tvalid;
+  assign slv_div0_vif.tvalid =y_valid_div0;
   assign slv_div0_vif.tlast  = mst_div0_vif.tlast;
   assign slv_div0_vif.tdata = {'0, y_div0};
   assign {slv_div0_vif.tstrb, slv_div0_vif.tkeep, slv_div0_vif.tid, slv_div0_vif.tdest} = '0;
 
   gf_div_bin_alg gf_div_bin_alg_i0 (
-    .clk     ( clk_rst_vif.clk    ), // input
-    .rst_n   ( clk_rst_vif.rst_n  ), // input
-    .x0      ( x0_div0            ), // input
-    .x1      ( x0_div1            ), // input
-    .x_valid (mst_div0_vif.tvalid ), // input
-    .y       ( y_div0             ), // output
-    .y_valid ( y_valid_div0       )  // output
+    .clk     ( clk_rst_vif.clk     ), // input
+    .rst_n   ( clk_rst_vif.rst_n   ), // input
+    .x0      ( x0_div0             ), // input
+    .x1      ( x1_div0             ), // input
+    .x_valid ( x_valid_div0        ), // input
+    .x_ready ( mst_div0_vif.tready ), // output
+    .y       ( y_div0              ), // output
+    .y_valid ( y_valid_div0        )  // output
+  );
+
+  binary_algorithm_polynomials binary_algorithm_polynomials_i0 (
+    .clk     ( clk_rst_vif.clk     ), // input
+    .reset   ( clk_rst_vif.rst     ), // input
+    .start   ( x_valid_div0        ), // input
+    .g       ( x0_div0             ), // input
+    .h       ( x1_div0             ), // input
+    .z       (                     ), // output
+    .done    (                     )  // output
   );
 
   initial begin
