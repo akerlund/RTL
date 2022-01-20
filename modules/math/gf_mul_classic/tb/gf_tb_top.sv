@@ -28,44 +28,78 @@ import gf_ref_pkg::*;
 module gf_tb_top;
 
   clk_rst_if                      clk_rst_vif();
-  vip_axi4s_if #(VIP_AXI4S_CFG_C) mst_vif(clk_rst_vif.clk, clk_rst_vif.rst_n);
-  vip_axi4s_if #(VIP_AXI4S_CFG_C) slv_vif(clk_rst_vif.clk, clk_rst_vif.rst_n);
+  vip_axi4s_if #(VIP_AXI4S_CFG_C) mst_mul0_vif(clk_rst_vif.clk, clk_rst_vif.rst_n);
+  vip_axi4s_if #(VIP_AXI4S_CFG_C) slv_mul0_vif(clk_rst_vif.clk, clk_rst_vif.rst_n);
+  vip_axi4s_if #(VIP_AXI4S_CFG_C) mst_div0_vif(clk_rst_vif.clk, clk_rst_vif.rst_n);
+  vip_axi4s_if #(VIP_AXI4S_CFG_C) slv_div0_vif(clk_rst_vif.clk, clk_rst_vif.rst_n);
 
-  logic [M_C-1 : 0] x0;
-  logic [M_C-1 : 0] x1;
-  logic [M_C-1 : 0] y;
+  // ---------------------------------------------------------------------------
+  //
+  // ---------------------------------------------------------------------------
 
-  assign x0 = mst_vif.tdata[M_C-1   : 0];
-  assign x1 = mst_vif.tdata[2*M_C-1 : M_C];
+  logic [M_C-1 : 0] x0_mul0;
+  logic [M_C-1 : 0] x1_mul0;
+  logic [M_C-1 : 0] y_mul0;
 
-  assign mst_vif.tready = '1;
-  assign slv_vif.tvalid = mst_vif.tvalid;
-  assign slv_vif.tlast  = mst_vif.tlast;
-  assign {slv_vif.tstrb, slv_vif.tkeep, slv_vif.tid, slv_vif.tdest} = '0;
-  assign slv_vif.tdata = {'0, y};
+  assign x0_mul0 = mst_mul0_vif.tdata[M_C-1   : 0];
+  assign x1_mul0 = mst_mul0_vif.tdata[2*M_C-1 : M_C];
+
+  assign mst_mul0_vif.tready = '1;
+  assign slv_mul0_vif.tvalid = mst_mul0_vif.tvalid;
+  assign slv_mul0_vif.tlast  = mst_mul0_vif.tlast;
+  assign slv_mul0_vif.tdata = {'0, y_mul0};
+  assign {slv_mul0_vif.tstrb, slv_mul0_vif.tkeep, slv_mul0_vif.tid, slv_mul0_vif.tdest} = '0;
 
   gf_mul_classic #(
     .M_P   ( M_C               )
   ) gf_mul_classic_i0 (
     .clk   ( clk_rst_vif.clk   ), // input
     .rst_n ( clk_rst_vif.rst_n ), // input
-    .x0    ( x0                ), // input
-    .x1    ( x1                ), // input
-    .y     ( y                 )  // output
+    .x0    ( x0_mul0           ), // input
+    .x1    ( x1_mul0           ), // input
+    .y     ( y_mul0            )  // output
   );
-
 
   classic_multiplication classic_multiplication_i0 (
-    .a ( x0 ), // input
-    .b ( x1 ), // input
-    .c (    )  // output
+    .a ( x0_mul0 ), // input
+    .b ( x1_mul0 ), // input
+    .c (         )  // output
   );
 
+  // ---------------------------------------------------------------------------
+  //
+  // ---------------------------------------------------------------------------
+
+  logic [M_C-1 : 0] x0_div0;
+  logic [M_C-1 : 0] x1_div0;
+  logic [M_C-1 : 0] y_div0;
+  logic             y_valid_div0;
+
+  assign x0_div0 = mst_div0_vif.tdata[M_C-1   : 0];
+  assign x1_div0 = mst_div0_vif.tdata[2*M_C-1 : M_C];
+
+  assign mst_div0_vif.tready = '1;
+  assign slv_div0_vif.tvalid = mst_div0_vif.tvalid;
+  assign slv_div0_vif.tlast  = mst_div0_vif.tlast;
+  assign slv_div0_vif.tdata = {'0, y_div0};
+  assign {slv_div0_vif.tstrb, slv_div0_vif.tkeep, slv_div0_vif.tid, slv_div0_vif.tdest} = '0;
+
+  gf_div_bin_alg gf_div_bin_alg_i0 (
+    .clk     ( clk_rst_vif.clk    ), // input
+    .rst_n   ( clk_rst_vif.rst_n  ), // input
+    .x0      ( x0_div0            ), // input
+    .x1      ( x0_div1            ), // input
+    .x_valid (mst_div0_vif.tvalid ), // input
+    .y       ( y_div0             ), // output
+    .y_valid ( y_valid_div0       )  // output
+  );
 
   initial begin
-    uvm_config_db #(virtual clk_rst_if)::set(uvm_root::get(),                      "uvm_test_top.tb_env*",            "vif", clk_rst_vif);
-    uvm_config_db #(virtual vip_axi4s_if #(VIP_AXI4S_CFG_C))::set(uvm_root::get(), "uvm_test_top.tb_env.mst_agent0*", "vif", mst_vif);
-    uvm_config_db #(virtual vip_axi4s_if #(VIP_AXI4S_CFG_C))::set(uvm_root::get(), "uvm_test_top.tb_env.slv_agent0*", "vif", slv_vif);
+    uvm_config_db #(virtual clk_rst_if)::set(uvm_root::get(),                      "uvm_test_top.tb_env*",                 "vif", clk_rst_vif);
+    uvm_config_db #(virtual vip_axi4s_if #(VIP_AXI4S_CFG_C))::set(uvm_root::get(), "uvm_test_top.tb_env.mst_mul0_agent0*", "vif", mst_mul0_vif);
+    uvm_config_db #(virtual vip_axi4s_if #(VIP_AXI4S_CFG_C))::set(uvm_root::get(), "uvm_test_top.tb_env.slv_mul0_agent0*", "vif", slv_mul0_vif);
+    uvm_config_db #(virtual vip_axi4s_if #(VIP_AXI4S_CFG_C))::set(uvm_root::get(), "uvm_test_top.tb_env.mst_div0_agent0*", "vif", mst_div0_vif);
+    uvm_config_db #(virtual vip_axi4s_if #(VIP_AXI4S_CFG_C))::set(uvm_root::get(), "uvm_test_top.tb_env.slv_div0_agent0*", "vif", slv_div0_vif);
     run_test();
     $stop();
   end

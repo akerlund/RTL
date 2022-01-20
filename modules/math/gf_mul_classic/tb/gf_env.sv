@@ -27,9 +27,11 @@ class gf_env extends uvm_env;
 
   protected virtual clk_rst_if vif;
 
-  clk_rst_agent                    clk_rst_agent0;
-  vip_axi4s_agent #(VIP_AXI4S_CFG_C) mst_agent0;
-  vip_axi4s_agent #(VIP_AXI4S_CFG_C) slv_agent0;
+  clk_rst_agent                      clk_rst_agent0;
+  vip_axi4s_agent #(VIP_AXI4S_CFG_C) mst_mul0_agent0;
+  vip_axi4s_agent #(VIP_AXI4S_CFG_C) slv_mul0_agent0;
+  vip_axi4s_agent #(VIP_AXI4S_CFG_C) mst_div0_agent0;
+  vip_axi4s_agent #(VIP_AXI4S_CFG_C) slv_div0_agent0;
 
   gf_scoreboard        scoreboard0;
   gf_virtual_sequencer virtual_sequencer;
@@ -43,6 +45,8 @@ class gf_env extends uvm_env;
   //----------------------------------------------------------------------------
   function void build_phase(uvm_phase phase);
 
+    int id = 0;
+
     super.build_phase(phase);
 
     if (!uvm_config_db #(virtual clk_rst_if)::get(this, "", "vif", vif)) begin
@@ -50,13 +54,17 @@ class gf_env extends uvm_env;
     end
 
     // Create Agents
-    clk_rst_agent0 = clk_rst_agent::type_id::create("clk_rst_agent0", this);
-    mst_agent0     = vip_axi4s_agent #(VIP_AXI4S_CFG_C)::type_id::create("mst_agent0", this);
-    slv_agent0     = vip_axi4s_agent #(VIP_AXI4S_CFG_C)::type_id::create("slv_agent0", this);
+    clk_rst_agent0  = clk_rst_agent::type_id::create("clk_rst_agent0", this);
+    mst_mul0_agent0 = vip_axi4s_agent #(VIP_AXI4S_CFG_C)::type_id::create("mst_mul0_agent0", this);
+    slv_mul0_agent0 = vip_axi4s_agent #(VIP_AXI4S_CFG_C)::type_id::create("slv_mul0_agent0", this);
+    mst_div0_agent0 = vip_axi4s_agent #(VIP_AXI4S_CFG_C)::type_id::create("mst_div0_agent0", this);
+    slv_div0_agent0 = vip_axi4s_agent #(VIP_AXI4S_CFG_C)::type_id::create("slv_div0_agent0", this);
 
-    uvm_config_db #(int)::set(this, {"clk_rst_agent0", "*"}, "id", 0);
-    uvm_config_db #(int)::set(this, {"mst_agent0",     "*"}, "id", 1);
-    uvm_config_db #(int)::set(this, {"slv_agent0",     "*"}, "id", 2);
+    uvm_config_db #(int)::set(this, {"clk_rst_agent0",  "*"}, "id", 0);
+    uvm_config_db #(int)::set(this, {"mst_mul0_agent0", "*"}, "id", 1);
+    uvm_config_db #(int)::set(this, {"slv_mul0_agent0", "*"}, "id", 2);
+    uvm_config_db #(int)::set(this, {"mst_div0_agent0", "*"}, "id", 3);
+    uvm_config_db #(int)::set(this, {"slv_div0_agent0", "*"}, "id", 4);
 
     // Create Scoreboards
     scoreboard0 = gf_scoreboard::type_id::create("scoreboard0", this);
@@ -74,12 +82,15 @@ class gf_env extends uvm_env;
 
     super.connect_phase(phase);
 
-    mst_agent0.monitor.tdata_port.connect(scoreboard0.mst_port);
-    slv_agent0.monitor.tdata_port.connect(scoreboard0.slv_port);
+    mst_mul0_agent0.monitor.tdata_port.connect(scoreboard0.mst_mul0_port);
+    slv_mul0_agent0.monitor.tdata_port.connect(scoreboard0.slv_mul0_port);
+
+    mst_div0_agent0.monitor.tdata_port.connect(scoreboard0.mst_div0_port);
+    slv_div0_agent0.monitor.tdata_port.connect(scoreboard0.slv_div0_port);
 
     virtual_sequencer.clk_rst_sequencer0 = clk_rst_agent0.sequencer;
-    virtual_sequencer.mst_sequencer      = mst_agent0.sequencer;
-    virtual_sequencer.slv_sequencer      = slv_agent0.sequencer;
+    virtual_sequencer.mst_mul0_sequencer = mst_mul0_agent0.sequencer;
+    virtual_sequencer.mst_div0_sequencer = mst_div0_agent0.sequencer;
   endfunction
 
 endclass

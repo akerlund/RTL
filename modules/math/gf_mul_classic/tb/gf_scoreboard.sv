@@ -20,36 +20,34 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-`uvm_analysis_imp_decl(_mst_port)
-`uvm_analysis_imp_decl(_slv_port)
+`uvm_analysis_imp_decl(_mst_mul0_port)
+`uvm_analysis_imp_decl(_slv_mul0_port)
+`uvm_analysis_imp_decl(_mst_div0_port)
+`uvm_analysis_imp_decl(_slv_div0_port)
 
 class gf_scoreboard extends uvm_scoreboard;
 
   `uvm_component_utils(gf_scoreboard)
 
-  uvm_analysis_imp_mst_port #(vip_axi4s_item #(VIP_AXI4S_CFG_C), gf_scoreboard) mst_port;
-  uvm_analysis_imp_slv_port #(vip_axi4s_item #(VIP_AXI4S_CFG_C), gf_scoreboard) slv_port;
+  uvm_analysis_imp_mst_mul0_port #(vip_axi4s_item #(VIP_AXI4S_CFG_C), gf_scoreboard) mst_mul0_port;
+  uvm_analysis_imp_slv_mul0_port #(vip_axi4s_item #(VIP_AXI4S_CFG_C), gf_scoreboard) slv_mul0_port;
+  uvm_analysis_imp_mst_div0_port #(vip_axi4s_item #(VIP_AXI4S_CFG_C), gf_scoreboard) mst_div0_port;
+  uvm_analysis_imp_slv_div0_port #(vip_axi4s_item #(VIP_AXI4S_CFG_C), gf_scoreboard) slv_div0_port;
 
   // Storage for comparison
   vip_axi4s_item #(VIP_AXI4S_CFG_C) master_items [$];
   vip_axi4s_item #(VIP_AXI4S_CFG_C) slave_items  [$];
 
-  // Debug storage
-  vip_axi4s_item #(VIP_AXI4S_CFG_C) all_master_items [$];
-  vip_axi4s_item #(VIP_AXI4S_CFG_C) all_slave_items  [$];
-
   // For raising objections
   uvm_phase current_phase;
-
-  int number_of_master_items;
-  int number_of_slave_items;
 
   // Statistics
   int number_of_compared;
   int number_of_passed;
   int number_of_failed;
 
-  int ref_cnt;
+  int ref_mul0_i;
+  int ref_div0_i;
 
 
   function new(string name, uvm_component parent);
@@ -59,9 +57,12 @@ class gf_scoreboard extends uvm_scoreboard;
 
   virtual function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    mst_port = new("mst_port", this);
-    slv_port = new("slv_port", this);
-    ref_cnt  = 0;
+    mst_mul0_port = new("mst_mul0_port", this);
+    slv_mul0_port = new("slv_mul0_port", this);
+    mst_div0_port = new("mst_div0_port", this);
+    slv_div0_port = new("slv_div0_port", this);
+    ref_mul0_i    = 0;
+    ref_div0_i    = 0;
   endfunction
 
 
@@ -97,36 +98,41 @@ class gf_scoreboard extends uvm_scoreboard;
   // Master Agents
   //----------------------------------------------------------------------------
 
-  virtual function void write_mst_port(vip_axi4s_item #(VIP_AXI4S_CFG_C) trans);
+  virtual function void write_mst_mul0_port(vip_axi4s_item #(VIP_AXI4S_CFG_C) trans);
+    current_phase.raise_objection(this);
+  endfunction
+
+  virtual function void write_mst_div0_port(vip_axi4s_item #(VIP_AXI4S_CFG_C) trans);
     current_phase.raise_objection(this);
   endfunction
 
 
   //----------------------------------------------------------------------------
-  // Slave Agent
+  // Slave Agents
   //----------------------------------------------------------------------------
 
-  virtual function void write_slv_port(vip_axi4s_item #(VIP_AXI4S_CFG_C) trans);
-    number_of_slave_items++;
-    slave_items.push_back(trans);
-    all_slave_items.push_back(trans);
-    compare();
+  virtual function void write_slv_mul0_port(vip_axi4s_item #(VIP_AXI4S_CFG_C) trans);
+    compare_mul0(trans);
+    current_phase.drop_objection(this);
+  endfunction
+
+  virtual function void write_slv_div0_port(vip_axi4s_item #(VIP_AXI4S_CFG_C) trans);
+    compare_div0(trans);
     current_phase.drop_objection(this);
   endfunction
 
 
-  virtual function void compare();
+  //----------------------------------------------------------------------------
+  // Compares
+  //----------------------------------------------------------------------------
 
-    vip_axi4s_item #(VIP_AXI4S_CFG_C) current_master_item;
-    vip_axi4s_item #(VIP_AXI4S_CFG_C) current_slave_item;
+  virtual function void compare_mul0(vip_axi4s_item #(VIP_AXI4S_CFG_C) trans);
 
     int compare_ok = 1;
-    int gf_ref     = GF_MUL_C[ref_cnt++][2];
+    int gf_ref     = GF_MUL_C[ref_mul0_i++][2];
 
-    current_slave_item = slave_items.pop_front();
-
-    if (current_slave_item.tdata[0] != gf_ref) begin
-      `uvm_info(get_name(), $sformatf("out(%0d) != ref(%0d)", current_slave_item.tdata[0], gf_ref), UVM_LOW)
+    if (trans.tdata[0] != gf_ref) begin
+      `uvm_info(get_name(), $sformatf("out(%0d) != ref(%0d)", trans.tdata[0], gf_ref), UVM_LOW)
       `uvm_error(get_name(), $sformatf("Packet number (%0d) mismatches", number_of_compared))
       compare_ok = 0;
     end
@@ -138,6 +144,26 @@ class gf_scoreboard extends uvm_scoreboard;
     end
 
     number_of_compared++;
+  endfunction
 
+
+  virtual function void compare_div0(vip_axi4s_item #(VIP_AXI4S_CFG_C) trans);
+
+    int compare_ok = 1;
+    int gf_ref     = GF_DIV_C[ref_div0_i++][2];
+
+    if (trans.tdata[0] != gf_ref) begin
+      `uvm_info(get_name(), $sformatf("out(%0d) != ref(%0d)", trans.tdata[0], gf_ref), UVM_LOW)
+      `uvm_error(get_name(), $sformatf("Packet number (%0d) mismatches", number_of_compared))
+      compare_ok = 0;
+    end
+
+    if (compare_ok) begin
+      number_of_passed++;
+    end else begin
+      number_of_failed++;
+    end
+
+    number_of_compared++;
   endfunction
 endclass

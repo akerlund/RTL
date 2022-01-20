@@ -25,8 +25,8 @@ class gf_virtual_sequencer extends uvm_virtual_sequencer;
   `uvm_component_utils(gf_virtual_sequencer)
 
   clk_rst_sequencer                      clk_rst_sequencer0;
-  vip_axi4s_sequencer #(VIP_AXI4S_CFG_C) mst_sequencer;
-  vip_axi4s_sequencer #(VIP_AXI4S_CFG_C) slv_sequencer;
+  vip_axi4s_sequencer #(VIP_AXI4S_CFG_C) mst_mul0_sequencer;
+  vip_axi4s_sequencer #(VIP_AXI4S_CFG_C) mst_div0_sequencer;
 
   function new(string name = "virtual_sequencer", uvm_component parent = null);
     super.new(name, parent);
