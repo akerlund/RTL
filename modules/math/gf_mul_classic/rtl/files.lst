@@ -6,8 +6,10 @@ rtl_dirs+="
 
 rtl_files+="
   $module_path/rtl/gf_mul_classic.sv
+  $module_path/rtl/gf_div_bin_alg.sv
 "
 
 vhdl_files+="
   $module_path/rtl/classic_multiplier.vhd
+  $module_path/rtl/binary_algorithm_polynomials.vhd
 "
