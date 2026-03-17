@@ -1,0 +1,46 @@
+CAPI=2:
+name: "akerlund::lfsr:0"
+description: "Parameterized Linear Feedback Shift Register"
+
+filesets:
+  rtl:
+    files:
+      - rtl/lfsr.sv
+    file_type: systemVerilogSource
+
+parameters:
+  WIDTH_P:
+    datatype: int
+    default: 32
+    paramtype: vlogparam
+  TAPS_P:
+    datatype: str
+    default: "32'h8000_0057"
+    paramtype: vlogparam
+  SEED_P:
+    datatype: str
+    default: "32'h0000_0001"
+    paramtype: vlogparam
+
+targets:
+  default:
+    filesets:
+      - rtl
+
+  rtl:
+    flow: lint
+    flow_options:
+      tool: verilator
+      verilator_options:
+        - -Wall
+        - --timing
+        - --error-limit
+        - "0"
+        - -Werror-IMPLICIT
+        - -Werror-BLKSEQ
+        - -Werror-LATCH
+        - -Werror-CASEINCOMPLETE
+        - -Wno-UNUSEDSIGNAL
+    filesets:
+      - rtl
+    toplevel: lfsr
