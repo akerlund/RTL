@@ -39,16 +39,16 @@ module bind_fifo_register #(
     input  wire [ADDR_WIDTH_P-1 : 0] read_address
   );
 
-  //`include "fifo_register_sva.sva"
-
   localparam logic [ADDR_WIDTH_P : 0] FIFO_MAX_LEVEL_C = 2**ADDR_WIDTH_P;
 
   // Asynchronous reset property:
+  /* verilator lint_off SYNCASYNCNET */
   property pr_reset_rptr0_wptr0_empty1_full0_cnt0;
     @(posedge clk)
       ($past(rst_n) == 0 && rst_n |->
       ($past(read_address) == 0 && $past(write_address) == 0 && $past(egr_empty) == 1 && $past(ing_full) == 0 && $past(sr_fill_level) == 0));
   endproperty
+  /* verilator lint_on SYNCASYNCNET */
 
   // FIFO full condition properties:
   property pr_full_fifo_condition;

@@ -1,0 +1,20 @@
+CAPI=2:
+name: "akerlund::delay_enable:0"
+description: "Delay-based clock enable generator"
+
+filesets:
+  rtl:
+    files:
+      - rtl/delay_enable.sv
+    file_type: systemVerilogSource
+
+parameters:
+  COUNTER_WIDTH_P:
+    datatype: int
+    default: 32
+    paramtype: vlogparam
+
+targets:
+  default:
+    filesets:
+      - rtl

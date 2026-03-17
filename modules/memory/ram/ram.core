@@ -1,0 +1,20 @@
+CAPI=2:
+name: "akerlund::memory_ram:0"
+description: "Single-port and dual-port synchronous RAM primitives"
+
+filesets:
+  rtl:
+    files:
+      - rtl/ram_sdp.sv
+      - rtl/ram_sdp2c.sv
+      - rtl/ram_sdp_bw.sv
+      - rtl/ram_sp.sv
+      - rtl/ram_sp_bw.sv
+      - rtl/ram_tdp.sv
+      - rtl/ram_tdp_bw.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - rtl

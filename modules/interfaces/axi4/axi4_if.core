@@ -1,0 +1,14 @@
+CAPI=2:
+name: "akerlund::axi4_if:0"
+description: "AXI4 interface definition"
+
+filesets:
+  rtl:
+    files:
+      - rtl/axi4_if.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - rtl

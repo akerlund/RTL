@@ -1,0 +1,115 @@
+CAPI=2:
+name: "akerlund::iir_biquad_filter:0"
+description: "IIR biquad filter with AXI4 control and AXI4-Stream data interfaces"
+
+filesets:
+  rtl:
+    files:
+      - rtl/iir_address_pkg.sv
+      - rtl/iir_biquad_types_pkg.sv
+      - rtl/iir_axi_slave.sv
+      - rtl/iir_biquad_core.sv
+      - rtl/iir_biquad_top.sv
+    file_type: systemVerilogSource
+    depend:
+      - "akerlund::long_division:0"
+      - "akerlund::cordic:0"
+      - "akerlund::multiplication:0"
+      - "akerlund::frequency_enable:0"
+      - "akerlund::pyrg:0"
+
+  tb:
+    files:
+      # Compilation units
+      - tb/iir_tb_pkg.sv
+      - tc/iir_tc_pkg.sv
+      - tb/iir_tb_top.sv
+      # Include files: uvm_reg dir
+      - tb/uvm_reg/iir_block.sv: {is_include_file: true}
+      - tb/uvm_reg/iir_reg.sv: {is_include_file: true}
+      - tb/uvm_reg/register_model.sv: {is_include_file: true}
+      # Include files: tb dir
+      - tb/iir_env.sv: {is_include_file: true}
+      - tb/iir_scoreboard.sv: {is_include_file: true}
+      - tb/iir_virtual_sequencer.sv: {is_include_file: true}
+      # Include files: tc dir
+      - tc/iir_base_test.sv: {is_include_file: true}
+      - tc/tc_iir_basic_configuration.sv: {is_include_file: true}
+      - tc/tc_iir_coefficient_check.sv: {is_include_file: true}
+      - tc/tc_iir_reconfiguration.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+    depend:
+      - "akerlund::vip_bool:0"
+      - "akerlund::vip_axi4_agent:0"
+      - "akerlund::vip_axi4s_agent:0"
+      - "akerlund::vip_clk_rst_agent:0"
+      - "akerlund::vip_fixed_point:0"
+      - "akerlund::vip_math:0"
+      - "akerlund::vip_dsp:0"
+      - "akerlund::vip_report_server:0"
+
+parameters:
+  AXI_DATA_WIDTH_P:
+    datatype: int
+    default: 32
+    paramtype: vlogparam
+  AXI_ID_WIDTH_P:
+    datatype: int
+    default: 4
+    paramtype: vlogparam
+  AXI4S_ID_P:
+    datatype: int
+    default: 1
+    paramtype: vlogparam
+  APB_DATA_WIDTH_P:
+    datatype: int
+    default: 32
+    paramtype: vlogparam
+  N_BITS_P:
+    datatype: int
+    default: 32
+    paramtype: vlogparam
+  Q_BITS_P:
+    datatype: int
+    default: 17
+    paramtype: vlogparam
+
+targets:
+  default:
+    filesets:
+      - rtl
+
+  uvm:
+    flow: sim
+    flow_options:
+      tool: verilator
+    filesets:
+      - rtl
+      - tb
+    parameters:
+      - AXI_DATA_WIDTH_P
+      - AXI_ID_WIDTH_P
+      - AXI4S_ID_P
+      - APB_DATA_WIDTH_P
+      - N_BITS_P
+      - Q_BITS_P
+    toplevel: iir_tb_top
+
+  rtl:
+    flow: lint
+    flow_options:
+      tool: verilator
+      verilator_options:
+        - -Wall
+        - --timing
+        - --error-limit
+        - "0"
+        - -Werror-IMPLICIT
+        - -Werror-BLKSEQ
+        - -Werror-LATCH
+        - -Werror-CASEINCOMPLETE
+        - -Wno-UNUSEDSIGNAL
+        - -Wno-PINCONNECTEMPTY
+    filesets:
+      - rtl
+

@@ -1,0 +1,17 @@
+CAPI=2:
+name: "akerlund::reset_synchronizer:0"
+description: "Reset synchronizer"
+
+filesets:
+  rtl:
+    files:
+      - rtl/reset_synchronizer_core.sv
+      - rtl/reset_synchronizer.sv
+    file_type: systemVerilogSource
+    depend:
+      - "akerlund::io_synchronizer:0"
+
+targets:
+  default:
+    filesets:
+      - rtl

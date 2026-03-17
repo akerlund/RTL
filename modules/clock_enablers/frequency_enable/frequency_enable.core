@@ -1,0 +1,36 @@
+CAPI=2:
+name: "akerlund::frequency_enable:0"
+description: "Frequency-based clock enable generator with AXI4-Stream interface"
+
+filesets:
+  rtl:
+    files:
+      - rtl/frequency_enable.sv
+    file_type: systemVerilogSource
+
+parameters:
+  SYS_CLK_FREQUENCY_P:
+    datatype: int
+    default: 200000000
+    paramtype: vlogparam
+  AXI_DATA_WIDTH_P:
+    datatype: int
+    default: 32
+    paramtype: vlogparam
+  AXI_ID_WIDTH_P:
+    datatype: int
+    default: 4
+    paramtype: vlogparam
+  Q_BITS_P:
+    datatype: int
+    default: 17
+    paramtype: vlogparam
+  AXI4S_ID_P:
+    datatype: int
+    default: 1
+    paramtype: vlogparam
+
+targets:
+  default:
+    filesets:
+      - rtl

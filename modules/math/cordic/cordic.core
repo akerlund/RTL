@@ -1,0 +1,85 @@
+CAPI=2:
+name: "akerlund::cordic:0"
+description: "CORDIC algorithm core with AXI4-Stream interface"
+
+filesets:
+  rtl:
+    files:
+      - rtl/cordic_atan_radian_table_pkg.sv
+      - rtl/cordic_axi4s_types_pkg.sv
+      - rtl/cordic_radian_core.sv
+      - rtl/cordic_radian_top.sv
+      - rtl/cordic_axi4s_if.sv
+    file_type: systemVerilogSource
+
+  tb:
+    files:
+      # Compilation units
+      - tb/cordic_test_angles_pkg.sv
+      - tb/cor_tb_pkg.sv
+      - tc/cor_tc_pkg.sv
+      - tb/cor_tb_top.sv
+      # Include files (included by tb/tc packages)
+      - tb/cor_env.sv: {is_include_file: true}
+      - tb/cor_scoreboard.sv: {is_include_file: true}
+      - tb/cor_virtual_sequencer.sv: {is_include_file: true}
+      - tc/cor_base_test.sv: {is_include_file: true}
+      - tc/tc_negative_radian_spin.sv: {is_include_file: true}
+      - tc/tc_positive_radian_spin.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+    depend:
+      - "akerlund::vip_bool:0"
+      - "akerlund::vip_axi4s_agent:0"
+      - "akerlund::vip_clk_rst_agent:0"
+      - "akerlund::vip_report_server:0"
+
+parameters:
+  AXI_DATA_WIDTH_P:
+    datatype: int
+    default: 16
+    paramtype: vlogparam
+  AXI_ID_WIDTH_P:
+    datatype: int
+    default: 4
+    paramtype: vlogparam
+  NR_OF_STAGES_P:
+    datatype: int
+    default: 16
+    paramtype: vlogparam
+
+targets:
+  default:
+    filesets:
+      - rtl
+
+  uvm:
+    flow: sim
+    flow_options:
+      tool: verilator
+    filesets:
+      - rtl
+      - tb
+    parameters:
+      - AXI_DATA_WIDTH_P
+      - AXI_ID_WIDTH_P
+      - NR_OF_STAGES_P
+    toplevel: cor_tb_top
+
+  rtl:
+    flow: lint
+    flow_options:
+      tool: verilator
+      verilator_options:
+        - -Wall
+        - --timing
+        - --error-limit
+        - "0"
+        - -Werror-IMPLICIT
+        - -Werror-BLKSEQ
+        - -Werror-LATCH
+        - -Werror-CASEINCOMPLETE
+        - -Wno-UNUSEDSIGNAL
+        - -Wno-PINCONNECTEMPTY
+    filesets:
+      - rtl
+

@@ -1,6 +1,9 @@
 [submodule "submodules/VIP"]
 	path = submodules/VIP
-	url = git@github.com:akerlund/VIP.git
+	url = https://github.com/akerlund/VIP.git
 [submodule "submodules/PYRG"]
 	path = submodules/PYRG
 	url = https://github.com/akerlund/PYRG.git
+[submodule "submodules/fusesoc"]
+	path = submodules/fusesoc
+	url = https://github.com/olofk/fusesoc.git

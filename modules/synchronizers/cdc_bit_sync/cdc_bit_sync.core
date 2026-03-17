@@ -1,0 +1,15 @@
+CAPI=2:
+name: "akerlund::cdc_bit_sync:0"
+description: "Clock domain crossing bit synchronizer"
+
+filesets:
+  rtl:
+    files:
+      - rtl/cdc_bit_sync_core.sv
+      - rtl/cdc_bit_sync.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - rtl

@@ -1,0 +1,73 @@
+CAPI=2:
+name: "akerlund::cdc_vector_sync:0"
+description: "Clock domain crossing vector synchronizer"
+
+filesets:
+  rtl:
+    files:
+      - rtl/cdc_vector_sync.sv
+    file_type: systemVerilogSource
+    depend:
+      - "akerlund::cdc_bit_sync:0"
+
+  tb:
+    files:
+      # Compilation units
+      - tb/vec_tb_pkg.sv
+      - tc/vec_tc_pkg.sv
+      - tb/vec_tb_top.sv
+      # Include files (included by tb/tc packages)
+      - tb/tb.svh: {is_include_file: true}
+      - tb/vec_scoreboard.sv: {is_include_file: true}
+      - tb/vec_virtual_sequencer.sv: {is_include_file: true}
+      - tb/vec_env.sv: {is_include_file: true}
+      - tc/vec_base_test.sv: {is_include_file: true}
+      - tc/tc_vec_fast_to_slow.sv: {is_include_file: true}
+      - tc/tc_vec_slow_to_fast.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+    depend:
+      - "akerlund::vip_bool:0"
+      - "akerlund::vip_axi4s_agent:0"
+      - "akerlund::vip_clk_rst_agent:0"
+      - "akerlund::vip_report_server:0"
+
+parameters:
+  DATA_WIDTH_P:
+    datatype: int
+    default: 32
+    paramtype: vlogparam
+
+targets:
+  default:
+    filesets:
+      - rtl
+
+  uvm:
+    flow: sim
+    flow_options:
+      tool: verilator
+    filesets:
+      - rtl
+      - tb
+    parameters:
+      - DATA_WIDTH_P
+    toplevel: vec_tb_top
+
+  rtl:
+    flow: lint
+    flow_options:
+      tool: verilator
+      verilator_options:
+        - -Wall
+        - --timing
+        - --error-limit
+        - "0"
+        - -Werror-IMPLICIT
+        - -Werror-BLKSEQ
+        - -Werror-LATCH
+        - -Werror-CASEINCOMPLETE
+        - -Wno-UNUSEDSIGNAL
+        - -Wno-PINCONNECTEMPTY
+    filesets:
+      - rtl
+

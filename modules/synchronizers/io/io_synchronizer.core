@@ -1,0 +1,15 @@
+CAPI=2:
+name: "akerlund::io_synchronizer:0"
+description: "I/O input synchronizer"
+
+filesets:
+  rtl:
+    files:
+      - rtl/io_synchronizer_core.sv
+      - rtl/io_synchronizer.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - rtl
