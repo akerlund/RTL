@@ -1,0 +1,147 @@
+CAPI=2:
+name: "akerlund::oscillator:0"
+description: "Multi-waveform oscillator with AXI4 control interface"
+
+filesets:
+  rtl:
+    files:
+      - rtl/oscillator_types_pkg.sv
+      - rtl/osc_address_pkg.sv
+      - rtl/osc_axi_slave.sv
+      - rtl/osc_sin_top.sv
+      - rtl/osc_saw_core.sv
+      - rtl/osc_saw_top.sv
+      - rtl/osc_square_core.sv
+      - rtl/osc_square_top.sv
+      - rtl/osc_triangle_core.sv
+      - rtl/osc_triangle_top.sv
+      - rtl/oscillator_core.sv
+      - rtl/oscillator_top.sv
+      - rtl/oscillator_system.sv
+    file_type: systemVerilogSource
+    depend:
+      - "akerlund::long_division:0"
+      - "akerlund::cordic:0"
+      - "akerlund::multiplication:0"
+      - "akerlund::clock_enable:0"
+      - "akerlund::clock_enable_scaler:0"
+      - "akerlund::delay_enable:0"
+      - "akerlund::frequency_enable:0"
+      - "akerlund::mixer:0"
+      - "akerlund::pyrg:0"
+
+  tb:
+    files:
+      # Compilation units
+      - tb/osc_tb_pkg.sv
+      - tc/osc_tc_pkg.sv
+      - tb/osc_tb_top.sv
+      # Include files: uvm_reg dir
+      - tb/uvm_reg/osc_block.sv: {is_include_file: true}
+      - tb/uvm_reg/osc_reg.sv: {is_include_file: true}
+      - tb/uvm_reg/register_model.sv: {is_include_file: true}
+      # Include files: tb dir
+      - tb/osc_env.sv: {is_include_file: true}
+      - tb/osc_seq_lib.sv: {is_include_file: true}
+      - tb/osc_virtual_sequencer.sv: {is_include_file: true}
+      # Include files: tc dir
+      - tc/osc_base_test.sv: {is_include_file: true}
+      - tc/tc_osc_duty_cycle_sweep.sv: {is_include_file: true}
+      - tc/tc_osc_frequency_test.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+    depend:
+      - "akerlund::vip_bool:0"
+      - "akerlund::vip_axi4_agent:0"
+      - "akerlund::vip_clk_rst_agent:0"
+      - "akerlund::vip_report_server:0"
+
+parameters:
+  SYS_CLK_FREQUENCY_P:
+    datatype: int
+    default: 125000000
+    paramtype: vlogparam
+  PRIME_FREQUENCY_P:
+    datatype: int
+    default: 1000000
+    paramtype: vlogparam
+  WAVE_WIDTH_P:
+    datatype: int
+    default: 24
+    paramtype: vlogparam
+  DUTY_CYCLE_DIVIDER_P:
+    datatype: int
+    default: 1000
+    paramtype: vlogparam
+  N_BITS_P:
+    datatype: int
+    default: 32
+    paramtype: vlogparam
+  Q_BITS_P:
+    datatype: int
+    default: 11
+    paramtype: vlogparam
+  AXI_DATA_WIDTH_P:
+    datatype: int
+    default: 32
+    paramtype: vlogparam
+  AXI_ID_WIDTH_P:
+    datatype: int
+    default: 32
+    paramtype: vlogparam
+  APB_BASE_ADDR_P:
+    datatype: int
+    default: 0
+    paramtype: vlogparam
+  APB_ADDR_WIDTH_P:
+    datatype: int
+    default: 8
+    paramtype: vlogparam
+  APB_DATA_WIDTH_P:
+    datatype: int
+    default: 32
+    paramtype: vlogparam
+
+targets:
+  default:
+    filesets:
+      - rtl
+
+  uvm:
+    flow: sim
+    flow_options:
+      tool: verilator
+    filesets:
+      - rtl
+      - tb
+    parameters:
+      - SYS_CLK_FREQUENCY_P
+      - PRIME_FREQUENCY_P
+      - WAVE_WIDTH_P
+      - DUTY_CYCLE_DIVIDER_P
+      - N_BITS_P
+      - Q_BITS_P
+      - AXI_DATA_WIDTH_P
+      - AXI_ID_WIDTH_P
+      - APB_BASE_ADDR_P
+      - APB_ADDR_WIDTH_P
+      - APB_DATA_WIDTH_P
+    toplevel: osc_tb_top
+
+  rtl:
+    flow: lint
+    flow_options:
+      tool: verilator
+      verilator_options:
+        - -Wall
+        - --timing
+        - --error-limit
+        - "0"
+        - -Werror-IMPLICIT
+        - -Werror-BLKSEQ
+        - -Werror-LATCH
+        - -Werror-CASEINCOMPLETE
+        - -Wno-UNUSEDSIGNAL
+        - -Wno-PINCONNECTEMPTY
+    filesets:
+      - rtl
+

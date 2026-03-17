@@ -1,0 +1,14 @@
+CAPI=2:
+name: "akerlund::memory_reg:0"
+description: "Single-port register file"
+
+filesets:
+  rtl:
+    files:
+      - rtl/reg_sp_rf.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - rtl

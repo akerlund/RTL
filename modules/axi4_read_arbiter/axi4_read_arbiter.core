@@ -1,0 +1,91 @@
+CAPI=2:
+name: "akerlund::axi4_read_arbiter:0"
+description: "AXI4 read arbiter (multiple masters to multiple slaves)"
+
+filesets:
+  rtl:
+    files:
+      - rtl/axi4_read_arbiter_msts_2_slv.sv
+      - rtl/axi4_read_arbiter_mst_2_slvs.sv
+      - rtl/axi4_read_arbiter.sv
+    file_type: systemVerilogSource
+
+  tb:
+    files:
+      # Compilation units
+      - tb/ara_tb_pkg.sv
+      - tc/ara_tc_pkg.sv
+      - tb/ara_tb_top.sv
+      # Include files (included by tb/tc packages)
+      - tb/ara_env.sv: {is_include_file: true}
+      - tb/ara_scoreboard.sv: {is_include_file: true}
+      - tb/ara_virtual_sequencer.sv: {is_include_file: true}
+      - tc/ara_base_test.sv: {is_include_file: true}
+      - tc/tc_ara_basic_read.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+    depend:
+      - "akerlund::vip_bool:0"
+      - "akerlund::vip_axi4_agent:0"
+      - "akerlund::vip_clk_rst_agent:0"
+      - "akerlund::vip_report_server:0"
+
+parameters:
+  AXI_ID_WIDTH_P:
+    datatype: int
+    default: 4
+    paramtype: vlogparam
+  AXI_ADDR_WIDTH_P:
+    datatype: int
+    default: 32
+    paramtype: vlogparam
+  AXI_DATA_WIDTH_P:
+    datatype: int
+    default: 16
+    paramtype: vlogparam
+  NR_OF_MASTERS_P:
+    datatype: int
+    default: 1
+    paramtype: vlogparam
+  NR_OF_SLAVES_P:
+    datatype: int
+    default: 2
+    paramtype: vlogparam
+
+targets:
+  default:
+    filesets:
+      - rtl
+
+  uvm:
+    flow: sim
+    flow_options:
+      tool: verilator
+    filesets:
+      - rtl
+      - tb
+    parameters:
+      - AXI_ID_WIDTH_P
+      - AXI_ADDR_WIDTH_P
+      - AXI_DATA_WIDTH_P
+      - NR_OF_MASTERS_P
+      - NR_OF_SLAVES_P
+    toplevel: ara_tb_top
+
+  rtl:
+    flow: lint
+    flow_options:
+      tool: verilator
+      verilator_options:
+        - -Wall
+        - --timing
+        - --error-limit
+        - "0"
+        - -Werror-IMPLICIT
+        - -Werror-BLKSEQ
+        - -Werror-LATCH
+        - -Werror-CASEINCOMPLETE
+        - -Wno-UNUSEDSIGNAL
+        - -Wno-PINCONNECTEMPTY
+    filesets:
+      - rtl
+

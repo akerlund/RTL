@@ -1,0 +1,94 @@
+CAPI=2:
+name: "akerlund::mixer:0"
+description: "Multi-channel audio mixer"
+
+filesets:
+  rtl:
+    files:
+      - rtl/mixer_channel.sv
+      - rtl/mixer_core.sv
+      - rtl/mixer_top.sv
+    file_type: systemVerilogSource
+    depend:
+      - "akerlund::multiplication:0"
+
+  tb:
+    files:
+      # Compilation unit: tb.svh includes all other tb/tc files
+      - tb/tb.svh
+      # Include files: accessed via +incdir+tb/ and +incdir+tc/
+      - tb/mix_if.sv: {is_include_file: true}
+      - tb/mix_env.sv: {is_include_file: true}
+      - tb/mix_scoreboard.sv: {is_include_file: true}
+      - tb/mix_seq_lib.sv: {is_include_file: true}
+      - tb/mix_virtual_sequencer.sv: {is_include_file: true}
+      - tb/mix_tb_pkg.sv: {is_include_file: true}
+      - tb/mix_tb_top.sv: {is_include_file: true}
+      - tc/mix_tc_pkg.sv: {is_include_file: true}
+      - tc/mix_base_test.sv: {is_include_file: true}
+      - tc/tc_positive_signals.sv: {is_include_file: true}
+      - tc/tc_random_signals.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+    depend:
+      - "akerlund::vip_bool:0"
+      - "akerlund::vip_axi4s_agent:0"
+      - "akerlund::vip_clk_rst_agent:0"
+      - "akerlund::vip_fixed_point:0"
+      - "akerlund::vip_math:0"
+      - "akerlund::vip_report_server:0"
+
+parameters:
+  AUDIO_WIDTH_P:
+    datatype: int
+    default: 24
+    paramtype: vlogparam
+  GAIN_WIDTH_P:
+    datatype: int
+    default: 24
+    paramtype: vlogparam
+  NR_OF_CHANNELS_P:
+    datatype: int
+    default: 4
+    paramtype: vlogparam
+  Q_BITS_P:
+    datatype: int
+    default: 7
+    paramtype: vlogparam
+
+targets:
+  default:
+    filesets:
+      - rtl
+
+  uvm:
+    flow: sim
+    flow_options:
+      tool: verilator
+    filesets:
+      - rtl
+      - tb
+    parameters:
+      - AUDIO_WIDTH_P
+      - GAIN_WIDTH_P
+      - NR_OF_CHANNELS_P
+      - Q_BITS_P
+    toplevel: mix_tb_top
+
+  rtl:
+    flow: lint
+    flow_options:
+      tool: verilator
+      verilator_options:
+        - -Wall
+        - --timing
+        - --error-limit
+        - "0"
+        - -Werror-IMPLICIT
+        - -Werror-BLKSEQ
+        - -Werror-LATCH
+        - -Werror-CASEINCOMPLETE
+        - -Wno-UNUSEDSIGNAL
+        - -Wno-PINCONNECTEMPTY
+    filesets:
+      - rtl
+

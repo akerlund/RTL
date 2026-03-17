@@ -1,0 +1,22 @@
+CAPI=2:
+name: "akerlund::switch:0"
+description: "Debounced switch core"
+
+filesets:
+  rtl:
+    files:
+      - rtl/switch_core.sv
+    file_type: systemVerilogSource
+    depend:
+      - "akerlund::io_synchronizer:0"
+
+parameters:
+  NR_OF_DEBOUNCE_CLKS_P:
+    datatype: int
+    default: 100000
+    paramtype: vlogparam
+
+targets:
+  default:
+    filesets:
+      - rtl

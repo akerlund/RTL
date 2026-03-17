@@ -1,0 +1,20 @@
+CAPI=2:
+name: "akerlund::clock_enable:0"
+description: "Clock enable generator"
+
+filesets:
+  rtl:
+    files:
+      - rtl/clock_enable.sv
+    file_type: systemVerilogSource
+
+parameters:
+  COUNTER_WIDTH_P:
+    datatype: int
+    default: 32
+    paramtype: vlogparam
+
+targets:
+  default:
+    filesets:
+      - rtl

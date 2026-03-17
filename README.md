@@ -22,12 +22,12 @@ RTL modules which can be used between projects. This is an ongoing project and n
  - Synchronous FIFO
 ## FPGA RAM and REG
  - Block for FPGA RAM and registers
-## I2C / I2S
 ## LED
  - RGB HUE controller (ongoing)
 ## MATH
  - CORDIC
  - Fixed Point Long Division
+ - LFSR
 ## Mechanics
  - Button
  - Rotary Encoder
@@ -36,13 +36,5 @@ RTL modules which can be used between projects. This is an ongoing project and n
  - CDC bit synchronizer
  - IO bit synchronizer
  - Reset bit synchronizer
-## VIP
- - UVM: APB3 Agent
- - UVM: AXI4-S Agent
- - Math functions
- - DSP functions
- - Fixed point functions
-
-
 
 I make badges with the help of [this](https://shields.io/category/build) page

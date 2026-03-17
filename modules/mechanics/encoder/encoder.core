@@ -1,0 +1,17 @@
+CAPI=2:
+name: "akerlund::encoder:0"
+description: "Rotary encoder top"
+
+filesets:
+  rtl:
+    files:
+      - rtl/rotary_encoder_fsm.sv
+      - rtl/rotary_encoder_top.sv
+    file_type: systemVerilogSource
+    depend:
+      - "akerlund::io_synchronizer:0"
+
+targets:
+  default:
+    filesets:
+      - rtl

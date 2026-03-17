@@ -1,0 +1,99 @@
+CAPI=2:
+name: "akerlund::axi4s_s2m_arbiter:0"
+description: "AXI4-Stream single-to-many arbiter"
+
+filesets:
+  rtl:
+    files:
+      - rtl/axi4s_s2m_arbiter.sv
+    file_type: systemVerilogSource
+
+  tb:
+    files:
+      # Compilation units
+      - tb/arb_tb_pkg.sv
+      - tc/arb_tc_pkg.sv
+      - tb/arb_tb_top.sv
+      # Include files (included by tb/tc packages)
+      - tb/arb_env.sv: {is_include_file: true}
+      - tb/arb_scoreboard.sv: {is_include_file: true}
+      - tb/arb_virtual_sequencer.sv: {is_include_file: true}
+      - tc/arb_base_test.sv: {is_include_file: true}
+      - tc/tc_arb_simple_test.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+    depend:
+      - "akerlund::vip_bool:0"
+      - "akerlund::vip_axi4s_agent:0"
+      - "akerlund::vip_clk_rst_agent:0"
+      - "akerlund::vip_report_server:0"
+
+parameters:
+  NR_OF_MASTERS_P:
+    datatype: int
+    default: 3
+    paramtype: vlogparam
+  AXI_DATA_WIDTH_P:
+    datatype: int
+    default: 32
+    paramtype: vlogparam
+  AXI_STRB_WIDTH_P:
+    datatype: int
+    default: 4
+    paramtype: vlogparam
+  AXI_KEEP_WIDTH_P:
+    datatype: int
+    default: 4
+    paramtype: vlogparam
+  AXI_ID_WIDTH_P:
+    datatype: int
+    default: 4
+    paramtype: vlogparam
+  AXI_DEST_WIDTH_P:
+    datatype: int
+    default: 4
+    paramtype: vlogparam
+  AXI_USER_WIDTH_P:
+    datatype: int
+    default: 4
+    paramtype: vlogparam
+
+targets:
+  default:
+    filesets:
+      - rtl
+
+  uvm:
+    flow: sim
+    flow_options:
+      tool: verilator
+    filesets:
+      - rtl
+      - tb
+    parameters:
+      - NR_OF_MASTERS_P
+      - AXI_DATA_WIDTH_P
+      - AXI_STRB_WIDTH_P
+      - AXI_KEEP_WIDTH_P
+      - AXI_ID_WIDTH_P
+      - AXI_DEST_WIDTH_P
+      - AXI_USER_WIDTH_P
+    toplevel: arb_tb_top
+
+  rtl:
+    flow: lint
+    flow_options:
+      tool: verilator
+      verilator_options:
+        - -Wall
+        - --timing
+        - --error-limit
+        - "0"
+        - -Werror-IMPLICIT
+        - -Werror-BLKSEQ
+        - -Werror-LATCH
+        - -Werror-CASEINCOMPLETE
+        - -Wno-UNUSEDSIGNAL
+        - -Wno-PINCONNECTEMPTY
+    filesets:
+      - rtl
+

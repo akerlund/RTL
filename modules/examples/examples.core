@@ -1,0 +1,37 @@
+CAPI=2:
+name: "akerlund::examples:0"
+description: "Example/template module for UVM testbench development"
+
+filesets:
+  rtl:
+    files:
+      - rtl/dummy.sv
+    file_type: systemVerilogSource
+
+  tb:
+    files:
+      # Compilation units
+      - tb/ex_tb_pkg.sv
+      - tc/ex_tc_pkg.sv
+      - tb/ex_tb_top.sv
+      # Include files (included by tb/tc packages)
+      - tc/ex_base_test.sv: {is_include_file: true}
+      - tc/tc_display.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+    depend:
+      - "akerlund::vip_bool:0"
+      - "akerlund::vip_report_server:0"
+
+targets:
+  default:
+    filesets:
+      - rtl
+
+  uvm:
+    flow: sim
+    flow_options:
+      tool: verilator
+    filesets:
+      - rtl
+      - tb
+    toplevel: ex_tb_top

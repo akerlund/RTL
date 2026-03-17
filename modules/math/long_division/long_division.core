@@ -1,0 +1,90 @@
+CAPI=2:
+name: "akerlund::long_division:0"
+description: "Long division core with AXI4-Stream interface"
+
+filesets:
+  rtl:
+    files:
+      - rtl/long_division_core.sv
+      - rtl/long_division_axi4s_if.sv
+    file_type: systemVerilogSource
+
+  tb:
+    files:
+      # Compilation units
+      - tb/div_tb_pkg.sv
+      - tc/div_tc_pkg.sv
+      - tb/div_tb_top.sv
+      # Include files (included by tb/tc packages)
+      - tb/div_env.sv: {is_include_file: true}
+      - tb/div_scoreboard.sv: {is_include_file: true}
+      - tb/div_virtual_sequencer.sv: {is_include_file: true}
+      - tc/div_base_test.sv: {is_include_file: true}
+      - tc/tc_negative_divisions.sv: {is_include_file: true}
+      - tc/tc_overflow_divisions.sv: {is_include_file: true}
+      - tc/tc_positive_divisions.sv: {is_include_file: true}
+      - tc/tc_random_divisions.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+    depend:
+      - "akerlund::vip_bool:0"
+      - "akerlund::vip_axi4s_agent:0"
+      - "akerlund::vip_clk_rst_agent:0"
+      - "akerlund::vip_fixed_point:0"
+      - "akerlund::vip_math:0"
+      - "akerlund::vip_report_server:0"
+
+parameters:
+  AXI_DATA_WIDTH_P:
+    datatype: int
+    default: 32
+    paramtype: vlogparam
+  AXI_ID_WIDTH_P:
+    datatype: int
+    default: 4
+    paramtype: vlogparam
+  N_BITS_P:
+    datatype: int
+    default: 32
+    paramtype: vlogparam
+  Q_BITS_P:
+    datatype: int
+    default: 17
+    paramtype: vlogparam
+
+targets:
+  default:
+    filesets:
+      - rtl
+
+  uvm:
+    flow: sim
+    flow_options:
+      tool: verilator
+    filesets:
+      - rtl
+      - tb
+    parameters:
+      - AXI_DATA_WIDTH_P
+      - AXI_ID_WIDTH_P
+      - N_BITS_P
+      - Q_BITS_P
+    toplevel: div_tb_top
+
+  rtl:
+    flow: lint
+    flow_options:
+      tool: verilator
+      verilator_options:
+        - -Wall
+        - --timing
+        - --error-limit
+        - "0"
+        - -Werror-IMPLICIT
+        - -Werror-BLKSEQ
+        - -Werror-LATCH
+        - -Werror-CASEINCOMPLETE
+        - -Wno-UNUSEDSIGNAL
+        - -Wno-PINCONNECTEMPTY
+    filesets:
+      - rtl
+

@@ -1,0 +1,39 @@
+CAPI=2:
+name: "akerlund::fifo:0"
+description: "Synchronous FIFO with register and RAM backends"
+
+filesets:
+  rtl:
+    files:
+      - rtl/fifo.sv
+      - rtl/fifo_register.sv
+    file_type: systemVerilogSource
+    depend:
+      - "akerlund::memory_reg:0"
+      - "akerlund::memory_ram:0"
+
+  sva:
+    files:
+      - sva/bind_fifo_register.sva
+      - sva/sva_top.sva
+    file_type: systemVerilogSource
+
+parameters:
+  DATA_WIDTH_P:
+    datatype: int
+    default: 32
+    paramtype: vlogparam
+  ADDR_WIDTH_P:
+    datatype: int
+    default: 3
+    paramtype: vlogparam
+  MAX_REG_BYTES_P:
+    datatype: int
+    default: 256
+    paramtype: vlogparam
+
+targets:
+  default:
+    filesets:
+      - rtl
+      - sva

@@ -1,0 +1,92 @@
+CAPI=2:
+name: "akerlund::multiplication:0"
+description: "N.Q fixed-point multiplier with AXI4-Stream interface"
+
+filesets:
+  rtl:
+    files:
+      - rtl/dsp48_nq_multiplier.sv
+      - rtl/dsp48_nq_multiplier_axi4s_if.sv
+      - rtl/nq_multiplier.sv
+      - rtl/nq_multiplier_axi4s_if.sv
+    file_type: systemVerilogSource
+
+  tb:
+    files:
+      # Compilation units
+      - tb/mul_tb_pkg.sv
+      - tc/mul_tc_pkg.sv
+      - tb/mul_tb_top.sv
+      # Include files (included by tb/tc packages)
+      - tb/mul_env.sv: {is_include_file: true}
+      - tb/mul_scoreboard.sv: {is_include_file: true}
+      - tb/mul_seq_lib.sv: {is_include_file: true}
+      - tb/mul_virtual_sequencer.sv: {is_include_file: true}
+      - tc/mul_base_test.sv: {is_include_file: true}
+      - tc/tc_corner_multiplications.sv: {is_include_file: true}
+      - tc/tc_positive_multiplications.sv: {is_include_file: true}
+      - tc/tc_random_multiplications.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+    depend:
+      - "akerlund::vip_bool:0"
+      - "akerlund::vip_axi4s_agent:0"
+      - "akerlund::vip_clk_rst_agent:0"
+      - "akerlund::vip_fixed_point:0"
+      - "akerlund::vip_math:0"
+      - "akerlund::vip_report_server:0"
+
+parameters:
+  AXI_DATA_WIDTH_P:
+    datatype: int
+    default: 32
+    paramtype: vlogparam
+  AXI_ID_WIDTH_P:
+    datatype: int
+    default: 4
+    paramtype: vlogparam
+  N_BITS_P:
+    datatype: int
+    default: 32
+    paramtype: vlogparam
+  Q_BITS_P:
+    datatype: int
+    default: 17
+    paramtype: vlogparam
+
+targets:
+  default:
+    filesets:
+      - rtl
+
+  uvm:
+    flow: sim
+    flow_options:
+      tool: verilator
+    filesets:
+      - rtl
+      - tb
+    parameters:
+      - AXI_DATA_WIDTH_P
+      - AXI_ID_WIDTH_P
+      - N_BITS_P
+      - Q_BITS_P
+    toplevel: mul_tb_top
+
+  rtl:
+    flow: lint
+    flow_options:
+      tool: verilator
+      verilator_options:
+        - -Wall
+        - --timing
+        - --error-limit
+        - "0"
+        - -Werror-IMPLICIT
+        - -Werror-BLKSEQ
+        - -Werror-LATCH
+        - -Werror-CASEINCOMPLETE
+        - -Wno-UNUSEDSIGNAL
+        - -Wno-PINCONNECTEMPTY
+    filesets:
+      - rtl
+

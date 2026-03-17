@@ -1,0 +1,86 @@
+CAPI=2:
+name: "akerlund::afifo:0"
+description: "Asynchronous FIFO with gray-code pointer synchronization"
+
+filesets:
+  rtl:
+    files:
+      - rtl/gray_to_bin.sv
+      - rtl/afifo.sv
+      - rtl/afifo_core.sv
+    file_type: systemVerilogSource
+    depend:
+      - "akerlund::cdc_bit_sync:0"
+      - "akerlund::memory_reg:0"
+      - "akerlund::memory_ram:0"
+      - "akerlund::fifo:0"
+
+  tb:
+    files:
+      # Compilation units
+      - tb/fi_tb_pkg.sv
+      - tc/fi_tc_pkg.sv
+      - tb/fi_tb_top.sv
+      # Include files (included by tb/tc packages)
+      - tb/fi_env.sv: {is_include_file: true}
+      - tb/fi_scoreboard.sv: {is_include_file: true}
+      - tb/fi_virtual_sequencer.sv: {is_include_file: true}
+      - tc/fi_base_test.sv: {is_include_file: true}
+      - tc/tc_fi_basic.sv: {is_include_file: true}
+      - tc/tc_fi_fast_to_slow.sv: {is_include_file: true}
+      - tc/tc_fi_slow_to_fast.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+    depend:
+      - "akerlund::vip_bool:0"
+      - "akerlund::vip_axi4s_agent:0"
+      - "akerlund::vip_clk_rst_agent:0"
+      - "akerlund::vip_report_server:0"
+
+parameters:
+  DATA_WIDTH_P:
+    datatype: int
+    default: 128
+    paramtype: vlogparam
+  ADDR_WIDTH_P:
+    datatype: int
+    default: 2
+    paramtype: vlogparam
+
+targets:
+  default:
+    filesets:
+      - rtl
+
+  rtl:
+    flow: lint
+    flow_options:
+      tool: verilator
+      verilator_options:
+        - -Wall
+        - --timing
+        - --error-limit
+        - "0"
+        - -Werror-IMPLICIT
+        - -Werror-BLKSEQ
+        - -Werror-LATCH
+        - -Werror-CASEINCOMPLETE
+        - -Wno-UNUSEDSIGNAL
+        - -Wno-PINCONNECTEMPTY
+    filesets:
+      - rtl
+    parameters:
+      - DATA_WIDTH_P
+      - ADDR_WIDTH_P
+    toplevel: afifo
+
+  uvm:
+    flow: sim
+    flow_options:
+      tool: verilator
+    filesets:
+      - rtl
+      - tb
+    parameters:
+      - DATA_WIDTH_P
+      - ADDR_WIDTH_P
+    toplevel: fi_tb_top

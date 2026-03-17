@@ -1,0 +1,22 @@
+CAPI=2:
+name: "akerlund::button:0"
+description: "Debounced button core"
+
+filesets:
+  rtl:
+    files:
+      - rtl/button_core.sv
+    file_type: systemVerilogSource
+    depend:
+      - "akerlund::io_synchronizer:0"
+
+parameters:
+  NR_OF_DEBOUNCE_CLKS_P:
+    datatype: int
+    default: 100000
+    paramtype: vlogparam
+
+targets:
+  default:
+    filesets:
+      - rtl
