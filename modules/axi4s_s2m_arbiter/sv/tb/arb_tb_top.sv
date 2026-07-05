@@ -33,9 +33,9 @@ module arb_tb_top;
   vip_axi4s_if #(VIP_AXI4S_CFG_C) mst2_vif(clk_rst_vif.clk, clk_rst_vif.rst_n);
   vip_axi4s_if #(VIP_AXI4S_CFG_C) slv0_vif(clk_rst_vif.clk, clk_rst_vif.rst_n);
 
-  localparam int AXI_DATA_WIDTH_C = VIP_AXI4S_CFG_C.VIP_AXI4S_TDATA_WIDTH_P;
-  localparam int AXI_STRB_WIDTH_C = VIP_AXI4S_CFG_C.VIP_AXI4S_TSTRB_WIDTH_P;
-  localparam int AXI_KEEP_WIDTH_C = VIP_AXI4S_CFG_C.VIP_AXI4S_TKEEP_WIDTH_P;
+  localparam int AXI_DATA_WIDTH_C = (8 * VIP_AXI4S_CFG_C.VIP_AXI4S_TDATA_BYTES_P);
+  localparam int AXI_STRB_WIDTH_C = VIP_AXI4S_CFG_C.VIP_AXI4S_TDATA_BYTES_P;
+  localparam int AXI_KEEP_WIDTH_C = VIP_AXI4S_CFG_C.VIP_AXI4S_TDATA_BYTES_P;
   localparam int AXI_ID_WIDTH_C   = VIP_AXI4S_CFG_C.VIP_AXI4S_TID_WIDTH_P;
   localparam int AXI_DEST_WIDTH_C = VIP_AXI4S_CFG_C.VIP_AXI4S_TDEST_WIDTH_P;
   localparam int AXI_USER_WIDTH_C = VIP_AXI4S_CFG_C.VIP_AXI4S_TUSER_WIDTH_P;
@@ -120,6 +120,12 @@ module arb_tb_top;
 
 
   initial begin
+    // 1024 bursts x 128 beats, randomized 2-10 cycle gaps, comfortably
+    // exceeds UVM's 9200 (time-unit) default global timeout -- `refuse simv`
+    // invokes the compiled binary directly and doesn't apply the .core
+    // file's run_options, so +UVM_TIMEOUT on the command line has no effect
+    // here; set it programmatically instead.
+    uvm_root::get().set_timeout(50_000_000, 0);
     uvm_config_db #(virtual clk_rst_if)::set(uvm_root::get(),                      "uvm_test_top.tb_env*",                "vif", clk_rst_vif);
     uvm_config_db #(virtual clk_rst_if)::set(uvm_root::get(),                      "uvm_test_top.tb_env.clk_rst_agent0*", "vif", clk_rst_vif);
     uvm_config_db #(virtual vip_axi4s_if #(VIP_AXI4S_CFG_C))::set(uvm_root::get(), "uvm_test_top.tb_env.mst_agent0*",     "vif", mst0_vif);

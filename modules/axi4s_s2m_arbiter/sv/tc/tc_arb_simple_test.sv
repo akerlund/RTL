@@ -39,13 +39,18 @@ class tc_arb_simple_test extends arb_base_test;
     super.run_phase(phase);
     phase.raise_objection(this);
 
-    vip_axi4s_seq0.set_data_type(VIP_AXI4S_TDATA_COUNTER_E);
+    vip_axi4s_seq0.set_tdata_type(VIP_AXI4S_TDATA_COUNTER_E);
     vip_axi4s_seq0.set_cfg_burst_length(128, 1);
-    vip_axi4s_seq0.set_tstrb(VIP_AXI4S_TSTRB_ALL_E);
+    vip_axi4s_seq0.set_tstrb_type(VIP_AXI4S_TSTRB_ALL_E);
+    vip_axi4s_seq0.set_id_type(VIP_AXI4S_TID_RANDOM_E);
+    vip_axi4s_seq0.set_tdest_type(VIP_AXI4S_TDEST_CUSTOM_E);
     vip_axi4s_seq0.set_tid(0);
     vip_axi4s_seq0.set_nr_of_bursts(1024);
     vip_axi4s_seq0.set_log_denominator(4);
-    vip_axi4s_seq0.set_enable_tdest_increment(FALSE);
+    // set_enable_tdest_increment() doesn't exist on vip_axi4s_seq (the SV
+    // testcase never actually compiled before this fix) -- and it would have
+    // been redundant anyway: TDEST_CUSTOM already doesn't auto-increment
+    // (see vip_axi4s_item::post_randomize, only TDEST_INCR does).
     vip_axi4s_seq0.set_cfg_tdest(NR_OF_MASTERS_C-1, 0);
 
     vip_axi4s_seq0.start(v_sqr.slv0_sequencer);
