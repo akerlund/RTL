@@ -1,3 +1,7 @@
 **/.vscode
 **/__pycache__
 **/build
+**/rundir
+**/sim_build
+**/results.xml
+**/REVIEW.md
