@@ -11,12 +11,12 @@ filesets:
   tb:
     files:
       # Compilation units
-      - tb/ex_tb_pkg.sv
-      - tc/ex_tc_pkg.sv
-      - tb/ex_tb_top.sv
+      - sv/tb/ex_tb_pkg.sv
+      - sv/tc/ex_tc_pkg.sv
+      - sv/tb/ex_tb_top.sv
       # Include files (included by tb/tc packages)
-      - tc/ex_base_test.sv: {is_include_file: true}
-      - tc/tc_display.sv: {is_include_file: true}
+      - sv/tc/ex_base_test.sv: {is_include_file: true}
+      - sv/tc/tc_display.sv: {is_include_file: true}
     file_type: systemVerilogSource
     depend:
       - "akerlund::vip_bool:0"
@@ -28,10 +28,16 @@ targets:
       - rtl
 
   uvm:
-    flow: sim
-    flow_options:
-      tool: verilator
     filesets:
       - rtl
       - tb
     toplevel: ex_tb_top
+    tools:
+      vcs:
+        vcs_options:
+          - -ntb_opts
+          - uvm-1.2
+        run_options:
+          - +UVM_TESTNAME=tc_display
+          - -l
+          - tc_display.log
