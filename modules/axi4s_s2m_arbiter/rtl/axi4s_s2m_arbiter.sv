@@ -74,7 +74,9 @@ module axi4s_s2m_arbiter #(
 
   arbiter_state_t arbiter_state;
 
-  logic [$clog2(NR_OF_MASTERS_P)-1 : 0] mux_address;
+  localparam int unsigned MST_SEL_WIDTH_C = $clog2(NR_OF_MASTERS_P);
+
+  logic [MST_SEL_WIDTH_C-1 : 0] mux_address;
   logic                                 output_enable;
 
   // FSM
@@ -90,11 +92,22 @@ module axi4s_s2m_arbiter #(
 
         WAIT_SLV_TVALID_E: begin
 
+          // Capturing on slv_tvalid alone (not slv_tvalid && slv_tready) relies
+          // on the AXI4-Stream contract that a master holds tdest (and the rest
+          // of the payload) stable while stalled, so this is not a functional
+          // bug -- just documenting the reliance per review.
           if (slv_tvalid) begin
 
-            arbiter_state <= WAIT_SLV_TLAST_E;
-            mux_address   <= slv_tdest;
-            output_enable <= '1;
+            if (32'(slv_tdest) < NR_OF_MASTERS_P) begin
+              arbiter_state <= WAIT_SLV_TLAST_E;
+              mux_address   <= MST_SEL_WIDTH_C'(slv_tdest);
+              output_enable <= '1;
+            end
+            else begin
+              // Out-of-range destination: stall (slv_tready stays low via
+              // output_enable=='0) instead of aliasing onto a valid master.
+              $error("axi4s_s2m_arbiter: slv_tdest (%0d) is out of range for NR_OF_MASTERS_P=%0d; stalling", slv_tdest, NR_OF_MASTERS_P);
+            end
 
           end
         end
