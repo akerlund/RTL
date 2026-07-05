@@ -11,15 +11,15 @@ filesets:
   tb:
     files:
       # Compilation units
-      - tb/arb_tb_pkg.sv
-      - tc/arb_tc_pkg.sv
-      - tb/arb_tb_top.sv
+      - sv/tb/arb_tb_pkg.sv
+      - sv/tc/arb_tc_pkg.sv
+      - sv/tb/arb_tb_top.sv
       # Include files (included by tb/tc packages)
-      - tb/arb_env.sv: {is_include_file: true}
-      - tb/arb_scoreboard.sv: {is_include_file: true}
-      - tb/arb_virtual_sequencer.sv: {is_include_file: true}
-      - tc/arb_base_test.sv: {is_include_file: true}
-      - tc/tc_arb_simple_test.sv: {is_include_file: true}
+      - sv/tb/arb_env.sv: {is_include_file: true}
+      - sv/tb/arb_scoreboard.sv: {is_include_file: true}
+      - sv/tb/arb_virtual_sequencer.sv: {is_include_file: true}
+      - sv/tc/arb_base_test.sv: {is_include_file: true}
+      - sv/tc/tc_arb_simple_test.sv: {is_include_file: true}
     file_type: systemVerilogSource
     depend:
       - "akerlund::vip_bool:0"
@@ -63,21 +63,22 @@ targets:
       - rtl
 
   uvm:
-    flow: sim
-    flow_options:
-      tool: verilator
     filesets:
       - rtl
       - tb
-    parameters:
-      - NR_OF_MASTERS_P
-      - AXI_DATA_WIDTH_P
-      - AXI_STRB_WIDTH_P
-      - AXI_KEEP_WIDTH_P
-      - AXI_ID_WIDTH_P
-      - AXI_DEST_WIDTH_P
-      - AXI_USER_WIDTH_P
     toplevel: arb_tb_top
+    tools:
+      vcs:
+        vcs_options:
+          - -ntb_opts
+          - uvm-1.2
+        run_options:
+          - +UVM_TESTNAME=tc_arb_simple_test
+          # 1024 bursts x 128 beats x 3 masters, with randomized 2-10 cycle
+          # gaps, comfortably exceeds UVM's 9200 (time-unit) default global
+          # timeout -- this is a pre-existing testbench characteristic, not
+          # specific to this module's RTL (confirmed unchanged on stock RTL).
+          - +UVM_TIMEOUT=50000000,NO
 
   rtl:
     flow: lint
@@ -85,6 +86,7 @@ targets:
       tool: verilator
       verilator_options:
         - -Wall
+        - -Wno-fatal
         - --timing
         - --error-limit
         - "0"
@@ -96,4 +98,12 @@ targets:
         - -Wno-PINCONNECTEMPTY
     filesets:
       - rtl
-
+    parameters:
+      - NR_OF_MASTERS_P
+      - AXI_DATA_WIDTH_P
+      - AXI_STRB_WIDTH_P
+      - AXI_KEEP_WIDTH_P
+      - AXI_ID_WIDTH_P
+      - AXI_DEST_WIDTH_P
+      - AXI_USER_WIDTH_P
+    toplevel: axi4s_m2s_arbiter

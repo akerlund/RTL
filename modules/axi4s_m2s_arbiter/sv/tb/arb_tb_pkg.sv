@@ -36,18 +36,17 @@ package arb_tb_pkg;
 
   // Configuration of the AXI4-S VIP
   localparam vip_axi4s_cfg_t VIP_AXI4S_CFG_C = '{
-    VIP_AXI4S_TDATA_WIDTH_P : 16,
-    VIP_AXI4S_TSTRB_WIDTH_P : 2,
-    VIP_AXI4S_TKEEP_WIDTH_P : 2,
+    VIP_AXI4S_TDATA_BYTES_P : 2,
     VIP_AXI4S_TID_WIDTH_P   : 2,
     VIP_AXI4S_TDEST_WIDTH_P : 1,
     VIP_AXI4S_TUSER_WIDTH_P : 0
   };
 
+  typedef vip_axi4s_seq #(VIP_AXI4S_CFG_C) vip_axi4s_seq_t;
+
   `include "arb_scoreboard.sv"
   `include "arb_virtual_sequencer.sv"
   `include "arb_env.sv"
-  `include "vip_axi4s_seq_lib.sv"
 
 endpackage
 
