@@ -39,24 +39,33 @@ class tc_arb_simple_test extends arb_base_test;
     super.run_phase(phase);
     phase.raise_objection(this);
 
-    vip_axi4s_seq0.set_data_type(VIP_AXI4S_TDATA_COUNTER_E);
+    vip_axi4s_seq0.set_tdata_type(VIP_AXI4S_TDATA_COUNTER_E);
     vip_axi4s_seq0.set_cfg_burst_length(128, 1);
-    vip_axi4s_seq0.set_tstrb(VIP_AXI4S_TSTRB_ALL_E);
+    vip_axi4s_seq0.set_tstrb_type(VIP_AXI4S_TSTRB_ALL_E);
+    vip_axi4s_seq0.set_id_type(VIP_AXI4S_TID_RANDOM_E);
+    vip_axi4s_seq0.set_tdest_type(VIP_AXI4S_TDEST_CUSTOM_E);
     vip_axi4s_seq0.set_tid(0);
+    vip_axi4s_seq0.set_tdest(0);
     vip_axi4s_seq0.set_nr_of_bursts(1024);
     vip_axi4s_seq0.set_log_denominator(4);
 
-    vip_axi4s_seq1.set_data_type(VIP_AXI4S_TDATA_COUNTER_E);
+    vip_axi4s_seq1.set_tdata_type(VIP_AXI4S_TDATA_COUNTER_E);
     vip_axi4s_seq1.set_cfg_burst_length(128, 1);
-    vip_axi4s_seq1.set_tstrb(VIP_AXI4S_TSTRB_ALL_E);
+    vip_axi4s_seq1.set_tstrb_type(VIP_AXI4S_TSTRB_ALL_E);
+    vip_axi4s_seq1.set_id_type(VIP_AXI4S_TID_RANDOM_E);
+    vip_axi4s_seq1.set_tdest_type(VIP_AXI4S_TDEST_CUSTOM_E);
     vip_axi4s_seq1.set_tid(1);
+    vip_axi4s_seq1.set_tdest(0);
     vip_axi4s_seq1.set_nr_of_bursts(1024);
     vip_axi4s_seq1.set_log_denominator(4);
 
-    vip_axi4s_seq2.set_data_type(VIP_AXI4S_TDATA_COUNTER_E);
+    vip_axi4s_seq2.set_tdata_type(VIP_AXI4S_TDATA_COUNTER_E);
     vip_axi4s_seq2.set_cfg_burst_length(128, 1);
-    vip_axi4s_seq2.set_tstrb(VIP_AXI4S_TSTRB_ALL_E);
+    vip_axi4s_seq2.set_tstrb_type(VIP_AXI4S_TSTRB_ALL_E);
+    vip_axi4s_seq2.set_id_type(VIP_AXI4S_TID_RANDOM_E);
+    vip_axi4s_seq2.set_tdest_type(VIP_AXI4S_TDEST_CUSTOM_E);
     vip_axi4s_seq2.set_tid(2);
+    vip_axi4s_seq2.set_tdest(0);
     vip_axi4s_seq2.set_nr_of_bursts(1024);
     vip_axi4s_seq2.set_log_denominator(4);
 

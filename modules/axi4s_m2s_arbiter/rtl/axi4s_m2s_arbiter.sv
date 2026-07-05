@@ -20,6 +20,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+`default_nettype none
+
 module axi4s_m2s_arbiter #(
     parameter int NR_OF_MASTERS_P  = -1,
     parameter int AXI_DATA_WIDTH_P = -1,
@@ -63,7 +65,14 @@ module axi4s_m2s_arbiter #(
     output logic                         [AXI_USER_WIDTH_P-1 : 0] slv_tuser
   );
 
-  localparam logic [$clog2(NR_OF_MASTERS_P)-1 : 0] NR_OF_MASTERS_C = NR_OF_MASTERS_P;
+  localparam int unsigned MST_SEL_WIDTH_C = $clog2(NR_OF_MASTERS_P);
+  localparam logic [MST_SEL_WIDTH_C-1 : 0] LAST_MST_IDX_C = MST_SEL_WIDTH_C'(NR_OF_MASTERS_P - 1);
+
+  initial begin
+    if (NR_OF_MASTERS_P < 2) begin
+      $fatal(1, "axi4s_m2s_arbiter: NR_OF_MASTERS_P must be >= 2 (got %0d)", NR_OF_MASTERS_P);
+    end
+  end
 
   typedef enum {
     FIND_MST_TVALID_E,
@@ -72,8 +81,8 @@ module axi4s_m2s_arbiter #(
 
   arbiter_state_t arbiter_state;
 
-  logic [$clog2(NR_OF_MASTERS_P)-1 : 0] rotating_mst;
-  logic [$clog2(NR_OF_MASTERS_P)-1 : 0] mux_address;
+  logic [MST_SEL_WIDTH_C-1 : 0] rotating_mst;
+  logic [MST_SEL_WIDTH_C-1 : 0] mux_address;
   logic                                 output_enable;
 
   // FSM
@@ -90,22 +99,19 @@ module axi4s_m2s_arbiter #(
 
         FIND_MST_TVALID_E: begin
 
-          if (slv_tready) begin
-
-            if (rotating_mst == NR_OF_MASTERS_C-1) begin
-              rotating_mst <= '0;
-            end
-            else begin
-              rotating_mst <= rotating_mst + 1;
-            end
-
-            if (mst_tvalid[rotating_mst]) begin
-              arbiter_state <= WAIT_MST_TLAST_E;
-              mux_address  <= rotating_mst;
-              output_enable <= '1;
-            end
-
+          if (rotating_mst == LAST_MST_IDX_C) begin
+            rotating_mst <= '0;
           end
+          else begin
+            rotating_mst <= rotating_mst + 1;
+          end
+
+          if (mst_tvalid[rotating_mst]) begin
+            arbiter_state <= WAIT_MST_TLAST_E;
+            mux_address   <= rotating_mst;
+            output_enable <= '1;
+          end
+
         end
 
 
@@ -136,21 +142,7 @@ module axi4s_m2s_arbiter #(
     slv_tuser  = '0;
     mst_tready = '0;
 
-
-    if (!output_enable) begin
-
-      slv_tvalid = '0;
-      slv_tdata  = slv_tdata;
-      slv_tstrb  = slv_tstrb;
-      slv_tkeep  = slv_tkeep;
-      slv_tlast  = slv_tlast;
-      slv_tid    = slv_tid;
-      slv_tdest  = slv_tdest;
-      slv_tuser  = slv_tuser;
-      mst_tready = '0;
-
-    end
-    else begin
+    if (output_enable) begin
 
       slv_tvalid = mst_tvalid [mux_address];
       slv_tdata  = mst_tdata  [mux_address];
