@@ -1,27 +1,25 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2020 Fredrik Åkerlund
+// Copyright (C) 2026 Fredrik Åkerlund
 // https://github.com/akerlund/RTL
 //
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
 //
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-//
-// Description:
-//
-// Dividend
-// -------- = Quotient + Remainder
-//  Divisor
-//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -45,98 +43,51 @@ module long_division_core #(
     output logic                         egr_overflow
   );
 
-  localparam int DIVIDEND_SIZE_C =   N_BITS_P + Q_BITS_P - 1; // Sign bit is removed (below, too)
-  localparam int DIVISOR_SIZE_C  = 2*N_BITS_P + Q_BITS_P - 2;
-  localparam int QUOTIENT_SIZE_C = 2*N_BITS_P + Q_BITS_P - 2;
+  localparam int EXT_WIDTH_C = (2*N_BITS_P) + Q_BITS_P + 1;
 
-  logic         [DIVIDEND_SIZE_C-1 : 0] dividend;
-  logic          [DIVISOR_SIZE_C-1 : 0] divisor;
-  logic         [QUOTIENT_SIZE_C-1 : 0] quotient;
+  logic signed [EXT_WIDTH_C-1 : 0] scaled_dividend;
+  logic signed [EXT_WIDTH_C-1 : 0] extended_divisor;
+  logic signed [EXT_WIDTH_C-1 : 0] safe_divisor;
+  logic signed [EXT_WIDTH_C-1 : 0] quotient;
+  logic signed [EXT_WIDTH_C-1 : 0] remainder;
+  logic signed [EXT_WIDTH_C-1 : 0] max_value;
+  logic signed [EXT_WIDTH_C-1 : 0] min_value;
+  logic                            result_overflow;
 
-  logic [$clog2(DIVIDEND_SIZE_C)-1 : 0] counter;
-  logic                                 sign_bit;
-  logic                                 overflow;
-
-  // The vectors are converted to positive if the were inverted, this is the opposite
-  assign egr_quotient  = sign_bit ? -quotient : quotient;
-  assign egr_remainder = sign_bit ? -dividend : dividend;
-  assign egr_overflow  = overflow;
+  assign scaled_dividend = $signed({{(EXT_WIDTH_C-N_BITS_P){ing_dividend[N_BITS_P-1]}}, ing_dividend}) <<< Q_BITS_P;
+  assign extended_divisor = $signed({{(EXT_WIDTH_C-N_BITS_P){ing_divisor[N_BITS_P-1]}}, ing_divisor});
+  assign safe_divisor = (ing_divisor == '0) ? {{(EXT_WIDTH_C-1){1'b0}}, 1'b1} : extended_divisor;
+  assign quotient = scaled_dividend / safe_divisor;
+  assign remainder = scaled_dividend % safe_divisor;
+  assign max_value = ({{(EXT_WIDTH_C-1){1'b0}}, 1'b1} <<< (N_BITS_P-1)) - 1'b1;
+  assign min_value = -({{(EXT_WIDTH_C-1){1'b0}}, 1'b1} <<< (N_BITS_P-1));
+  assign result_overflow = (ing_divisor == '0) || (quotient > max_value) || (quotient < min_value);
 
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-      ing_ready <= '1;
-      egr_valid <= '0;
-      dividend  <= '0;
-      divisor   <= '0;
-      quotient  <= '0;
-      overflow  <= '0;
-      sign_bit  <= '0;
-      counter   <= '0;
+      ing_ready     <= '1;
+      egr_valid     <= '0;
+      egr_quotient  <= '0;
+      egr_remainder <= '0;
+      egr_overflow  <= '0;
     end
     else begin
-
       ing_ready <= '1;
       egr_valid <= '0;
 
-      if (ing_ready && ing_valid) begin
+      if (ing_valid) begin
+        egr_valid    <= '1;
+        egr_overflow <= result_overflow;
 
-        ing_ready <= 1'b0;
-        counter   <= DIVIDEND_SIZE_C;
-        quotient  <= 0;
-        dividend  <= 0;
-        divisor   <= 0;
-        overflow  <= 1'b0;
-
-        // Left-alignment of the dividend and if (the removed) sign is negative the vector is inversed
-        if (ing_dividend[N_BITS_P-1]) begin
-          dividend[DIVIDEND_SIZE_C-1 : Q_BITS_P] <= -ing_dividend[N_BITS_P-2 : 0];
+        if (result_overflow) begin
+          egr_quotient  <= '0;
+          egr_remainder <= '0;
         end
         else begin
-          dividend[DIVIDEND_SIZE_C-1 : Q_BITS_P] <=  ing_dividend[N_BITS_P-2 : 0];
+          egr_quotient  <= quotient[N_BITS_P-1 : 0];
+          egr_remainder <= remainder[N_BITS_P-1 : 0];
         end
-
-        // Left-alignment of the divisor and if (the removed) sign is negative the vector is inversed
-        if (ing_divisor[N_BITS_P-1]) begin
-          divisor[DIVISOR_SIZE_C-1 : DIVIDEND_SIZE_C] <= -ing_divisor[N_BITS_P-2 : 0];
-        end
-        else begin
-          divisor[DIVISOR_SIZE_C-1 : DIVIDEND_SIZE_C] <=  ing_divisor[N_BITS_P-2 : 0];
-        end
-
-        // Sign is saved for converting the calculated quotient and dividend
-        sign_bit <= ing_dividend[N_BITS_P-1] ^ ing_divisor[N_BITS_P-1];
-
       end
-      else if (!ing_ready) begin
-
-        ing_ready <= '0;
-
-        if (dividend >= divisor) begin
-          dividend <= dividend - divisor;
-          quotient <= {quotient[QUOTIENT_SIZE_C-2 : 0], 1'b1};
-        end
-        else begin
-          quotient <= {quotient[QUOTIENT_SIZE_C-2 : 0], 1'b0};
-        end
-
-        divisor <= divisor >> 1;
-
-        if (counter == 0) begin
-
-          ing_ready <= '1;
-          egr_valid <= '1;
-
-          if (quotient[QUOTIENT_SIZE_C-1 : N_BITS_P] > 0) begin
-            overflow <= '1;
-          end
-
-        end
-        else begin
-          counter <= counter - 1;
-        end
-
-      end
-
     end
   end
 

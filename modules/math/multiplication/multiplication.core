@@ -14,18 +14,18 @@ filesets:
   tb:
     files:
       # Compilation units
-      - tb/mul_tb_pkg.sv
-      - tc/mul_tc_pkg.sv
-      - tb/mul_tb_top.sv
+      - sv/tb/mul_tb_pkg.sv
+      - sv/tc/mul_tc_pkg.sv
+      - sv/tb/mul_tb_top.sv
       # Include files (included by tb/tc packages)
-      - tb/mul_env.sv: {is_include_file: true}
-      - tb/mul_scoreboard.sv: {is_include_file: true}
-      - tb/mul_seq_lib.sv: {is_include_file: true}
-      - tb/mul_virtual_sequencer.sv: {is_include_file: true}
-      - tc/mul_base_test.sv: {is_include_file: true}
-      - tc/tc_corner_multiplications.sv: {is_include_file: true}
-      - tc/tc_positive_multiplications.sv: {is_include_file: true}
-      - tc/tc_random_multiplications.sv: {is_include_file: true}
+      - sv/tb/mul_env.sv: {is_include_file: true}
+      - sv/tb/mul_scoreboard.sv: {is_include_file: true}
+      - sv/tb/mul_seq_lib.sv: {is_include_file: true}
+      - sv/tb/mul_virtual_sequencer.sv: {is_include_file: true}
+      - sv/tc/mul_base_test.sv: {is_include_file: true}
+      - sv/tc/tc_corner_multiplications.sv: {is_include_file: true}
+      - sv/tc/tc_positive_multiplications.sv: {is_include_file: true}
+      - sv/tc/tc_random_multiplications.sv: {is_include_file: true}
     file_type: systemVerilogSource
     depend:
       - "akerlund::vip_bool:0"
@@ -59,18 +59,17 @@ targets:
       - rtl
 
   uvm:
-    flow: sim
-    flow_options:
-      tool: verilator
     filesets:
       - rtl
       - tb
-    parameters:
-      - AXI_DATA_WIDTH_P
-      - AXI_ID_WIDTH_P
-      - N_BITS_P
-      - Q_BITS_P
     toplevel: mul_tb_top
+    tools:
+      vcs:
+        vcs_options:
+          - -ntb_opts
+          - uvm-1.2
+        run_options:
+          - +UVM_TESTNAME=tc_positive_multiplications
 
   rtl:
     flow: lint
@@ -78,6 +77,7 @@ targets:
       tool: verilator
       verilator_options:
         - -Wall
+        - -Wno-fatal
         - --timing
         - --error-limit
         - "0"
@@ -89,4 +89,9 @@ targets:
         - -Wno-PINCONNECTEMPTY
     filesets:
       - rtl
-
+    parameters:
+      - AXI_DATA_WIDTH_P
+      - AXI_ID_WIDTH_P
+      - N_BITS_P
+      - Q_BITS_P
+    toplevel: nq_multiplier_axi4s_if

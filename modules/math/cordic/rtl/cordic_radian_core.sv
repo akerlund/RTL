@@ -1,22 +1,25 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2020 Fredrik Åkerlund
+// Copyright (C) 2026 Fredrik Åkerlund
 // https://github.com/akerlund/RTL
 //
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
 //
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-//
-// Description:
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -51,12 +54,13 @@ module cordic_radian_core #(
   logic signed [DATA_WIDTH_P-1 : 0] x_vector [0 : NR_OF_STAGES_P-1]; // Cosine vector
   logic signed [DATA_WIDTH_P-1 : 0] y_vector [0 : NR_OF_STAGES_P-1]; // Sine vector
   logic signed [DATA_WIDTH_P-1 : 0] z_vector [0 : NR_OF_STAGES_P-1]; // Rotating vector
+  logic        [NR_OF_STAGES_P-1 : 0] theta_negative;
 
   // Sign correction of the input theta vector
   assign theta_vector = !ing_theta_vector[DATA_WIDTH_P-1] ? ing_theta_vector : -ing_theta_vector;
 
   // Assigning the output registers
-  assign egr_sine_vector   = y_vector[NR_OF_STAGES_P-1];
+  assign egr_sine_vector   = theta_negative[NR_OF_STAGES_P-1] ? -y_vector[NR_OF_STAGES_P-1] : y_vector[NR_OF_STAGES_P-1];
   assign egr_cosine_vector = x_vector[NR_OF_STAGES_P-1];
 
 
@@ -65,8 +69,10 @@ module cordic_radian_core #(
       x_vector[0] <= '0;
       y_vector[0] <= '0;
       z_vector[0] <= '0;
+      theta_negative[0] <= '0;
     end
     else begin
+      theta_negative[0] <= ing_theta_vector[DATA_WIDTH_P-1];
 
       // Quadrant 1 - Do nothing
       if (theta_vector <= pos_pi_2_quarter) begin
@@ -102,7 +108,7 @@ module cordic_radian_core #(
       logic                             z_sign;
       logic signed [DATA_WIDTH_P-1 : 0] x_shr;
       logic signed [DATA_WIDTH_P-1 : 0] y_shr;
-      logic        [DATA_WIDTH_P-1 : 0] atan_value;
+      logic signed [DATA_WIDTH_P-1 : 0] atan_value;
 
       // Arithmetic right shift (>>>) fills with value of sign bit if expression is signed
       assign x_shr = x_vector[i] >>> i;
@@ -112,18 +118,20 @@ module cordic_radian_core #(
       assign atan_value = atan_radian_table_32stage_n64q60[i][63 : 63-DATA_WIDTH_P+1];
 
       // The sign of the current rotation angle
-      assign z_sign = z_vector[i][31];
+      assign z_sign = z_vector[i][DATA_WIDTH_P-1];
 
       always_ff @(posedge clk or negedge rst_n) begin: cordic_stage
         if (!rst_n) begin
           x_vector[i+1] <= '0;
           y_vector[i+1] <= '0;
           z_vector[i+1] <= '0;
+          theta_negative[i+1] <= '0;
         end
         else begin
           x_vector[i+1] <= z_sign ? x_vector[i] + y_shr      : x_vector[i] - y_shr;
           y_vector[i+1] <= z_sign ? y_vector[i] - x_shr      : y_vector[i] + x_shr;
           z_vector[i+1] <= z_sign ? z_vector[i] + atan_value : z_vector[i] - atan_value;
+          theta_negative[i+1] <= theta_negative[i];
         end
       end
     end

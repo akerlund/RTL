@@ -1,10 +1,27 @@
 # Multiplication with Fixed Point
 
-![Test  Status](https://img.shields.io/badge/test-passes-green)
+![Test Status](https://img.shields.io/badge/test-passes-green)
 ![Synth Status](https://img.shields.io/badge/synthesis-passes-green)
-![FPGA  Status](https://img.shields.io/badge/fpga-N/A-lightgrey)
+![FPGA Status](https://img.shields.io/badge/fpga-N/A-lightgrey)
 
-Parameterizable fixed-point multiplier
+## Table of Contents
+
+- [Overview](#overview)
+- [Parameters and Ports](#parameters-and-ports)
+- [Simulation / Verification](#simulation--verification)
+- [Synthesis](#synthesis)
+- [License](#license)
+
+## Overview
+
+A parameterizable fixed-point multiplier in N.Q format (N total bits, Q fractional bits). Both a bare-core module (`nq_multiplier`) and an AXI4-Stream wrapper (`nq_multiplier_axi4s_if`) are provided. A DSP48-mapped variant (`dsp48_nq_multiplier`) is also included for Xilinx targets.
+
+The AXI4-S interface expects two consecutive transfers per multiply: the first `tdata` word is the multiplicand and the second is the multiplier. The result is returned on the egress port; `tuser` signals arithmetic overflow.
+The wrapper is fixed-latency AXI4-Stream style: it has ingress `tready`, but no egress `tready` backpressure.
+
+FuseSoC core name: `akerlund::multiplication:0`
+
+## Parameters and Ports
 
 ```verilog
 module nq_multiplier_axi4s_if #(
@@ -67,6 +84,19 @@ and an UVM test bench with these tests:
 - tc_positive_multiplications
 - tc_random_multiplications
 
+## Simulation / Verification
+
+The legacy UVM test bench lives under `sv/` and the cocotb port lives under `py/`.
+The cocotb tests drive the two-beat AXI4-Stream request protocol and compare the
+registered product/overflow response against a Python N.Q fixed-point multiplication
+reference model, including signed corner cases and overflow clearing.
+
+```bash
+refuse vcs && refuse simv --all
+refuse cocotb -t tc_corner_multiplications
+refuse cocotb -t tc_positive_multiplications
+refuse cocotb -t tc_random_multiplications
+```
 
 ## Performed Tests
 
@@ -104,3 +134,7 @@ parameter int Q_BITS_P         = 15
 | F8 Muxes                |    2 |     0 |     13300 |  0.02 |
 +-------------------------+------+-------+-----------+-------+
 ```
+
+## License
+
+Copyright (C) 2020 Fredrik Åkerlund — released under the GNU General Public License v3 or later. See [LICENSE](../../../LICENSE).
