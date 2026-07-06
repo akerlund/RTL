@@ -48,7 +48,7 @@ class tc_arb_simple_test(arb_base_test):
     await Combine(*tasks)
 
     sb = self.tb_env.scoreboard0
-    assert sb.number_of_failed == 0, f"{sb.number_of_failed} mismatches"
+    sb.assert_empty(expected_count=3 * 1024)
     self.drop_objection()
 
 

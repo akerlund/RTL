@@ -37,7 +37,7 @@ class tc_arb_simple_test(arb_base_test):
     await seq.start(self.tb_env.slv_agent0.sequencer)
 
     sb = self.tb_env.scoreboard0
-    assert sb.number_of_failed == 0, f"{sb.number_of_failed} mismatches"
+    sb.assert_empty(expected_count=1024)
     self.drop_objection()
 
 

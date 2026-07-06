@@ -39,7 +39,7 @@ class tc_fi_basic(fi_base_test):
     await seq.start(self.tb_env.mst_agent0.sequencer)
 
     sb = self.tb_env.scoreboard0
-    assert sb.number_of_failed == 0, f"{sb.number_of_failed} mismatches"
+    sb.assert_empty(expected_count=2**16)
     self.drop_objection()
 
 

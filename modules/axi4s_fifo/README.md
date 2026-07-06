@@ -18,7 +18,7 @@
 
 A single-clock AXI4-Stream FIFO. The intended use is to concatenate all AXI4-S sideband signals (`tdata`, `tlast`, etc.) into the `tuser` vector on ingress, and split them back out on egress. This keeps the FIFO generic — only `tuser` width and depth need to be configured.
 
-The underlying storage is provided by `akerlund::fifo`, which automatically selects between a register-based or RAM-based backend depending on total bit capacity vs. `MAX_REG_BYTES_P`.
+The underlying storage is provided by the RAM-backed `akerlund::fifo`.
 
 ## Parameters
 
@@ -26,7 +26,6 @@ The underlying storage is provided by `akerlund::fifo`, which automatically sele
 |---|---|---|
 | `TUSER_WIDTH_P` | 32 | Width of the `tuser` data vector (concatenation of all AXI4-S signals to buffer) |
 | `ADDR_WIDTH_P` | 7 | Address width; FIFO depth = 2^`ADDR_WIDTH_P` entries |
-| `MAX_REG_BYTES_P` | 256 | Threshold in bytes below which registers are used instead of a RAM |
 
 ## Ports
 
@@ -54,8 +53,7 @@ assign {egr_tlast, egr_tdata} = egr_tuser;
 
 axi4s_fifo #(
   .TUSER_WIDTH_P        ( TUSER_WIDTH_C        ),
-  .ADDR_WIDTH_P         ( ADDR_WIDTH_C         ),
-  .MAX_REG_BYTES_P      ( 256                  )
+  .ADDR_WIDTH_P         ( ADDR_WIDTH_C         )
 ) u_axi4s_fifo (
   .clk                  ( clk                  ),
   .rst_n                ( rst_n                ),

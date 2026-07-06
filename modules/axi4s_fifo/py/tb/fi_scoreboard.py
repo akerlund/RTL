@@ -51,6 +51,16 @@ class fi_scoreboard(uvm_component):
         f"Test passed ({self.number_of_passed})/({self.number_of_compared}) "
         "finished transfers")
 
+  def assert_empty(self, expected_count=None):
+    assert not self.master_items, (
+      f"{len(self.master_items)} items still in the Master queue")
+    assert not self.slave_items, (
+      f"{len(self.slave_items)} items still in the Slave queue")
+    if expected_count is not None:
+      assert self.number_of_compared == expected_count, (
+        f"Compared {self.number_of_compared}, expected {expected_count}")
+    assert self.number_of_failed == 0, f"{self.number_of_failed} mismatches"
+
   def _write_mst(self, item):
     self.number_of_master_items += 1
     self.master_items.append(item)

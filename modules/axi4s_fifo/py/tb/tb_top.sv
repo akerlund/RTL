@@ -1,19 +1,31 @@
 ////////////////////////////////////////////////////////////////////////////////
-// cocotb entry point for axi4s_fifo.
 //
-// The DUT only carries a generic tuser vector (no tdata/tlast of its own) --
-// the SV testbench packs {tlast, tdata} into ing_tuser on ingress and unpacks
-// egr_tuser back into {tlast, tdata} on egress (see sv/tb/fi_tb_top.sv). This
-// wrapper does the same packing/unpacking so the standard AXI4-S cocotb VIP
-// (Axi4sBus) can attach to plain mst_*/slv_* signals; tstrb/tkeep/tid/tdest/
-// tuser are intentionally absent from this wrapper's ports (Axi4sBus tolerates
-// missing signals) since this DUT has no concept of them.
+// Copyright (C) 2026 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
 ////////////////////////////////////////////////////////////////////////////////
 
 module tb_top #(
     parameter int AXI_DATA_WIDTH_P  = 32,
-    parameter int FIFO_ADDR_WIDTH_P = 6,
-    parameter int MAX_REG_BYTES_P   = 256
+    parameter int FIFO_ADDR_WIDTH_P = 6
   )(
     input  wire clk,
     input  wire rst_n,
@@ -43,8 +55,7 @@ module tb_top #(
 
   axi4s_fifo #(
     .TUSER_WIDTH_P        ( TUSER_WIDTH_C        ),
-    .ADDR_WIDTH_P         ( FIFO_ADDR_WIDTH_P    ),
-    .MAX_REG_BYTES_P      ( MAX_REG_BYTES_P      )
+    .ADDR_WIDTH_P         ( FIFO_ADDR_WIDTH_P    )
   ) dut (
     .clk                  ( clk                  ),
     .rst_n                ( rst_n                ),

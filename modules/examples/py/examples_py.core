@@ -1,0 +1,24 @@
+CAPI=2:
+name: "akerlund::examples_py:0"
+description: "Examples cocotb tests"
+
+filesets:
+  tb:
+    files:
+      - ../rtl/dummy.sv
+      - tb/tb_top.sv
+    file_type: systemVerilogSource
+
+targets:
+  sim:
+    flow: sim
+    flow_options:
+      tool: verilator
+      cocotb_module: cocotb_entry
+      mode: cc
+      verilator_options:
+        - -Wno-fatal
+        - --public-flat-rw
+    filesets:
+      - tb
+    toplevel: tb_top

@@ -41,11 +41,6 @@ parameters:
     datatype: int
     default: 7
     paramtype: vlogparam
-  MAX_REG_BYTES_P:
-    datatype: int
-    default: 256
-    paramtype: vlogparam
-
 targets:
   default:
     filesets:
@@ -85,5 +80,4 @@ targets:
     parameters:
       - TUSER_WIDTH_P
       - ADDR_WIDTH_P
-      - MAX_REG_BYTES_P
     toplevel: axi4s_fifo
