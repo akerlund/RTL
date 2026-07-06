@@ -1,16 +1,35 @@
-# CORDIC - System Verilog
+# CORDIC
 
-![Test  Status](https://img.shields.io/badge/test-pass-green)
+![Test Status](https://img.shields.io/badge/test-pass-green)
 ![Synth Status](https://img.shields.io/badge/synthesis-pass-green)
-![FPGA  Status](https://img.shields.io/badge/fpga-N/A-lightgrey)
+![FPGA Status](https://img.shields.io/badge/fpga-N/A-lightgrey)
 
-This is a System Verilog implementation of the CORDIC algorithm. The design use fixed point representation of the input and output vectors. The input should be between ±2π with four integer bits and the rest as fractional bits and the output will be between ±1.
+## Table of Contents
 
-This implementation of the CORDIC algorithm can yield a simulation like this
+- [Overview](#overview)
+- [Features](#feature)
+- [Simulation / Verification](#simulation--verification)
+- [Synthesis](#synthesis)
+- [Theory](#cordic-theory)
+- [License](#license)
 
-![sim](https://github.com/akerlund/rtl_common_design/blob/master/.pictures/cordic/cordic_simulation.JPG)
+## Overview
 
-## Feature
+A pipelined CORDIC (COordinate Rotation Digital Computer) implementation in SystemVerilog for computing sine and cosine. Both a raw core (`cordic_radian_top`) with a simple parallel interface and a fully pipelined AXI4-Stream wrapper (`cordic_axi4s_if`) are provided.
+
+Fixed-point representation is used throughout. The input angle must be in the range $\pm 2\pi$ with 4 integer bits (1 sign + 3 magnitude), and the rest as fractional bits. Outputs are in the range $\pm 1$.
+
+FuseSoC core name: `akerlund::cordic:0`
+
+**Parameters**
+
+| Parameter | Default | Description |
+|---|---|---|
+| `AXI_DATA_WIDTH_P` | 16 | Data width (both for the raw core and AXI4-S interface, max 54 with the packaged constants) |
+| `AXI_ID_WIDTH_P` | 4 | AXI4-S ID width |
+| `NR_OF_STAGES_P` | 16 | Number of CORDIC pipeline stages (max 32) |
+
+
 
  - Fixed point representation
    - Output span is ±1
@@ -21,12 +40,23 @@ This implementation of the CORDIC algorithm can yield a simulation like this
      - All other bits become fractional bits
  - Parameters
    - Number of stages, maximum 32
-   - Data width, maximum 64
- - AXI4-S interface
-   - Shift register to signal a requesting master back the following:
-     - tvalid
-     - tid
-     - tdata, ingress tuser to select either sine or cosine
+   - Data width, maximum 54 with the packaged 54-bit quadrant constants
+ - AXI4-S style interface
+   - Fixed-latency pipeline without ingress or egress backpressure
+   - Shift register to signal a requesting master back `tvalid` and `tid`
+   - `tdata` always returns `{sine, cosine}`; `ing_tuser` is latency-matched internally but does not select the result vector
+
+## Simulation / Verification
+
+The legacy UVM test bench lives under `sv/` and the cocotb port lives under `py/`.
+The cocotb tests drive the AXI4-Stream style wrapper and compare sine/cosine against
+a Python trigonometric fixed-point reference model.
+
+```bash
+refuse vcs && refuse simv --all
+refuse cocotb -t tc_positive_radian_spin
+refuse cocotb -t tc_negative_radian_spin
+```
 
 ## Synthesis
 
@@ -205,3 +235,7 @@ Table 3 shows the gain *Ai* of the 16 first stages. Only the first few stages sh
 [1] Jack E Volder. The cordic trigonometric computing technique.Electronic Computers, IRE Transactionson, (3):330-334, 1959.
 
 [2] Dirk  Koch. Cordic algorithm, 2012. Available at http://www.uio.no/studier/emner/matnat/ifi/INF5430/v12/undervisningsmateriale/dirk/Lecture_cordic.pdf.
+
+## License
+
+Copyright (C) 2020 Fredrik Åkerlund — released under the GNU General Public License v3 or later. See [LICENSE](../../../LICENSE).

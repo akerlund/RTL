@@ -12,18 +12,18 @@ filesets:
   tb:
     files:
       # Compilation units
-      - tb/div_tb_pkg.sv
-      - tc/div_tc_pkg.sv
-      - tb/div_tb_top.sv
+      - sv/tb/div_tb_pkg.sv
+      - sv/tc/div_tc_pkg.sv
+      - sv/tb/div_tb_top.sv
       # Include files (included by tb/tc packages)
-      - tb/div_env.sv: {is_include_file: true}
-      - tb/div_scoreboard.sv: {is_include_file: true}
-      - tb/div_virtual_sequencer.sv: {is_include_file: true}
-      - tc/div_base_test.sv: {is_include_file: true}
-      - tc/tc_negative_divisions.sv: {is_include_file: true}
-      - tc/tc_overflow_divisions.sv: {is_include_file: true}
-      - tc/tc_positive_divisions.sv: {is_include_file: true}
-      - tc/tc_random_divisions.sv: {is_include_file: true}
+      - sv/tb/div_env.sv: {is_include_file: true}
+      - sv/tb/div_scoreboard.sv: {is_include_file: true}
+      - sv/tb/div_virtual_sequencer.sv: {is_include_file: true}
+      - sv/tc/div_base_test.sv: {is_include_file: true}
+      - sv/tc/tc_negative_divisions.sv: {is_include_file: true}
+      - sv/tc/tc_overflow_divisions.sv: {is_include_file: true}
+      - sv/tc/tc_positive_divisions.sv: {is_include_file: true}
+      - sv/tc/tc_random_divisions.sv: {is_include_file: true}
     file_type: systemVerilogSource
     depend:
       - "akerlund::vip_bool:0"
@@ -57,18 +57,17 @@ targets:
       - rtl
 
   uvm:
-    flow: sim
-    flow_options:
-      tool: verilator
     filesets:
       - rtl
       - tb
-    parameters:
-      - AXI_DATA_WIDTH_P
-      - AXI_ID_WIDTH_P
-      - N_BITS_P
-      - Q_BITS_P
     toplevel: div_tb_top
+    tools:
+      vcs:
+        vcs_options:
+          - -ntb_opts
+          - uvm-1.2
+        run_options:
+          - +UVM_TESTNAME=tc_positive_divisions
 
   rtl:
     flow: lint
@@ -76,6 +75,7 @@ targets:
       tool: verilator
       verilator_options:
         - -Wall
+        - -Wno-fatal
         - --timing
         - --error-limit
         - "0"
@@ -87,4 +87,9 @@ targets:
         - -Wno-PINCONNECTEMPTY
     filesets:
       - rtl
-
+    parameters:
+      - AXI_DATA_WIDTH_P
+      - AXI_ID_WIDTH_P
+      - N_BITS_P
+      - Q_BITS_P
+    toplevel: long_division_axi4s_if

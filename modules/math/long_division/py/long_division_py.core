@@ -1,0 +1,27 @@
+CAPI=2:
+name: "akerlund::long_division_py:0"
+description: "Long division cocotb tests"
+
+filesets:
+  tb:
+    files:
+      - ../rtl/long_division_core.sv
+      - ../rtl/long_division_axi4s_if.sv
+      - tb/tb_top.sv
+    file_type: systemVerilogSource
+
+targets:
+  sim:
+    flow: sim
+    flow_options:
+      tool: verilator
+      cocotb_module: cocotb_entry
+      mode: cc
+      verilator_options:
+        - -Wno-fatal
+        - --public-flat-rw
+        - -Wno-WIDTHTRUNC
+        - -Wno-WIDTHEXPAND
+    filesets:
+      - tb
+    toplevel: tb_top

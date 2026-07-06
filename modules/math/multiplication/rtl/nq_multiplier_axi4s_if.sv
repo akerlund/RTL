@@ -1,22 +1,25 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2020 Fredrik Åkerlund
+// Copyright (C) 2026 Fredrik Åkerlund
 // https://github.com/akerlund/RTL
 //
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
 //
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-//
-// Description:
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -53,7 +56,6 @@ module nq_multiplier_axi4s_if #(
   logic [N_BITS_P-1 : 0] ing_nq_multiplicand;
   logic [N_BITS_P-1 : 0] ing_nq_multiplier;
   logic                  egr_nq_valid_d0;
-  logic                  egr_nq_valid_d1;
   logic [N_BITS_P-1 : 0] egr_nq_product;
   logic                  egr_nq_overflow;
 
@@ -61,7 +63,7 @@ module nq_multiplier_axi4s_if #(
   assign ing_tready = ing_nq_ready;
 
   // Assign AXI4-S output ports
-  assign egr_tvalid = egr_nq_valid_d0 && !egr_nq_valid_d1;
+  assign egr_tvalid = egr_nq_valid_d0;
   assign egr_tdata  = egr_nq_product;
   assign egr_tlast  = '1;
   assign egr_tuser  = egr_nq_overflow;
@@ -73,13 +75,11 @@ module nq_multiplier_axi4s_if #(
       ing_nq_valid        <= '0;
       ing_nq_multiplicand <= '0;
       ing_nq_multiplier   <= '0;
-      egr_nq_valid_d1     <= '0;
       egr_tid             <= '0;
     end
     else begin
 
-      ing_nq_valid    <= '0;
-      egr_nq_valid_d1 <= egr_nq_valid_d0;
+      ing_nq_valid <= '0;
 
       if (ing_tvalid && ing_nq_ready) begin
         egr_tid <= ing_tid;

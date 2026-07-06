@@ -1,10 +1,24 @@
 # Linear Feedback Shift Register
 
-![Test  Status](https://img.shields.io/badge/test-N/A-lightgrey)
+![Test Status](https://img.shields.io/badge/test-N/A-lightgrey)
 ![Synth Status](https://img.shields.io/badge/synthesis-N/A-lightgrey)
-![FPGA  Status](https://img.shields.io/badge/fpga-N/A-lightgrey)
+![FPGA Status](https://img.shields.io/badge/fpga-N/A-lightgrey)
 
-Parameterized Fibonacci LFSR with configurable width, tap mask, and reset seed.
+## Table of Contents
+
+- [Overview](#overview)
+- [Parameters and Ports](#parameters-and-ports)
+- [Tap Mask Reference](#tap-mask-reference)
+- [How an LFSR Works](#how-an-lfsr-works)
+- [License](#license)
+
+## Overview
+
+A parameterized Fibonacci LFSR (Linear Feedback Shift Register) in SystemVerilog. The register width, tap polynomial mask, and reset seed are all configurable via parameters. The default configuration is a maximal-length 32-bit LFSR with polynomial $x^{32} + x^7 + x^5 + x^3 + x^2 + x + 1$.
+
+FuseSoC core name: `akerlund::lfsr:0`
+
+## Parameters and Ports
 
 ```verilog
 module lfsr #(
@@ -26,6 +40,8 @@ module lfsr #(
 this module's convention, bit `n-1` in `TAPS_P` corresponds to the `x^n` term in
 the polynomial, while the `+ 1` term is implicit in the XOR feedback path.
 
+## Tap Mask Reference
+
 Suggested maximal-length polynomials and masks:
 
 | Width | `TAPS_P`     | Polynomial |
@@ -43,6 +59,12 @@ given register width.
 `value` is the current LFSR register contents. `bit_out` is the bit shifted out
 on the current cycle, which is useful when the LFSR is used as a serial
 pseudo-random bit source rather than only as a parallel state generator.
+The shift direction is toward the MSB: `next_state = {value[WIDTH_P-2:0],
+feedback}` and `bit_out` is the pre-shift MSB. If either `SEED_P` or a runtime
+`cr_seed` is zero, the module substitutes a valid nonzero seed so the LFSR does
+not lock in the all-zero state. The default 32-bit tap mask is intended for
+`WIDTH_P == 32`; choose an explicit tap mask from the table, or another known
+primitive polynomial, for other widths.
 
 ## How an LFSR works
 
@@ -72,3 +94,7 @@ cycles, while a 16-bit one repeats after 65,535 cycles, and a 32-bit one after
 4,294,967,295 cycles. Wider LFSRs do not make the sequence more truly random,
 but they do make repetition much less frequent and usually improve usefulness in
 test pattern generation, scrambling, counters, and simple noise-like sources.
+
+## License
+
+Copyright (C) 2021 Fredrik Åkerlund — released under the GNU General Public License v3 or later. See [LICENSE](../../../LICENSE).

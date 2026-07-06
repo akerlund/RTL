@@ -1,22 +1,25 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2020 Fredrik Åkerlund
+// Copyright (C) 2026 Fredrik Åkerlund
 // https://github.com/akerlund/RTL
 //
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
 //
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-//
-// Description:
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -26,96 +29,48 @@ module nq_multiplier #(
     parameter int N_BITS_P = 32,
     parameter int Q_BITS_P = 15
   )(
-    input  wire                   clk,
-    input  wire                   rst_n,
+    input  wire                          clk,
+    input  wire                          rst_n,
 
-    input  wire                   ing_valid,
-    output logic                  ing_ready,
-    input  wire  [N_BITS_P-1 : 0] ing_multiplicand,
-    input  wire  [N_BITS_P-1 : 0] ing_multiplier,
+    input  wire                          ing_valid,
+    output logic                         ing_ready,
+    input  wire  signed [N_BITS_P-1 : 0] ing_multiplicand,
+    input  wire  signed [N_BITS_P-1 : 0] ing_multiplier,
 
-    output logic                  egr_valid,
-    output logic [N_BITS_P-1 : 0] egr_product,
-    output logic                  egr_overflow
+    output logic                         egr_valid,
+    output logic signed [N_BITS_P-1 : 0] egr_product,
+    output logic                         egr_overflow
   );
 
-  logic       [2*N_BITS_P-2 : 0] multiplier_r0;
-  logic         [N_BITS_P-1 : 0] multiplicand_r0;
-  logic       [2*N_BITS_P-2 : 0] product_r0;
-  logic [$clog2(N_BITS_P)-1 : 0] counter;
+  localparam int PRODUCT_WIDTH_C = 2*N_BITS_P;
 
-  logic                          sign_bit;
-  logic                          is_multiplying;
+  logic signed [PRODUCT_WIDTH_C-1 : 0] full_product;
+  logic signed [PRODUCT_WIDTH_C-1 : 0] scaled_product;
+  logic signed [PRODUCT_WIDTH_C-1 : 0] max_value;
+  logic signed [PRODUCT_WIDTH_C-1 : 0] min_value;
+  logic                                result_overflow;
 
-
-  assign egr_product[N_BITS_P-2:0] = product_r0[(N_BITS_P + Q_BITS_P)-2 : Q_BITS_P];
-  assign egr_product[N_BITS_P-1]   = sign_bit;
-
+  assign full_product = ing_multiplicand * ing_multiplier;
+  assign scaled_product = full_product >>> Q_BITS_P;
+  assign max_value = ({{(PRODUCT_WIDTH_C-1){1'b0}}, 1'b1} <<< (N_BITS_P-1)) - 1'b1;
+  assign min_value = -({{(PRODUCT_WIDTH_C-1){1'b0}}, 1'b1} <<< (N_BITS_P-1));
+  assign result_overflow = (scaled_product > max_value) || (scaled_product < min_value);
 
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-
-      // Ports
-      ing_ready       <= '0;
-      egr_valid       <= '0;
-      egr_overflow    <= '0;
-
-      // Registers
-      multiplier_r0   <= '0;
-      multiplicand_r0 <= '0;
-      product_r0      <= '0;
-      counter         <= '0;
-      sign_bit        <= '0;
-      ing_ready       <= '0;
-      is_multiplying  <= '0;
-
+      ing_ready    <= '1;
+      egr_valid    <= '0;
+      egr_product  <= '0;
+      egr_overflow <= '0;
     end
     else begin
-
       ing_ready <= '1;
       egr_valid <= '0;
 
-      if (!is_multiplying && ing_valid) begin
-
-        egr_valid  <= '0;
-        ing_ready  <= '0;
-        counter    <= '0;
-        product_r0 <= '0;
-
-        // Remove sign bit
-        multiplicand_r0 <= {'0, ing_multiplicand[N_BITS_P-2 : 0]};
-        multiplier_r0   <= {'0, ing_multiplier[N_BITS_P-2 : 0]};
-
-        if (!(|ing_multiplicand) || !(|ing_multiplier)) begin // Approximately 19 LUT logic
-          egr_valid <= '1;
-          sign_bit  <= '0;
-        end else begin
-          is_multiplying <= '1;
-          sign_bit       <= ing_multiplicand[N_BITS_P-1] ^ ing_multiplier[N_BITS_P-1];
-        end
-      end
-      else if (is_multiplying) begin
-
-        ing_ready  <= '0;
-
-        if (multiplicand_r0[counter]) begin
-          product_r0 <= product_r0 + multiplier_r0;
-        end
-
-        multiplier_r0 <= multiplier_r0 << 1;
-        counter       <= counter + 1;
-
-        if (counter == N_BITS_P-1) begin
-
-          egr_valid      <= 1'b1;
-          ing_ready      <= '1;
-          is_multiplying <= '0;
-
-          if (product_r0[2*N_BITS_P-2 : N_BITS_P-1 + Q_BITS_P] > 0) begin
-            egr_overflow <= 1'b1;
-          end
-
-        end
+      if (ing_valid) begin
+        egr_valid    <= '1;
+        egr_overflow <= result_overflow;
+        egr_product  <= result_overflow ? '0 : scaled_product[N_BITS_P-1 : 0];
       end
     end
   end

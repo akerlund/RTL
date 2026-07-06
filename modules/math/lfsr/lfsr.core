@@ -33,6 +33,7 @@ targets:
       tool: verilator
       verilator_options:
         - -Wall
+        - -Wno-fatal
         - --timing
         - --error-limit
         - "0"

@@ -1,10 +1,27 @@
 # Long Division with Fixed Point
 
-![Test  Status](https://img.shields.io/badge/test-passes-green)
+![Test Status](https://img.shields.io/badge/test-passes-green)
 ![Synth Status](https://img.shields.io/badge/synthesis-passes-green)
-![FPGA  Status](https://img.shields.io/badge/fpga-N/A-lightgrey)
+![FPGA Status](https://img.shields.io/badge/fpga-N/A-lightgrey)
 
-Parameterizable fixed-point divider
+## Table of Contents
+
+- [Overview](#overview)
+- [Parameters and Ports](#parameters-and-ports)
+- [Simulation / Verification](#simulation--verification)
+- [Synthesis](#synthesis)
+- [License](#license)
+
+## Overview
+
+A parameterizable fixed-point long divider in N.Q format (N total bits, Q fractional bits). Both a bare core (`long_division_core`) and an AXI4-Stream wrapper (`long_division_axi4s_if`) are provided.
+
+The AXI4-S interface expects two consecutive transfers: the first `tdata` is the dividend and the second is the divisor. The quotient is returned on the egress port; `tuser` signals overflow.
+The wrapper is fixed-latency AXI4-Stream style: it has ingress `tready`, but no egress `tready` backpressure.
+
+FuseSoC core name: `akerlund::long_division:0`
+
+## Parameters and Ports
 
 ```verilog
 module long_division_core #(
@@ -61,6 +78,21 @@ and an UVM test bench with these tests:
 - tc_negative_divisions
 - tc_random_divisions
 
+## Simulation / Verification
+
+The legacy UVM test bench lives under `sv/` and the cocotb port lives under `py/`.
+The cocotb tests drive the two-beat AXI4-Stream request protocol and compare the
+registered quotient/overflow response against a Python N.Q fixed-point division
+reference model, including divide-by-zero and overflow cases.
+
+```bash
+refuse vcs && refuse simv --all
+refuse cocotb -t tc_positive_divisions
+refuse cocotb -t tc_negative_divisions
+refuse cocotb -t tc_overflow_divisions
+refuse cocotb -t tc_random_divisions
+```
+
 
 ## Performed Tests
 
@@ -114,3 +146,7 @@ parameter int Q_BITS_P         = 15
 | F8 Muxes                |    0 |     0 |     13300 |  0.00 |
 +-------------------------+------+-------+-----------+-------+
 ```
+
+## License
+
+Copyright (C) 2020 Fredrik Åkerlund — released under the GNU General Public License v3 or later. See [LICENSE](../../../LICENSE).

@@ -15,17 +15,17 @@ filesets:
   tb:
     files:
       # Compilation units
-      - tb/cordic_test_angles_pkg.sv
-      - tb/cor_tb_pkg.sv
-      - tc/cor_tc_pkg.sv
-      - tb/cor_tb_top.sv
+      - sv/tb/cordic_test_angles_pkg.sv
+      - sv/tb/cor_tb_pkg.sv
+      - sv/tc/cor_tc_pkg.sv
+      - sv/tb/cor_tb_top.sv
       # Include files (included by tb/tc packages)
-      - tb/cor_env.sv: {is_include_file: true}
-      - tb/cor_scoreboard.sv: {is_include_file: true}
-      - tb/cor_virtual_sequencer.sv: {is_include_file: true}
-      - tc/cor_base_test.sv: {is_include_file: true}
-      - tc/tc_negative_radian_spin.sv: {is_include_file: true}
-      - tc/tc_positive_radian_spin.sv: {is_include_file: true}
+      - sv/tb/cor_env.sv: {is_include_file: true}
+      - sv/tb/cor_scoreboard.sv: {is_include_file: true}
+      - sv/tb/cor_virtual_sequencer.sv: {is_include_file: true}
+      - sv/tc/cor_base_test.sv: {is_include_file: true}
+      - sv/tc/tc_negative_radian_spin.sv: {is_include_file: true}
+      - sv/tc/tc_positive_radian_spin.sv: {is_include_file: true}
     file_type: systemVerilogSource
     depend:
       - "akerlund::vip_bool:0"
@@ -53,17 +53,17 @@ targets:
       - rtl
 
   uvm:
-    flow: sim
-    flow_options:
-      tool: verilator
     filesets:
       - rtl
       - tb
-    parameters:
-      - AXI_DATA_WIDTH_P
-      - AXI_ID_WIDTH_P
-      - NR_OF_STAGES_P
     toplevel: cor_tb_top
+    tools:
+      vcs:
+        vcs_options:
+          - -ntb_opts
+          - uvm-1.2
+        run_options:
+          - +UVM_TESTNAME=tc_positive_radian_spin
 
   rtl:
     flow: lint
@@ -71,6 +71,7 @@ targets:
       tool: verilator
       verilator_options:
         - -Wall
+        - -Wno-fatal
         - --timing
         - --error-limit
         - "0"
@@ -82,4 +83,8 @@ targets:
         - -Wno-PINCONNECTEMPTY
     filesets:
       - rtl
-
+    parameters:
+      - AXI_DATA_WIDTH_P
+      - AXI_ID_WIDTH_P
+      - NR_OF_STAGES_P
+    toplevel: cordic_axi4s_if
