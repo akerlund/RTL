@@ -1,0 +1,28 @@
+CAPI=2:
+name: "akerlund::mixer_py:0"
+description: "Mixer cocotb tests"
+
+filesets:
+  tb:
+    files:
+      - ../../math/multiplication/rtl/dsp48_nq_multiplier.sv
+      - ../rtl/mixer_channel.sv
+      - ../rtl/mixer_core.sv
+      - ../rtl/mixer_top.sv
+      - tb/tb_top.sv
+    file_type: systemVerilogSource
+
+targets:
+  sim:
+    flow: sim
+    flow_options:
+      tool: verilator
+      cocotb_module: cocotb_entry
+      mode: cc
+      verilator_options:
+        - -Wno-fatal
+        - --public-flat-rw
+        - -Wno-WIDTHTRUNC
+    filesets:
+      - tb
+    toplevel: tb_top
