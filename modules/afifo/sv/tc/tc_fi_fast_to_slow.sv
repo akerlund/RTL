@@ -23,23 +23,25 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-`default_nettype none
+class tc_fi_fast_to_slow extends tc_fi_basic;
 
-module gray_to_bin #(
-    parameter WIDTH_P = -1
-  )(
-    input  wire  [WIDTH_P-1 : 0] gray,
-    output logic [WIDTH_P-1 : 0] bin
-  );
+  `uvm_component_utils(tc_fi_fast_to_slow)
 
-  genvar i;
+  function new(string name = "tc_fi_fast_to_slow", uvm_component parent = null);
+    super.new(name, parent);
+  endfunction
 
-  generate
-    for (i = 0; i < WIDTH_P; i++) begin
-      assign bin[i] = ^gray[WIDTH_P-1 : i];
-    end
-  endgenerate
 
-endmodule
+  function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
+    //clk_rst_config0.clock_period = 1.4771; // 677MHz
+    clk_rst_config0.clock_period = 8.849557; // 113MHz
+    clk_rst_config1.clock_period = 200.0;  // 5MHz
+  endfunction
 
-`default_nettype wire
+
+  task run_phase(uvm_phase phase);
+    super.run_phase(phase);
+  endtask
+
+endclass

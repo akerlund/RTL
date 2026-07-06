@@ -23,23 +23,44 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-`default_nettype none
+`ifndef SYFI_TB_PKG
+`define SYFI_TB_PKG
 
-module gray_to_bin #(
-    parameter WIDTH_P = -1
-  )(
-    input  wire  [WIDTH_P-1 : 0] gray,
-    output logic [WIDTH_P-1 : 0] bin
-  );
+package fi_tb_pkg;
 
-  genvar i;
+  import uvm_pkg::*;
+  `include "uvm_macros.svh"
 
-  generate
-    for (i = 0; i < WIDTH_P; i++) begin
-      assign bin[i] = ^gray[WIDTH_P-1 : i];
-    end
-  endgenerate
+  import bool_pkg::*;
+  import clk_rst_types_pkg::*;
+  import clk_rst_pkg::*;
+  import vip_axi4s_types_pkg::*;
+  import vip_axi4s_agent_pkg::*;
 
-endmodule
+  localparam int VIP_AXI4S_TDATA_WIDTH_C = 32;
+  localparam int VIP_AXI4S_TSTRB_WIDTH_C = VIP_AXI4S_TDATA_WIDTH_C/8;
+  localparam int VIP_AXI4S_TKEEP_WIDTH_C = 0;
+  localparam int VIP_AXI4S_TID_WIDTH_C   = 11;
+  localparam int VIP_AXI4S_TDEST_WIDTH_C = 0;
+  localparam int VIP_AXI4S_TUSER_WIDTH_C = 0;
 
-`default_nettype wire
+  // Configuration of the VIP (Data)
+  localparam vip_axi4s_cfg_t VIP_AXI4S_CFG_C = '{
+    VIP_AXI4S_TDATA_BYTES_P : VIP_AXI4S_TDATA_WIDTH_C/8,
+    VIP_AXI4S_TID_WIDTH_P   : 0,
+    VIP_AXI4S_TDEST_WIDTH_P : 0,
+    VIP_AXI4S_TUSER_WIDTH_P : 0
+  };
+
+  typedef vip_axi4s_seq #(VIP_AXI4S_CFG_C) vip_axi4s_seq_t;
+
+  localparam int FIFO_ADDR_WIDTH_C = 6; // Minimum width is (1)
+  localparam int FIFO_DATA_WIDTH_C = VIP_AXI4S_TDATA_WIDTH_C + 1;
+
+  `include "fi_scoreboard.sv"
+  `include "fi_virtual_sequencer.sv"
+  `include "fi_env.sv"
+
+endpackage
+
+`endif

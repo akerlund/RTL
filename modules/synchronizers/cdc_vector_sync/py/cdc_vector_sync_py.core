@@ -1,0 +1,26 @@
+CAPI=2:
+name: "akerlund::cdc_vector_sync_py:0"
+description: "CDC vector sync cocotb tests"
+
+filesets:
+  tb:
+    files:
+      - ../cdc_bit_sync/rtl/cdc_bit_sync_core.sv
+      - ../cdc_bit_sync/rtl/cdc_bit_sync.sv
+      - ../rtl/cdc_vector_sync.sv
+      - tb/tb_top.sv
+    file_type: systemVerilogSource
+
+targets:
+  sim:
+    flow: sim
+    flow_options:
+      tool: verilator
+      cocotb_module: cocotb_entry
+      mode: cc
+      verilator_options:
+        - -Wno-fatal
+        - --public-flat-rw
+    filesets:
+      - tb
+    toplevel: tb_top

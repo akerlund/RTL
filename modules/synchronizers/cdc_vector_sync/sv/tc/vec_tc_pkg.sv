@@ -23,23 +23,27 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-`default_nettype none
+`ifndef VEC_TC_PKG
+`define VEC_TC_PKG
 
-module gray_to_bin #(
-    parameter WIDTH_P = -1
-  )(
-    input  wire  [WIDTH_P-1 : 0] gray,
-    output logic [WIDTH_P-1 : 0] bin
-  );
+package vec_tc_pkg;
 
-  genvar i;
+  `include "uvm_macros.svh"
 
-  generate
-    for (i = 0; i < WIDTH_P; i++) begin
-      assign bin[i] = ^gray[WIDTH_P-1 : i];
-    end
-  endgenerate
+  import vec_tb_pkg::*;
 
-endmodule
+  import uvm_pkg::*;
+  import bool_pkg::*;
+  import report_server_pkg::*;
+  import vip_axi4s_types_pkg::*;
+  import vip_axi4s_agent_pkg::*;
+  import clk_rst_types_pkg::*;
+  import clk_rst_pkg::*;
 
-`default_nettype wire
+  `include "vec_base_test.sv"
+  `include "tc_vec_slow_to_fast.sv"
+  `include "tc_vec_fast_to_slow.sv"
+
+endpackage
+
+`endif

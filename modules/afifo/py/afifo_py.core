@@ -1,0 +1,40 @@
+CAPI=2:
+name: "akerlund::afifo_py:0"
+description: "AFIFO cocotb tests"
+
+filesets:
+  tb:
+    files:
+      - ../../synchronizers/cdc_bit_sync/rtl/cdc_bit_sync_core.sv
+      - ../../synchronizers/cdc_bit_sync/rtl/cdc_bit_sync.sv
+      - ../../memory/reg/rtl/reg_sp_rf.sv
+      - ../../memory/ram/rtl/ram_sdp.sv
+      - ../../memory/ram/rtl/ram_sdp2c.sv
+      - ../../memory/ram/rtl/ram_sdp_bw.sv
+      - ../../memory/ram/rtl/ram_sp.sv
+      - ../../memory/ram/rtl/ram_sp_bw.sv
+      - ../../memory/ram/rtl/ram_tdp.sv
+      - ../../memory/ram/rtl/ram_tdp_bw.sv
+      - ../../fifo/rtl/fifo.sv
+      - ../../fifo/rtl/fifo_register.sv
+      - ../rtl/gray_to_bin.sv
+      - ../rtl/afifo_core.sv
+      - ../rtl/afifo.sv
+      - tb/tb_top.sv
+    file_type: systemVerilogSource
+
+targets:
+  sim:
+    flow: sim
+    flow_options:
+      tool: verilator
+      cocotb_module: cocotb_entry
+      mode: cc
+      verilator_options:
+        - -Wno-fatal
+        - --public-flat-rw
+        - -Wno-WIDTHTRUNC
+        - -Wno-WIDTHEXPAND
+    filesets:
+      - tb
+    toplevel: tb_top

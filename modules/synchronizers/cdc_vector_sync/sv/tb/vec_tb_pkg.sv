@@ -23,23 +23,35 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-`default_nettype none
+`ifndef VEC_TB_PKG
+`define VEC_TB_PKG
 
-module gray_to_bin #(
-    parameter WIDTH_P = -1
-  )(
-    input  wire  [WIDTH_P-1 : 0] gray,
-    output logic [WIDTH_P-1 : 0] bin
-  );
+package vec_tb_pkg;
 
-  genvar i;
+  import uvm_pkg::*;
+  `include "uvm_macros.svh"
 
-  generate
-    for (i = 0; i < WIDTH_P; i++) begin
-      assign bin[i] = ^gray[WIDTH_P-1 : i];
-    end
-  endgenerate
+  import bool_pkg::*;
+  import clk_rst_types_pkg::*;
+  import clk_rst_pkg::*;
+  import vip_axi4s_types_pkg::*;
+  import vip_axi4s_agent_pkg::*;
 
-endmodule
+  localparam CDC_DATA_WIDTH_C = 25;
 
-`default_nettype wire
+  // Configuration of the AXI4-S VIP
+  localparam vip_axi4s_cfg_t VIP_AXI4S_CFG_C = '{
+    VIP_AXI4S_TDATA_BYTES_P : 3,
+    VIP_AXI4S_TID_WIDTH_P   : 0,
+    VIP_AXI4S_TDEST_WIDTH_P : 0,
+    VIP_AXI4S_TUSER_WIDTH_P : 0
+  };
+
+  typedef vip_axi4s_seq #(VIP_AXI4S_CFG_C) vip_axi4s_seq_t;
+  `include "vec_scoreboard.sv"
+  `include "vec_virtual_sequencer.sv"
+  `include "vec_env.sv"
+
+endpackage
+
+`endif
