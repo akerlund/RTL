@@ -1,12 +1,180 @@
-# Enable modules
+# Clock Enablers
 
-## Frequency Enable
+## Table of Contents
 
-![Test  Status](https://img.shields.io/badge/testbench-pass-green)
+- [Overview](#overview)
+- [clock\_enable](#clock_enable)
+- [clock\_enable\_scaler](#clock_enable_scaler)
+- [delay\_enable](#delay_enable)
+- [frequency\_enable](#frequency_enable)
+- [License](#license)
+
+## Overview
+
+A collection of clock-enable generation modules. All share the same design pattern: a counter fires a single-cycle `enable` pulse at a programmed interval. The modules differ in how the interval is specified and what triggers the count.
+
+---
+
+## clock_enable
+
+![Test Status](https://img.shields.io/badge/testbench-pass-green)
 ![Synth Status](https://img.shields.io/badge/synthesis-N/A-lightgrey)
-![FPGA  Status](https://img.shields.io/badge/fpga-N/A-lightgrey)
+![FPGA Status](https://img.shields.io/badge/fpga-N/A-lightgrey)
 
-The Frequency Enable module will assert its **enable** port with the period of a provided frequency to its configuration register **cr_enable_frequency**. A divider module is therefore needed which is connected through the AXI4-S interface. When a new frequency is detected the module will use the divider and calculate the new counter value needed to produce the correct period on the **enable** port.
+FuseSoC core: `akerlund::clock_enable:0`
+
+Asserts `enable` for one clock cycle every `cr_enable_period` clock cycles. The counter can be reset externally via `reset_counter_n`.
+`cr_enable_period == 0` disables pulses and holds the internal counter at zero.
+`cr_enable_period == 1` pulses every clock. Runtime period updates take effect
+immediately and can shorten or stretch the current interval.
+
+**Parameters**
+
+| Parameter | Description |
+|---|---|
+| `COUNTER_WIDTH_P` | Bit width of the period counter |
+
+**Ports**
+
+| Port | Direction | Description |
+|---|---|---|
+| `clk` | input | System clock |
+| `rst_n` | input | Active-low reset |
+| `reset_counter_n` | input | Active-low counter reset (does not reset module) |
+| `enable` | output | Single-cycle enable pulse |
+| `cr_enable_period` | input | Period in clock cycles |
+
+---
+
+## clock_enable_scaler
+
+![Test Status](https://img.shields.io/badge/testbench-pass-green)
+![Synth Status](https://img.shields.io/badge/synthesis-N/A-lightgrey)
+![FPGA Status](https://img.shields.io/badge/fpga-N/A-lightgrey)
+
+FuseSoC core: `akerlund::clock_enable_scaler:0`
+
+A clock-enable divider: counts `ing_enable` pulses and asserts `egr_enable` every `cr_enable_period` input pulses. Useful for sub-dividing an existing enable signal rather than free-running clock cycles.
+`cr_enable_period == 0` disables output pulses and clears the counter. Sparse
+`ing_enable` pulses are counted as events; gaps do not advance the counter.
+Runtime period updates take effect on the current in-flight count.
+
+**Parameters**
+
+| Parameter | Description |
+|---|---|
+| `COUNTER_WIDTH_P` | Bit width of the period counter |
+
+**Ports**
+
+| Port | Direction | Description |
+|---|---|---|
+| `clk` | input | System clock |
+| `rst_n` | input | Active-low reset |
+| `reset_counter_n` | input | Active-low counter reset |
+| `ing_enable` | input | Incoming enable to divide |
+| `egr_enable` | output | Divided enable output |
+| `cr_enable_period` | input | Divider ratio |
+
+---
+
+## delay_enable
+
+![Test Status](https://img.shields.io/badge/testbench-pass-green)
+![Synth Status](https://img.shields.io/badge/synthesis-N/A-lightgrey)
+![FPGA Status](https://img.shields.io/badge/fpga-N/A-lightgrey)
+
+FuseSoC core: `akerlund::delay_enable:0`
+
+Asserts `delay_out` for one clock cycle exactly `cr_delay_period` clock cycles after a `start` pulse. Only one delay can be in flight at a time; a new `start` while delaying is ignored. `cr_delay_period == 0` turns a `start` pulse into an immediate `delay_out` pulse. Deasserting `reset_counter_n` cancels any in-flight delay.
+
+**Parameters**
+
+| Parameter | Description |
+|---|---|
+| `COUNTER_WIDTH_P` | Bit width of the delay counter |
+
+**Ports**
+
+| Port | Direction | Description |
+|---|---|---|
+| `clk` | input | System clock |
+| `rst_n` | input | Active-low reset |
+| `reset_counter_n` | input | Active-low counter reset |
+| `start` | input | Begin the delay |
+| `delay_out` | output | Single-cycle pulse after `cr_delay_period` clocks |
+| `cr_delay_period` | input | Delay duration in clock cycles |
+
+---
+
+## frequency_enable
+
+![Test Status](https://img.shields.io/badge/testbench-pass-green)
+![Synth Status](https://img.shields.io/badge/synthesis-N/A-lightgrey)
+![FPGA Status](https://img.shields.io/badge/fpga-N/A-lightgrey)
+
+FuseSoC core: `akerlund::frequency_enable:0`
+
+Asserts `enable` at a programmable frequency specified in Hz by `cr_enable_frequency`. On startup or whenever the frequency changes, the module uses the external long-division AXI4-S interface to compute the counter period (`SYS_CLK_FREQUENCY / cr_enable_frequency`) and then drives `enable` at that rate.
+`cr_enable_frequency == 0` disables output pulses and prevents divider requests.
+If the divider reports overflow, the module drops back to the disabled state
+until a nonzero frequency is presented again. If the fixed-point quotient rounds
+to zero, the period is clamped to one system clock.
+
+**Parameters**
+
+| Parameter | Description |
+|---|---|
+| `SYS_CLK_FREQUENCY_P` | System clock frequency in Hz (used as dividend) |
+| `AXI_DATA_WIDTH_P` | AXI4-S data width to the divider |
+| `AXI_ID_WIDTH_P` | AXI4-S ID width |
+| `Q_BITS_P` | Number of fractional bits in the fixed-point divider; `Q_BITS_P + $clog2(SYS_CLK_FREQUENCY_P+1)` must fit in `AXI_DATA_WIDTH_P` |
+| `AXI4S_ID_P` | ID value used on the AXI4-S divider interface |
+
+**Ports**
+
+| Port | Direction | Description |
+|---|---|---|
+| `clk` | input | System clock |
+| `rst_n` | input | Active-low reset |
+| `enable` | output | Single-cycle enable pulse at the configured frequency |
+| `cr_enable_frequency` | input | Target frequency in Hz |
+| `div_egr_t*` | output | AXI4-S egress to long-division module |
+| `div_ing_t*` | input | AXI4-S ingress from long-division module (quotient + overflow) |
+
+**Instantiation example**
+
+```systemverilog
+frequency_enable #(
+  .SYS_CLK_FREQUENCY_P ( 100_000_000 ),
+  .AXI_DATA_WIDTH_P    ( 32          ),
+  .AXI_ID_WIDTH_P      ( 2           ),
+  .Q_BITS_P            ( 4           ),
+  .AXI4S_ID_P          ( 1           )
+) u_freq_en (
+  .clk                 ( clk                 ),
+  .rst_n               ( rst_n               ),
+  .enable              ( enable              ),
+  .cr_enable_frequency ( 20_000_000          ), // 20 MHz
+  .div_egr_tvalid      ( div_egr_tvalid      ),
+  .div_egr_tready      ( div_egr_tready      ),
+  .div_egr_tdata       ( div_egr_tdata       ),
+  .div_egr_tlast       ( div_egr_tlast       ),
+  .div_egr_tid         ( div_egr_tid         ),
+  .div_ing_tvalid      ( div_ing_tvalid      ),
+  .div_ing_tready      ( div_ing_tready      ),
+  .div_ing_tdata       ( div_ing_tdata       ),
+  .div_ing_tlast       ( div_ing_tlast       ),
+  .div_ing_tid         ( div_ing_tid         ),
+  .div_ing_tuser       ( div_ing_tuser       )
+);
+```
+
+---
+
+## License
+
+Copyright (C) 2020 Fredrik Åkerlund — released under the GNU General Public License v3 or later. See [LICENSE](../../LICENSE).
 
 ### Instantiation Template
 
@@ -70,4 +238,3 @@ The module has merely been verified by eye to see that the desired period out (o
 ![Test  Status](https://img.shields.io/badge/testbench-pass-green)
 ![Synth Status](https://img.shields.io/badge/synthesis-N/A-lightgrey)
 ![FPGA  Status](https://img.shields.io/badge/fpga-N/A-lightgrey)
-

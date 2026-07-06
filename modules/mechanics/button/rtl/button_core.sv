@@ -1,30 +1,33 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2020 Fredrik Åkerlund
+// Copyright (C) 2026 Fredrik Åkerlund
 // https://github.com/akerlund/RTL
 //
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
 //
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-//
-// Description:
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 //
 ////////////////////////////////////////////////////////////////////////////////
 
 `default_nettype none
 
 module button_core #(
-    parameter int NR_OF_DEBOUNCE_CLKS_P = -1,
-    parameter     CONNECTION_TYPE_P     = "OPEN"
+    parameter int    NR_OF_DEBOUNCE_CLKS_P = 1,
+    parameter string CONNECTION_TYPE_P     = "OPEN"
   )(
     input  wire  clk,
     input  wire  rst_n,
@@ -36,7 +39,10 @@ module button_core #(
   logic button_in;
 
   logic button_is_debounced;
-  int   button_counter;
+  localparam int DEBOUNCE_COUNTER_WIDTH_C = (NR_OF_DEBOUNCE_CLKS_P <= 1) ?
+                                            1 : $clog2(NR_OF_DEBOUNCE_CLKS_P+1);
+
+  logic [DEBOUNCE_COUNTER_WIDTH_C-1 : 0] button_counter;
 
   io_synchronizer io_synchronizer_i0 (
     .clk         ( clk                 ),
@@ -45,13 +51,20 @@ module button_core #(
     .bit_egress  ( synchronized_button )
   );
 
-  if (CONNECTION_TYPE_P == "OPEN") begin
-    assign button_in = synchronized_button;
-  end
-
-  if (CONNECTION_TYPE_P == "CLOSED") begin
-    assign button_in = ~synchronized_button;
-  end
+  generate
+    if (CONNECTION_TYPE_P == "OPEN") begin : gen_open_connection
+      assign button_in = synchronized_button;
+    end
+    else if (CONNECTION_TYPE_P == "CLOSED") begin : gen_closed_connection
+      assign button_in = ~synchronized_button;
+    end
+    else begin : gen_unsupported_connection
+      assign button_in = '0;
+      initial begin
+        $error("CONNECTION_TYPE_P must be OPEN or CLOSED");
+      end
+    end
+  endgenerate
 
   // Debouncer
   always_ff @(posedge clk or negedge rst_n) begin
@@ -66,23 +79,25 @@ module button_core #(
 
       button_press_toggle <= '0;
 
-      if (button_in && !button_is_debounced) begin
-
-        if (button_counter == NR_OF_DEBOUNCE_CLKS_P) begin
-          button_is_debounced <= '1;
-          button_counter      <= '0;
+      if (button_in == button_is_debounced) begin
+        button_counter <= '0;
+      end
+      else if (button_counter == DEBOUNCE_COUNTER_WIDTH_C'(NR_OF_DEBOUNCE_CLKS_P)) begin
+        button_is_debounced <= button_in;
+        button_counter      <= '0;
+        if (button_in) begin
           button_press_toggle <= '1;
         end
-        else begin
-          button_counter <= button_counter + 1;
-        end
-
       end
-      else if (!button_in && button_is_debounced) begin
-
-        button_is_debounced <= '0;
-
+      else begin
+        button_counter <= button_counter + 1;
       end
+    end
+  end
+
+  initial begin
+    if (NR_OF_DEBOUNCE_CLKS_P <= 0) begin
+      $error("NR_OF_DEBOUNCE_CLKS_P must be greater than zero");
     end
   end
 
