@@ -62,6 +62,7 @@ class arb_scoreboard(uvm_component):
   def _write_mst(self, expected_tdest, item):
     self.number_of_master_items += 1
     self.master_items.append(item)
+    self.raise_objection()
 
     if item.tdest != expected_tdest:
       self.logger.error(f"Dest is not ({expected_tdest}), it is ({item.tdest})")
@@ -69,12 +70,14 @@ class arb_scoreboard(uvm_component):
 
     if self.master_items and self.slave_items:
       self._compare()
+      self.drop_objection()
 
   def _write_slv(self, item):
     self.number_of_slave_items += 1
     self.slave_items.append(item)
     if self.master_items and self.slave_items:
       self._compare()
+      self.drop_objection()
 
   def _compare(self):
     mst_item = self.master_items.pop(0)
