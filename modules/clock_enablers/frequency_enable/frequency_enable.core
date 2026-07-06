@@ -23,7 +23,7 @@ parameters:
     paramtype: vlogparam
   Q_BITS_P:
     datatype: int
-    default: 17
+    default: 4
     paramtype: vlogparam
   AXI4S_ID_P:
     datatype: int
@@ -34,3 +34,30 @@ targets:
   default:
     filesets:
       - rtl
+
+
+  rtl:
+    flow: lint
+    flow_options:
+      tool: verilator
+      verilator_options:
+        - -Wall
+        - -Wno-fatal
+        - --timing
+        - --error-limit
+        - "0"
+        - -Werror-IMPLICIT
+        - -Werror-BLKSEQ
+        - -Werror-LATCH
+        - -Werror-CASEINCOMPLETE
+        - -Wno-UNUSEDSIGNAL
+        - -Wno-PINCONNECTEMPTY
+    filesets:
+      - rtl
+    parameters:
+      - SYS_CLK_FREQUENCY_P
+      - AXI_DATA_WIDTH_P
+      - AXI_ID_WIDTH_P
+      - Q_BITS_P
+      - AXI4S_ID_P
+    toplevel: frequency_enable

@@ -1,6 +1,6 @@
 CAPI=2:
 name: "akerlund::memory_reg:0"
-description: "Single-port register file"
+description: "Single-port asynchronous-read register file"
 
 filesets:
   rtl:
@@ -8,7 +8,40 @@ filesets:
       - rtl/reg_sp_rf.sv
     file_type: systemVerilogSource
 
+parameters:
+  DATA_WIDTH_P:
+    datatype: int
+    default: 32
+    paramtype: vlogparam
+  ADDR_WIDTH_P:
+    datatype: int
+    default: 5
+    paramtype: vlogparam
+
 targets:
   default:
     filesets:
       - rtl
+
+  rtl:
+    flow: lint
+    flow_options:
+      tool: verilator
+      verilator_options:
+        - -Wall
+        - -Wno-fatal
+        - --timing
+        - --error-limit
+        - "0"
+        - -Werror-IMPLICIT
+        - -Werror-BLKSEQ
+        - -Werror-LATCH
+        - -Werror-CASEINCOMPLETE
+        - -Wno-UNUSEDSIGNAL
+        - -Wno-PINCONNECTEMPTY
+    filesets:
+      - rtl
+    parameters:
+      - DATA_WIDTH_P
+      - ADDR_WIDTH_P
+    toplevel: reg_sp_rf

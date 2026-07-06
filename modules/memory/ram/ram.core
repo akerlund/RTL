@@ -1,6 +1,6 @@
 CAPI=2:
 name: "akerlund::memory_ram:0"
-description: "Single-port and dual-port synchronous RAM primitives"
+description: "Single-port and dual-port synchronous RAM primitives with documented read-first behavior"
 
 filesets:
   rtl:
@@ -12,9 +12,30 @@ filesets:
       - rtl/ram_sp_bw.sv
       - rtl/ram_tdp.sv
       - rtl/ram_tdp_bw.sv
+      - rtl/ram_lint_top.sv
     file_type: systemVerilogSource
 
 targets:
   default:
     filesets:
       - rtl
+
+  rtl:
+    flow: lint
+    flow_options:
+      tool: verilator
+      verilator_options:
+        - -Wall
+        - -Wno-fatal
+        - --timing
+        - --error-limit
+        - "0"
+        - -Werror-IMPLICIT
+        - -Werror-BLKSEQ
+        - -Werror-LATCH
+        - -Werror-CASEINCOMPLETE
+        - -Wno-UNUSEDSIGNAL
+        - -Wno-PINCONNECTEMPTY
+    filesets:
+      - rtl
+    toplevel: ram_lint_top

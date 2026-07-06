@@ -15,8 +15,36 @@ parameters:
     datatype: int
     default: 100000
     paramtype: vlogparam
+  CONNECTION_TYPE_P:
+    datatype: str
+    default: '"OPEN"'
+    paramtype: vlogparam
 
 targets:
   default:
     filesets:
       - rtl
+
+
+  rtl:
+    flow: lint
+    flow_options:
+      tool: verilator
+      verilator_options:
+        - -Wall
+        - -Wno-fatal
+        - --timing
+        - --error-limit
+        - "0"
+        - -Werror-IMPLICIT
+        - -Werror-BLKSEQ
+        - -Werror-LATCH
+        - -Werror-CASEINCOMPLETE
+        - -Wno-UNUSEDSIGNAL
+        - -Wno-PINCONNECTEMPTY
+    filesets:
+      - rtl
+    parameters:
+      - NR_OF_DEBOUNCE_CLKS_P
+      - CONNECTION_TYPE_P
+    toplevel: button_core
