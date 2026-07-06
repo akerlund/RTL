@@ -1,0 +1,34 @@
+CAPI=2:
+name: "akerlund::axi4s_fifo_py:0"
+description: "AXI4-Stream FIFO cocotb tests"
+
+filesets:
+  tb:
+    files:
+      - ../../memory/ram/rtl/ram_sdp.sv
+      - ../../memory/ram/rtl/ram_sdp2c.sv
+      - ../../memory/ram/rtl/ram_sdp_bw.sv
+      - ../../memory/ram/rtl/ram_sp.sv
+      - ../../memory/ram/rtl/ram_sp_bw.sv
+      - ../../memory/ram/rtl/ram_tdp.sv
+      - ../../memory/ram/rtl/ram_tdp_bw.sv
+      - ../../memory/reg/rtl/reg_sp_rf.sv
+      - ../../fifo/rtl/fifo_register.sv
+      - ../../fifo/rtl/fifo.sv
+      - ../rtl/axi4s_fifo.sv
+      - tb/tb_top.sv
+    file_type: systemVerilogSource
+
+targets:
+  sim:
+    flow: sim
+    flow_options:
+      tool: verilator
+      cocotb_module: cocotb_entry
+      mode: cc
+      verilator_options:
+        - -Wno-fatal
+        - --public-flat-rw
+    filesets:
+      - tb
+    toplevel: tb_top

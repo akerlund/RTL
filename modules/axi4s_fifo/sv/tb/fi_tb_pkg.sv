@@ -43,13 +43,13 @@ package fi_tb_pkg;
 
   // Configuration of the VIP (Data)
   localparam vip_axi4s_cfg_t VIP_AXI4S_CFG_C = '{
-    VIP_AXI4S_TDATA_WIDTH_P : VIP_AXI4S_TDATA_WIDTH_C,
-    VIP_AXI4S_TSTRB_WIDTH_P : VIP_AXI4S_TSTRB_WIDTH_C,
-    VIP_AXI4S_TKEEP_WIDTH_P : 0,
+    VIP_AXI4S_TDATA_BYTES_P : VIP_AXI4S_TDATA_WIDTH_C/8,
     VIP_AXI4S_TID_WIDTH_P   : 0,
     VIP_AXI4S_TDEST_WIDTH_P : 0,
     VIP_AXI4S_TUSER_WIDTH_P : 0
   };
+
+  typedef vip_axi4s_seq #(VIP_AXI4S_CFG_C) vip_axi4s_seq_t;
 
   localparam int FIFO_ADDR_WIDTH_C = 6; // Minimum width is (1)
   localparam int FIFO_USER_WIDTH_C = VIP_AXI4S_TDATA_WIDTH_C + 1;
@@ -57,7 +57,6 @@ package fi_tb_pkg;
   `include "fi_scoreboard.sv"
   `include "fi_virtual_sequencer.sv"
   `include "fi_env.sv"
-  `include "vip_axi4s_seq_lib.sv"
 
 endpackage
 
