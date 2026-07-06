@@ -23,23 +23,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-`default_nettype none
+`include "uvm_macros.svh"
+import uvm_pkg::*;
 
-module gray_to_bin #(
-    parameter WIDTH_P = -1
-  )(
-    input  wire  [WIDTH_P-1 : 0] gray,
-    output logic [WIDTH_P-1 : 0] bin
-  );
-
-  genvar i;
-
-  generate
-    for (i = 0; i < WIDTH_P; i++) begin
-      assign bin[i] = ^gray[WIDTH_P-1 : i];
-    end
-  endgenerate
-
-endmodule
-
-`default_nettype wire
+// Include RTL files here
+`include "cdc_bit_sync_core.sv"
+`include "cdc_bit_sync.sv"
+`include "cdc_vector_sync.sv"
+`include "clk_rst_if.sv"

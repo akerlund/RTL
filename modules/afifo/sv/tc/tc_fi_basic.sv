@@ -23,23 +23,34 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-`default_nettype none
+class tc_fi_basic extends fi_base_test;
 
-module gray_to_bin #(
-    parameter WIDTH_P = -1
-  )(
-    input  wire  [WIDTH_P-1 : 0] gray,
-    output logic [WIDTH_P-1 : 0] bin
-  );
+  `uvm_component_utils(tc_fi_basic)
 
-  genvar i;
+  function new(string name = "tc_fi_basic", uvm_component parent = null);
+    super.new(name, parent);
+  endfunction
 
-  generate
-    for (i = 0; i < WIDTH_P; i++) begin
-      assign bin[i] = ^gray[WIDTH_P-1 : i];
-    end
-  endgenerate
 
-endmodule
+  function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
+  endfunction
 
-`default_nettype wire
+
+  task run_phase(uvm_phase phase);
+
+    super.run_phase(phase);
+    phase.raise_objection(this);
+
+    vip_axi4s_seq0.set_tdata_type(VIP_AXI4S_TDATA_COUNTER_E);
+    vip_axi4s_seq0.set_cfg_burst_length(128, 1);
+    vip_axi4s_seq0.set_nr_of_bursts(1024);
+    vip_axi4s_seq0.set_tstrb_type(VIP_AXI4S_TSTRB_ALL_E);
+    vip_axi4s_seq0.set_log_denominator(4);
+    vip_axi4s_seq0.start(v_sqr.mst_sequencer);
+
+    phase.drop_objection(this);
+
+  endtask
+
+endclass

@@ -1,24 +1,25 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2021 Fredrik Åkerlund
+// Copyright (C) 2026 Fredrik Åkerlund
 // https://github.com/akerlund/RTL
 //
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
 //
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-//
-// Description:
-// Simulation and Synthesis Techniques for Asynchronous FIFO Design
-// http://www.sunburst-design.com/papers/CummingsSNUG2002SJ_FIFO1.pdf
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -44,6 +45,23 @@ module afifo_core #(
     output logic   [ADDR_WIDTH_P : 0] sr_rclk_fill_level
   );
 
+  localparam logic [ADDR_WIDTH_P+1 : 0] PTR_MODULUS_C = {1'b1, {(ADDR_WIDTH_P+1){1'b0}}};
+
+  function automatic logic [ADDR_WIDTH_P : 0] ptr_distance(
+    input logic [ADDR_WIDTH_P : 0] newer,
+    input logic [ADDR_WIDTH_P : 0] older
+  );
+    logic [ADDR_WIDTH_P+1 : 0] distance;
+    begin
+      if (newer >= older) begin
+        distance = newer - older;
+      end else begin
+        distance = PTR_MODULUS_C - older + newer;
+      end
+      ptr_distance = distance[ADDR_WIDTH_P : 0];
+    end
+  endfunction
+
   logic                      wclk_rst_n;
   logic                      wclk_rclk_rst_n;
   logic   [ADDR_WIDTH_P : 0] wclk_wr_bin;
@@ -52,6 +70,7 @@ module afifo_core #(
   logic   [ADDR_WIDTH_P : 0] wclk_wr_gray_next;
   logic [ADDR_WIDTH_P-1 : 0] wclk_wr_addr;
   logic                      wclk_full_next;
+  logic   [ADDR_WIDTH_P : 0] wclk_full_gray;
   logic   [ADDR_WIDTH_P : 0] wclk_rd_gray;
   logic   [ADDR_WIDTH_P : 0] wclk_rd_bin;
   logic                      wclk_mem_wr_en;
@@ -73,9 +92,18 @@ module afifo_core #(
 
   assign wclk_wr_bin_next  = wclk_wr_bin + {{ADDR_WIDTH_P{1'b0}}, wclk_wr_en && !wclk_full};
   assign wclk_wr_gray_next = (wclk_wr_bin_next >> 1) ^ wclk_wr_bin_next;
-  assign wclk_full_next    = wclk_wr_gray_next == {~wclk_rd_gray[ADDR_WIDTH_P : ADDR_WIDTH_P-1], wclk_rd_gray[ADDR_WIDTH_P-2 : 0]};
   assign wclk_wr_addr      = wclk_wr_bin[ADDR_WIDTH_P-1 : 0];
   assign wclk_mem_wr_en    = wclk_wr_en && !wclk_full;
+
+  generate
+    if (ADDR_WIDTH_P > 1) begin : gen_wide_full_gray
+      assign wclk_full_gray = {~wclk_rd_gray[ADDR_WIDTH_P : ADDR_WIDTH_P-1], wclk_rd_gray[ADDR_WIDTH_P-2 : 0]};
+    end else begin : gen_narrow_full_gray
+      assign wclk_full_gray = ~wclk_rd_gray;
+    end
+  endgenerate
+
+  assign wclk_full_next = wclk_wr_gray_next == wclk_full_gray;
 
 
   always_ff @(posedge wclk or negedge rst_w_n) begin
@@ -99,11 +127,7 @@ module afifo_core #(
     if (!rst_w_n) begin
       sr_wclk_fill_level <= '0;
     end else begin
-      if (wclk_wr_bin >= wclk_rd_bin) begin
-        sr_wclk_fill_level <= wclk_wr_bin - wclk_rd_bin;
-      end else begin
-        sr_wclk_fill_level <= 2**ADDR_WIDTH_P - wclk_rd_bin - wclk_wr_bin;
-      end
+      sr_wclk_fill_level <= ptr_distance(wclk_wr_bin, wclk_rd_bin);
     end
   end
 
@@ -139,11 +163,7 @@ module afifo_core #(
     if (!rst_r_n) begin
       sr_rclk_fill_level <= '0;
     end else begin
-      if (rclk_wr_bin >= rclk_rd_bin) begin
-        sr_rclk_fill_level <= rclk_wr_bin - rclk_rd_bin;
-      end else begin
-        sr_rclk_fill_level <= 2**ADDR_WIDTH_P - rclk_rd_bin - rclk_wr_bin;
-      end
+      sr_rclk_fill_level <= ptr_distance(rclk_wr_bin, rclk_rd_bin);
     end
   end
 
@@ -228,6 +248,22 @@ module afifo_core #(
       );
     end
   endgenerate
+
+`ifndef SYNTHESIS
+  always_ff @(posedge wclk) begin
+    if (rst_w_n && !wclk_rclk_rst_n) begin
+      assert (wclk_full)
+        else $error("wclk_full must stay asserted until rclk reset has synchronized");
+    end
+  end
+
+  always_ff @(posedge rclk) begin
+    if (rst_r_n && !rclk_wclk_rst_n) begin
+      assert (rclk_empty)
+        else $error("rclk_empty must stay asserted until wclk reset has synchronized");
+    end
+  end
+`endif
 
 endmodule
 

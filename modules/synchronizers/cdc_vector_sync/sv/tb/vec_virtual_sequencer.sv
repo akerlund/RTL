@@ -23,23 +23,17 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-`default_nettype none
+class vec_virtual_sequencer extends uvm_virtual_sequencer;
 
-module gray_to_bin #(
-    parameter WIDTH_P = -1
-  )(
-    input  wire  [WIDTH_P-1 : 0] gray,
-    output logic [WIDTH_P-1 : 0] bin
-  );
+  `uvm_component_utils(vec_virtual_sequencer)
 
-  genvar i;
+  vip_axi4s_sequencer #(VIP_AXI4S_CFG_C) mst0_sequencer;
+  vip_axi4s_sequencer #(VIP_AXI4S_CFG_C) slv0_sequencer;
+  clk_rst_sequencer                      clk_rst_sequencer0;
+  clk_rst_sequencer                      clk_rst_sequencer1;
 
-  generate
-    for (i = 0; i < WIDTH_P; i++) begin
-      assign bin[i] = ^gray[WIDTH_P-1 : i];
-    end
-  endgenerate
+  function new(string name = "virtual_sequencer", uvm_component parent = null);
+    super.new(name, parent);
+  endfunction
 
-endmodule
-
-`default_nettype wire
+endclass

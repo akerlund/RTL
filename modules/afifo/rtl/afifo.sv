@@ -1,22 +1,25 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2021 Fredrik Åkerlund
+// Copyright (C) 2026 Fredrik Åkerlund
 // https://github.com/akerlund/RTL
 //
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
 //
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-//
-// Description:
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -46,6 +49,7 @@ module afifo #(
   );
 
   localparam int REG_ADDR_WIDTH_C = 2;
+  localparam int RP_FILL_PAD_C    = (ADDR_WIDTH_P > REG_ADDR_WIDTH_C) ? ADDR_WIDTH_P - REG_ADDR_WIDTH_C : 0;
 
   // AFIFO
   logic                        wclk_wr_en_c0;
@@ -54,10 +58,19 @@ module afifo #(
   logic   [DATA_WIDTH_P-1 : 0] rclk_data;
   logic                        rclk_empty;
   logic     [ADDR_WIDTH_P : 0] sr_rclk_fill_level;
+  logic     [ADDR_WIDTH_P : 0] rp_sr_fill_level_w;
 
   // FIFO
   logic                        rp_read_en_c0;
   logic [REG_ADDR_WIDTH_C : 0] rp_sr_fill_level;
+
+  generate
+    if (ADDR_WIDTH_P > REG_ADDR_WIDTH_C) begin : gen_pad_rp_fill
+      assign rp_sr_fill_level_w = {{RP_FILL_PAD_C{1'b0}}, rp_sr_fill_level};
+    end else begin : gen_trim_rp_fill
+      assign rp_sr_fill_level_w = rp_sr_fill_level[ADDR_WIDTH_P : 0];
+    end
+  endgenerate
 
   // AFIFO
   assign wclk_wr_en_c0 = wp_write_en && !wp_fifo_full;
@@ -119,7 +132,7 @@ module afifo #(
     if (rp_fifo_empty) begin
       sr_rp_fill_level = '0;
     end else begin
-      sr_rp_fill_level = sr_rclk_fill_level + rp_sr_fill_level;
+      sr_rp_fill_level = sr_rclk_fill_level + rp_sr_fill_level_w;
     end
   end
 
