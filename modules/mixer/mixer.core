@@ -14,20 +14,19 @@ filesets:
 
   tb:
     files:
-      # Compilation unit: tb.svh includes all other tb/tc files
-      - tb/tb.svh
-      # Include files: accessed via +incdir+tb/ and +incdir+tc/
-      - tb/mix_if.sv: {is_include_file: true}
-      - tb/mix_env.sv: {is_include_file: true}
-      - tb/mix_scoreboard.sv: {is_include_file: true}
-      - tb/mix_seq_lib.sv: {is_include_file: true}
-      - tb/mix_virtual_sequencer.sv: {is_include_file: true}
-      - tb/mix_tb_pkg.sv: {is_include_file: true}
-      - tb/mix_tb_top.sv: {is_include_file: true}
-      - tc/mix_tc_pkg.sv: {is_include_file: true}
-      - tc/mix_base_test.sv: {is_include_file: true}
-      - tc/tc_positive_signals.sv: {is_include_file: true}
-      - tc/tc_random_signals.sv: {is_include_file: true}
+      # Compilation units
+      - sv/tb/mix_tb_pkg.sv
+      - sv/tc/mix_tc_pkg.sv
+      - sv/tb/mix_if.sv
+      - sv/tb/mix_tb_top.sv
+      # Include files (included by tb/tc packages)
+      - sv/tb/mix_env.sv: {is_include_file: true}
+      - sv/tb/mix_scoreboard.sv: {is_include_file: true}
+      - sv/tb/mix_seq_lib.sv: {is_include_file: true}
+      - sv/tb/mix_virtual_sequencer.sv: {is_include_file: true}
+      - sv/tc/mix_base_test.sv: {is_include_file: true}
+      - sv/tc/tc_positive_signals.sv: {is_include_file: true}
+      - sv/tc/tc_random_signals.sv: {is_include_file: true}
     file_type: systemVerilogSource
     depend:
       - "akerlund::vip_bool:0"
@@ -54,6 +53,10 @@ parameters:
     datatype: int
     default: 7
     paramtype: vlogparam
+  CLIP_LED_HOLD_CYCLES_P:
+    datatype: int
+    default: 625000000
+    paramtype: vlogparam
 
 targets:
   default:
@@ -61,18 +64,17 @@ targets:
       - rtl
 
   uvm:
-    flow: sim
-    flow_options:
-      tool: verilator
     filesets:
       - rtl
       - tb
-    parameters:
-      - AUDIO_WIDTH_P
-      - GAIN_WIDTH_P
-      - NR_OF_CHANNELS_P
-      - Q_BITS_P
     toplevel: mix_tb_top
+    tools:
+      vcs:
+        vcs_options:
+          - -ntb_opts
+          - uvm-1.2
+        run_options:
+          - +UVM_TESTNAME=tc_positive_signals
 
   rtl:
     flow: lint
@@ -80,6 +82,7 @@ targets:
       tool: verilator
       verilator_options:
         - -Wall
+        - -Wno-fatal
         - --timing
         - --error-limit
         - "0"
@@ -91,4 +94,10 @@ targets:
         - -Wno-PINCONNECTEMPTY
     filesets:
       - rtl
-
+    parameters:
+      - AUDIO_WIDTH_P
+      - GAIN_WIDTH_P
+      - NR_OF_CHANNELS_P
+      - Q_BITS_P
+      - CLIP_LED_HOLD_CYCLES_P
+    toplevel: mixer_top

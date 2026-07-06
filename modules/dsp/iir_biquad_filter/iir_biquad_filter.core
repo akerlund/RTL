@@ -21,26 +21,26 @@ filesets:
   tb:
     files:
       # Compilation units
-      - tb/iir_tb_pkg.sv
-      - tc/iir_tc_pkg.sv
-      - tb/iir_tb_top.sv
+      - sv/tb/iir_tb_pkg.sv
+      - sv/tc/iir_tc_pkg.sv
+      - sv/tb/iir_tb_top.sv
       # Include files: uvm_reg dir
-      - tb/uvm_reg/iir_block.sv: {is_include_file: true}
-      - tb/uvm_reg/iir_reg.sv: {is_include_file: true}
-      - tb/uvm_reg/register_model.sv: {is_include_file: true}
+      - sv/tb/uvm_reg/iir_block.sv: {is_include_file: true}
+      - sv/tb/uvm_reg/iir_reg.sv: {is_include_file: true}
+      - sv/tb/uvm_reg/register_model.sv: {is_include_file: true}
       # Include files: tb dir
-      - tb/iir_env.sv: {is_include_file: true}
-      - tb/iir_scoreboard.sv: {is_include_file: true}
-      - tb/iir_virtual_sequencer.sv: {is_include_file: true}
+      - sv/tb/iir_env.sv: {is_include_file: true}
+      - sv/tb/iir_scoreboard.sv: {is_include_file: true}
+      - sv/tb/iir_virtual_sequencer.sv: {is_include_file: true}
       # Include files: tc dir
-      - tc/iir_base_test.sv: {is_include_file: true}
-      - tc/tc_iir_basic_configuration.sv: {is_include_file: true}
-      - tc/tc_iir_coefficient_check.sv: {is_include_file: true}
-      - tc/tc_iir_reconfiguration.sv: {is_include_file: true}
+      - sv/tc/iir_base_test.sv: {is_include_file: true}
+      - sv/tc/tc_iir_basic_configuration.sv: {is_include_file: true}
+      - sv/tc/tc_iir_coefficient_check.sv: {is_include_file: true}
+      - sv/tc/tc_iir_reconfiguration.sv: {is_include_file: true}
     file_type: systemVerilogSource
     depend:
       - "akerlund::vip_bool:0"
-      - "akerlund::vip_axi4_agent:0"
+      - "akerlund::vip_axi4_agent:1.0.0"
       - "akerlund::vip_axi4s_agent:0"
       - "akerlund::vip_clk_rst_agent:0"
       - "akerlund::vip_fixed_point:0"
@@ -80,20 +80,17 @@ targets:
       - rtl
 
   uvm:
-    flow: sim
-    flow_options:
-      tool: verilator
     filesets:
       - rtl
       - tb
-    parameters:
-      - AXI_DATA_WIDTH_P
-      - AXI_ID_WIDTH_P
-      - AXI4S_ID_P
-      - APB_DATA_WIDTH_P
-      - N_BITS_P
-      - Q_BITS_P
     toplevel: iir_tb_top
+    tools:
+      vcs:
+        vcs_options:
+          - -ntb_opts
+          - uvm-1.2
+        run_options:
+          - +UVM_TESTNAME=tc_iir_basic_configuration
 
   rtl:
     flow: lint
@@ -101,6 +98,7 @@ targets:
       tool: verilator
       verilator_options:
         - -Wall
+        - -Wno-fatal
         - --timing
         - --error-limit
         - "0"
@@ -112,4 +110,10 @@ targets:
         - -Wno-PINCONNECTEMPTY
     filesets:
       - rtl
-
+    parameters:
+      - AXI_DATA_WIDTH_P
+      - AXI_ID_WIDTH_P
+      - AXI4S_ID_P
+      - N_BITS_P
+      - Q_BITS_P
+    toplevel: iir_biquad_top

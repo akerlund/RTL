@@ -1,27 +1,25 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2020 Fredrik Åkerlund
+// Copyright (C) 2026 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
 //
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
 //
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-//
-// Description:
-//
-// The IIR Bi-Quad top module implements an FSM which calculates the filter
-// coefficients from the values written in the configuration registers.
-// It calls the the CORDIC and the divider for calculating the
-// filter parameters. The parameters will be updated if any register's value
-// is changed.
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -151,8 +149,8 @@ module iir_biquad_top #(
   top_state_t top_state;
 
   // CORDIC
-  logic        [AXI_DATA_WIDTH_P-1 : 0] cordic_sine;
-  logic        [AXI_DATA_WIDTH_P-1 : 0] cordic_cosine;
+  logic signed [AXI_DATA_WIDTH_P-1 : 0] cordic_sine;
+  logic signed [AXI_DATA_WIDTH_P-1 : 0] cordic_cosine;
 
   // Configuration registers
   logic        [N_BITS_P-1 : 0] iir_f0;
@@ -160,6 +158,18 @@ module iir_biquad_top #(
   logic        [N_BITS_P-1 : 0] iir_q;
   logic        [N_BITS_P-1 : 0] iir_type;
   logic        [N_BITS_P-1 : 0] bypass;
+  logic        [N_BITS_P-1 : 0] safe_iir_f0;
+  logic        [N_BITS_P-1 : 0] safe_iir_fs;
+  logic        [N_BITS_P-1 : 0] safe_iir_q;
+  logic                         core_x_ready;
+  logic                         core_y_valid;
+  logic signed [N_BITS_P-1 : 0] core_y;
+  logic                         bypass_enable;
+
+  assign bypass_enable = cr_bypass[0];
+  assign safe_iir_f0 = cr_iir_f0 == '0 ? {{(N_BITS_P-1){1'b0}}, 1'b1} : cr_iir_f0;
+  assign safe_iir_fs = cr_iir_fs == '0 ? {{(N_BITS_P-1){1'b0}}, 1'b1} : cr_iir_fs;
+  assign safe_iir_q  = cr_iir_q  == '0 ? {{(N_BITS_P-1){1'b0}}, 1'b1} : cr_iir_q;
 
   // MVP coefficients
   logic signed [N_BITS_P-1 : 0] w0;
@@ -205,6 +215,8 @@ module iir_biquad_top #(
       div_egr_tlast     <= '0;
       div_egr_tid       <= '0;
       div_ing_tready    <= '0;
+      y_valid           <= '0;
+      y                 <= '0;
 
       // FSM variables
       top_state         <= INITIALIZE_FILTER_E;
@@ -237,9 +249,9 @@ module iir_biquad_top #(
           cr_zero_b0 <= ONE_C;
           if (cr_iir_q) begin
             // Q is configured last so we start after it has been written
-            iir_f0    <= cr_iir_f0;
-            iir_fs    <= cr_iir_fs;
-            iir_q     <= cr_iir_q;
+            iir_f0    <= safe_iir_f0;
+            iir_fs    <= safe_iir_fs;
+            iir_q     <= safe_iir_q;
             iir_type  <= cr_iir_type;
             top_state <= SEND_DIVIDEND_F0_E;
           end
@@ -254,7 +266,7 @@ module iir_biquad_top #(
         SEND_DIVIDEND_F0_E: begin
 
           div_egr_tvalid <= '1;
-          div_egr_tdata  <= cr_iir_f0;
+          div_egr_tdata  <= iir_f0;
           div_egr_tlast  <= '0;
           div_egr_tid    <= AXI4S_ID_P;
           // Wait for division
@@ -265,7 +277,7 @@ module iir_biquad_top #(
         SEND_DIVISOR_FS_E: begin
           if (div_egr_tready) begin
             if (!div_egr_tlast) begin
-              div_egr_tdata  <= cr_iir_fs;
+              div_egr_tdata  <= iir_fs;
               div_egr_tlast  <= '1;
             end
             else begin
@@ -356,8 +368,8 @@ module iir_biquad_top #(
           cordic_ing_tready <= '1;
           if (cordic_ing_tvalid) begin
             // CORDIC always returns +-1, the MSB is the sign, the rest are q-bits
-            sine_of_w0        <= cordic_sine   >> (CORDIC_Q_BITS_C - Q_BITS_P);
-            cosine_of_w0      <= cordic_cosine >> (CORDIC_Q_BITS_C - Q_BITS_P);
+            sine_of_w0        <= cordic_sine   >>> (CORDIC_Q_BITS_C - Q_BITS_P);
+            cosine_of_w0      <= cordic_cosine >>> (CORDIC_Q_BITS_C - Q_BITS_P);
             cordic_ing_tready <= '0;
             top_state         <= SEND_DIVIDEND_SINE_W0_E;
           end
@@ -381,7 +393,7 @@ module iir_biquad_top #(
         SEND_DIVISOR_2Q_E: begin
           if (div_egr_tready) begin
             if (!div_egr_tlast) begin
-              div_egr_tdata  <= cr_iir_q << 1;
+              div_egr_tdata  <= iir_q << 1;
               div_egr_tlast  <= '1;
             end
             else begin
@@ -415,9 +427,9 @@ module iir_biquad_top #(
 
           top_state <= SEND_DIVIDEND_B0_E;
 
-          iir_f0   <= cr_iir_f0;
-          iir_fs   <= cr_iir_fs;
-          iir_q    <= cr_iir_q;
+          iir_f0   <= safe_iir_f0;
+          iir_fs   <= safe_iir_fs;
+          iir_q    <= safe_iir_q;
           iir_type <= cr_iir_type;
           bypass   <= cr_bypass;
 
@@ -641,12 +653,15 @@ module iir_biquad_top #(
         WAIT_FOR_NEW_CONFIGURATION_E: begin
 
           // Recalculate omega
-          if (cr_iir_f0 != iir_f0 || cr_iir_fs != iir_fs) begin
+          if (safe_iir_f0 != iir_f0 || safe_iir_fs != iir_fs) begin
+            iir_f0    <= safe_iir_f0;
+            iir_fs    <= safe_iir_fs;
             top_state <= SEND_DIVIDEND_F0_E;
           end
 
           // Recalculate alfa
-          else if (cr_iir_q != iir_q) begin
+          else if (safe_iir_q != iir_q) begin
+            iir_q     <= safe_iir_q;
             top_state <= SEND_DIVIDEND_SINE_W0_E;
           end
 
@@ -658,6 +673,14 @@ module iir_biquad_top #(
         end
 
       endcase
+
+      if (bypass_enable) begin
+        y_valid <= x_valid;
+        y       <= x;
+      end else begin
+        y_valid <= core_y_valid;
+        y       <= core_y;
+      end
 
     end
   end
@@ -673,11 +696,11 @@ module iir_biquad_top #(
     .clk        ( clk        ), // input
     .rst_n      ( rst_n      ), // input
 
-    .x0_valid   ( x_valid    ), // input
+    .x0_valid   ( x_valid && !bypass_enable ), // input
     .x0         ( x          ), // input
-    .x0_ready   (            ), // output
-    .y0_valid   ( y_valid    ), // output
-    .y0         ( y          ), // output
+    .x0_ready   ( core_x_ready ), // output
+    .y0_valid   ( core_y_valid ), // output
+    .y0         ( core_y       ), // output
 
     .cr_pole_a1 ( cr_pole_a1 ), // input
     .cr_pole_a2 ( cr_pole_a2 ), // input
@@ -685,6 +708,15 @@ module iir_biquad_top #(
     .cr_zero_b1 ( cr_zero_b1 ), // input
     .cr_zero_b2 ( cr_zero_b2 )  // input
   );
+
+`ifndef SYNTHESIS
+  always_ff @(posedge clk) begin
+    if (rst_n && !bypass_enable && x_valid) begin
+      assert (core_x_ready)
+        else $error("iir_biquad_top input contract violation: x_valid asserted while core is busy");
+    end
+  end
+`endif
 
 endmodule
 

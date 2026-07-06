@@ -1,12 +1,52 @@
 # IIR Bi-Quad Filter
 
-![Test  Status](https://img.shields.io/badge/test-passes-green)
+![Test Status](https://img.shields.io/badge/test-passes-green)
 ![Synth Status](https://img.shields.io/badge/synthesis-passes-green)
-![FPGA  Status](https://img.shields.io/badge/fpga-N/A-lightgrey)
+![FPGA Status](https://img.shields.io/badge/fpga-N/A-lightgrey)
 
-This IIR filter's test case *tc_iir_reconfiguration* will give this waveform
+## Table of Contents
 
-![sim](https://github.com/akerlund/rtl_common_design/blob/master/.pictures/dsp/bq_filter_sim.JPG)
+- [Overview](#overview)
+- [Implementation](#implementation)
+- [Synthesis](#synthesis)
+- [Theory](#theory)
+- [License](#license)
+
+## Overview
+
+A second-order IIR biquad filter in Direct-Form I with AXI4 register control. Filter coefficients (b0, b1, b2, a1, a2) are calculated on-chip from the cut-off frequency and Q-factor using the CORDIC and long-division peripherals, so the filter can be reconfigured at runtime by writing new values to the control registers.
+
+Fixed-point N.Q arithmetic is used throughout. N32Q11 is recommended as a minimum; N32Q7 was found to give insufficient accuracy for the ω₀ and α calculations.
+
+FuseSoC core name: `akerlund::iir_biquad_filter:0`
+
+**Parameters**
+
+| Parameter | Default | Description |
+|---|---|---|
+| `AXI_DATA_WIDTH_P` | 32 | AXI4-S data width for CORDIC and divider interfaces |
+| `AXI_ID_WIDTH_P` | 4 | AXI4-S ID width |
+| `AXI4S_ID_P` | — | ID value used on external AXI4-S interfaces |
+| `N_BITS_P` | 32 | Fixed-point total bits |
+| `Q_BITS_P` | 11 | Fixed-point fractional bits |
+
+## Simulation / Verification
+
+The legacy SystemVerilog/UVM testbench lives under `sv/`. A cocotb testbench lives
+under `py/`; it drives a small Python register model onto the plain configuration
+inputs, checks coefficient/status updates, and verifies the bypass output path with
+a signed sample.
+
+Run the flows from this module directory:
+
+```sh
+bash /home/shared/github/RTL/scripts/refuse.sh vcs
+bash /home/shared/github/RTL/scripts/refuse.sh simv --all
+bash /home/shared/github/RTL/scripts/refuse.sh cocotb -t tc_iir_basic_configuration
+bash /home/shared/github/RTL/scripts/refuse.sh cocotb -t tc_iir_coefficient_check
+bash /home/shared/github/RTL/scripts/refuse.sh cocotb -t tc_iir_reconfiguration
+```
+
 
 The input is a triangle wave with a frequency of **1kHz** and the cut-off frequency starts at **3kHz** and is decreased with steps of **200Hz**. Every time the cut-off frequency is changed the IIR top module's state machine will use the CORDIC and the long divider to calculate the new coefficients for the filter and then also normalize them to unity gain by dividing them all with **a0**. This particular simulation is using N32Q11 fixed point. It was found that N32Q7 provided insufficient accuracy of the calculating of w0 and alfa.
 
@@ -138,3 +178,7 @@ a2 = 1 - alfa
 # References
 
 [1] https://www.w3.org/2011/audio/audio-eq-cookbook.html
+
+## License
+
+Copyright (C) 2020 Fredrik Åkerlund — released under the GNU General Public License v3 or later. See [LICENSE](../../../LICENSE).

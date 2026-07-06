@@ -1,22 +1,25 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2020 Fredrik Åkerlund
+// Copyright (C) 2026 Fredrik Åkerlund
 // https://github.com/akerlund/RTL
 //
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
 //
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-//
-// Description:
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -90,8 +93,9 @@ module oscillator_core #(
   // Maximum duty cycle
   localparam logic signed [N_BITS_P-1 : 0] MAXIMUM_DUTY_CYCLE_C = (DUTY_CYCLE_DIVIDER_P-1) << Q_BITS_P;
 
-  // Minimum duty cycle TODO: Doesn't work as expected, still outputs the highest if < 0
   localparam logic signed [N_BITS_P-1 : 0] MINIMUM_DUTY_CYCLE_C = 1 << Q_BITS_P;
+  localparam logic        [N_BITS_P-1 : 0] MINIMUM_FREQUENCY_C   = 1 << Q_BITS_P;
+  localparam logic        [N_BITS_P-1 : 0] MAXIMUM_FREQUENCY_C   = PRIME_FREQUENCY_P << Q_BITS_P;
 
   // The value in "cr_duty_cycle" corresponds to a delay of a factor with this value
   // For example, 250M / 1k = 250000 and 18 bits are needed, N32Q11 should do the job
@@ -118,6 +122,8 @@ module oscillator_core #(
   logic                [N_BITS_P-1 : 0] cr_frequency_r0;         // Copy of cr_frequency, used to re-calculate when new input
   logic signed [AXI_DATA_WIDTH_P-1 : 0] cr_duty_cycle_q_shifted; // Copy of cr_duty_cycle
   logic signed       [2*N_BITS_P-1 : 0] multiplication_product;
+  logic                [N_BITS_P-1 : 0] cr_frequency_clamped;
+  logic signed         [N_BITS_P-1 : 0] cr_duty_cycle_clamped;
 
 
   logic   [N_BITS_P-1 : 0] enable_period; // Intermediate register the triangle and square enable periods
@@ -127,6 +133,24 @@ module oscillator_core #(
   logic   [N_BITS_P-1 : 0] tri_enable_period;
   logic   [N_BITS_P-1 : 0] sqr_enable_period;
   logic   [N_BITS_P-1 : 0] sqr_duty_cycle;
+
+  always_comb begin
+    if (cr_frequency < MINIMUM_FREQUENCY_C) begin
+      cr_frequency_clamped = MINIMUM_FREQUENCY_C;
+    end else if (cr_frequency > MAXIMUM_FREQUENCY_C) begin
+      cr_frequency_clamped = MAXIMUM_FREQUENCY_C;
+    end else begin
+      cr_frequency_clamped = cr_frequency;
+    end
+
+    if ($signed(cr_duty_cycle) < MINIMUM_DUTY_CYCLE_C) begin
+      cr_duty_cycle_clamped = MINIMUM_DUTY_CYCLE_C;
+    end else if ($signed(cr_duty_cycle) > MAXIMUM_DUTY_CYCLE_C) begin
+      cr_duty_cycle_clamped = MAXIMUM_DUTY_CYCLE_C;
+    end else begin
+      cr_duty_cycle_clamped = $signed(cr_duty_cycle);
+    end
+  end
 
 
   // FSM for interfacing with the divider and calculate for the
@@ -169,11 +193,11 @@ module oscillator_core #(
 
           if (update_frequency) begin
             ready                   <= '0;
-            cr_frequency_r0         <= cr_frequency;
+            cr_frequency_r0         <= cr_frequency_clamped;
             osc_core_state  <= SEND_DIVIDEND_PRIME_FREQUENCY_E;
           end else if (update_duty_cycle) begin
             ready                   <= '0;
-            cr_duty_cycle_q_shifted <= cr_duty_cycle <<< Q_BITS_P;
+            cr_duty_cycle_q_shifted <= cr_duty_cycle_clamped <<< Q_BITS_P;
             osc_core_state          <= SEND_DIVIDEND_DUTY_CYCLE_STEP_E;
           end
 
