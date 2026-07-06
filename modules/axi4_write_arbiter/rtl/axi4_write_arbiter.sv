@@ -1,32 +1,27 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2020 Fredrik Åkerlund
+// Copyright (C) 2026 Fredrik Åkerlund
 // https://github.com/akerlund/RTL
 //
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
 //
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 //
-// Description:
-//
-// If the parameter "NR_OF_MASTERS_P" is equal to one then an
-// "axi4_write_arbiter_mst_2_slvs" will be instantiated, i.e., one master
-// connected to (NR_OF_SLAVES_P) slaves.
-//
-// If the parameter "NR_OF_MASTERS_P" is NOT equal to one then a
-// "axi4_write_arbiter_msts_2_slv" will be instantiated, i.e.,
-// (NR_OF_MASTERS_P) masters is connected to one slave.
-//
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 `default_nettype none
 
@@ -98,9 +93,30 @@ module axi4_write_arbiter #(
     output logic                           [NR_OF_SLAVES_P-1 : 0] slv_bready
   );
 
+  initial begin
+    if (AXI_ID_WIDTH_P <= 0) begin
+      $fatal(1, "AXI_ID_WIDTH_P must be greater than zero");
+    end
+    if (AXI_ADDR_WIDTH_P <= 0) begin
+      $fatal(1, "AXI_ADDR_WIDTH_P must be greater than zero");
+    end
+    if (AXI_DATA_WIDTH_P <= 0) begin
+      $fatal(1, "AXI_DATA_WIDTH_P must be greater than zero");
+    end
+    if (AXI_STRB_WIDTH_P <= 0) begin
+      $fatal(1, "AXI_STRB_WIDTH_P must be greater than zero");
+    end
+    if (NR_OF_MASTERS_P <= 0 || NR_OF_SLAVES_P <= 0) begin
+      $fatal(1, "NR_OF_MASTERS_P and NR_OF_SLAVES_P must be greater than zero");
+    end
+    if (NR_OF_MASTERS_P > 1 && NR_OF_SLAVES_P > 1) begin
+      $fatal(1, "axi4_write_arbiter supports one master to many slaves or many masters to one slave");
+    end
+  end
+
 
   generate
-  if (NR_OF_MASTERS_P == 1) begin
+  if (NR_OF_MASTERS_P == 1) begin : gen_mst_to_slvs
 
     axi4_write_arbiter_mst_2_slvs #(
       .AXI_ID_WIDTH_P   ( AXI_ID_WIDTH_P   ),
@@ -170,7 +186,7 @@ module axi4_write_arbiter #(
     );
 
   end
-  else begin
+  else begin : gen_msts_to_slv
 
     axi4_write_arbiter_msts_2_slv #(
       .AXI_ID_WIDTH_P   ( AXI_ID_WIDTH_P   ),

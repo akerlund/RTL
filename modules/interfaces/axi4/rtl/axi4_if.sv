@@ -1,46 +1,32 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2021 Fredrik Åkerlund
+// Copyright (C) 2026 Fredrik Åkerlund
 // https://github.com/akerlund/RTL
 //
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
 //
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-//
-// Description:
-// Without the following signals:
-//  logic                      awlock;
-//  logic              [3 : 0] awcache;
-//  logic              [2 : 0] awprot;
-//  logic              [3 : 0] awqos;
-//  logic              [3 : 0] awregion;
-//  logic [USER_WIDTH_P-1 : 0] awuser;
-//  logic [USER_WIDTH_P-1 : 0] wuser;
-//  logic [USER_WIDTH_P-1 : 0] buser;
-//  logic              [1 : 0] arburst;
-//  logic                      arlock;
-//  logic              [3 : 0] arcache;
-//  logic              [2 : 0] arprot;
-//  logic              [3 : 0] arqos;
-//  logic              [3 : 0] arregion;
-//  logic [USER_WIDTH_P-1 : 0] aruser;
-//  logic [USER_WIDTH_P-1 : 0] ruser;
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 //
 ////////////////////////////////////////////////////////////////////////////////
 
 interface axi4_if #(
-    parameter int ID_WIDTH_P   = -1,
-    parameter int ADDR_WIDTH_P = -1,
-    parameter int DATA_WIDTH_P = -1,
+    parameter int ID_WIDTH_P   = 1,
+    parameter int ADDR_WIDTH_P = 1,
+    parameter int DATA_WIDTH_P = 8,
     parameter int STRB_WIDTH_P = DATA_WIDTH_P/8
   );
 
@@ -71,6 +57,7 @@ interface axi4_if #(
   logic [ADDR_WIDTH_P-1 : 0] araddr;
   logic              [7 : 0] arlen;
   logic              [2 : 0] arsize;
+  logic              [1 : 0] arburst;
   logic                      arvalid;
   logic                      arready;
 
@@ -103,6 +90,7 @@ interface axi4_if #(
     output araddr,
     output arlen,
     output arsize,
+    output arburst,
     output arvalid,
     input  arready,
     input  rid,
@@ -134,6 +122,7 @@ interface axi4_if #(
     input  araddr,
     input  arlen,
     input  arsize,
+    input  arburst,
     input  arvalid,
     output arready,
     output rid,
@@ -143,5 +132,47 @@ interface axi4_if #(
     output rvalid,
     input  rready
   );
+
+  modport monitor(
+    input awid,
+    input awaddr,
+    input awlen,
+    input awsize,
+    input awburst,
+    input awvalid,
+    input awready,
+    input wdata,
+    input wstrb,
+    input wlast,
+    input wvalid,
+    input wready,
+    input bid,
+    input bresp,
+    input bvalid,
+    input bready,
+    input arid,
+    input araddr,
+    input arlen,
+    input arsize,
+    input arburst,
+    input arvalid,
+    input arready,
+    input rid,
+    input rdata,
+    input rresp,
+    input rlast,
+    input rvalid,
+    input rready
+  );
+
+  initial begin
+    if (ID_WIDTH_P <= 0 || ADDR_WIDTH_P <= 0 || DATA_WIDTH_P <= 0 || STRB_WIDTH_P <= 0) begin
+      $error("AXI4 interface widths must be greater than zero");
+    end
+
+    if (DATA_WIDTH_P % 8 != 0) begin
+      $error("DATA_WIDTH_P must be a whole number of bytes");
+    end
+  end
 
 endinterface

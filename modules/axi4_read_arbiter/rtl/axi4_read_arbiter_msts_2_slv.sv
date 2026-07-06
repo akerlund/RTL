@@ -1,30 +1,27 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2020 Fredrik Åkerlund
+// Copyright (C) 2026 Fredrik Åkerlund
 // https://github.com/akerlund/RTL
 //
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
 //
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 //
-// Description:
-//
-// With the value of a counter labeled "read_rotating_mst" this arbiter checks
-// the corresponding "mst_arvalid" port and allows a connection if the port is
-// found high. The connection is closed when the handshake on the Read Data
-// Channel is detected with "rlast" and the counter will continue to
-// increase until the next asserted "mst_arvalid" is found.
-//
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 `default_nettype none
 
@@ -126,6 +123,8 @@ module axi4_read_arbiter_msts_2_slv #(
     end
     else begin
 
+      mst_arready <= '0;
+
       // -----------------------------------------------------------------------
       // Read Address Channel
       // -----------------------------------------------------------------------
@@ -134,31 +133,28 @@ module axi4_read_arbiter_msts_2_slv #(
 
         FIND_MST_ARVALID_E: begin
 
-          if (slv_arready) begin
+          if (read_rotating_mst == NR_OF_MASTERS_P-1) begin
+            read_rotating_mst <= '0;
+          end else begin
+            read_rotating_mst <= read_rotating_mst + 1;
+          end
 
-            if (read_rotating_mst == NR_OF_MASTERS_P-1) begin
-              read_rotating_mst <= '0;
-            end else begin
-              read_rotating_mst <= read_rotating_mst + 1;
-            end
-
-            if (mst_arvalid[read_rotating_mst]) begin
-              read_state                     <= WAIT_FOR_ADDR_HS_E;
-              mst_arready[read_rotating_mst] <= '1;
-              read_select                    <= read_rotating_mst;
-              read_mst_is_chosen             <= '1;
-            end
+          if (mst_arvalid[read_rotating_mst]) begin
+            read_state                     <= WAIT_FOR_ADDR_HS_E;
+            mst_arready[read_rotating_mst] <= slv_arready;
+            read_select                    <= read_rotating_mst;
+            read_mst_is_chosen             <= '1;
           end
         end
 
 
         WAIT_FOR_ADDR_HS_E: begin
 
+          mst_arready        <= '0;
+          mst_arready[read_select] <= slv_arready;
+
           if (slv_arready && slv_arvalid) begin
             read_state         <= WAIT_SLV_RLAST_E;
-            mst_arready        <= '0;
-          end else begin
-            mst_arready <= mst_arready;
           end
         end
 
