@@ -86,6 +86,19 @@ module fifo #(
         .sr_fill_level ( sr_fill_level )  // output
       );
 
+      assign ing_almost_full = (sr_fill_level >= cr_almost_full_level);
+
+      always_ff @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+          sr_max_fill_level <= '0;
+        end
+        else begin
+          if (sr_fill_level >= sr_max_fill_level) begin
+            sr_max_fill_level <= sr_fill_level;
+          end
+        end
+      end
+
     end else begin : memory_based_fifo
 
       localparam int REG_ADDR_WIDTH_C = 2;

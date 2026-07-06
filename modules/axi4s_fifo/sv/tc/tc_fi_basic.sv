@@ -39,10 +39,10 @@ class tc_fi_basic extends fi_base_test;
     super.run_phase(phase);
     phase.raise_objection(this);
 
-    vip_axi4s_seq0.set_data_type(VIP_AXI4S_TDATA_COUNTER_E);
+    vip_axi4s_seq0.set_tdata_type(VIP_AXI4S_TDATA_COUNTER_E);
     vip_axi4s_seq0.set_cfg_burst_length(128, 1);
     vip_axi4s_seq0.set_nr_of_bursts(2**16);
-    vip_axi4s_seq0.set_tstrb(VIP_AXI4S_TSTRB_ALL_E);
+    vip_axi4s_seq0.set_tstrb_type(VIP_AXI4S_TSTRB_ALL_E);
     vip_axi4s_seq0.set_log_denominator(64);
     vip_axi4s_seq0.start(v_sqr.mst_sequencer);
 

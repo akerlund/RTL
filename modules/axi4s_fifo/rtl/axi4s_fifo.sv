@@ -40,6 +40,7 @@ module axi4s_fifo #(
 
     output logic    [ADDR_WIDTH_P : 0] sr_fill_level,
     output logic    [ADDR_WIDTH_P : 0] sr_max_fill_level,
+    output logic                       sr_almost_full,
     input  wire     [ADDR_WIDTH_P : 0] cr_almost_full_level
   );
 
@@ -64,7 +65,7 @@ module axi4s_fifo #(
     .ing_enable           ( ing_transaction      ), // input
     .ing_data             ( ing_tuser            ), // input
     .ing_full             ( wp_fifo_full         ), // output
-    .ing_almost_full      (                      ), // output
+    .ing_almost_full      ( sr_almost_full       ), // output
     .egr_enable           ( egr_transaction      ), // input
     .egr_data             ( egr_tuser            ), // output
     .egr_empty            ( rp_fifo_empty        ), // output

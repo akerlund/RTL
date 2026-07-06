@@ -36,7 +36,7 @@ module axi4s_fifo_top;
   assign ing_tuser = {mst_vif.tlast, mst_vif.tdata};
   assign {slv_vif.tlast, slv_vif.tdata} = egr_tuser;
 
-  assign {slv_vif.tstrb, slv_vif.tkeep, slv_vif.tid, slv_vif.tdest} = '0;
+  assign {slv_vif.tstrb, slv_vif.tkeep, slv_vif.tid, slv_vif.tdest, slv_vif.tuser} = '0;
 
   axi4s_fifo #(
     .TUSER_WIDTH_P        ( FIFO_USER_WIDTH_C ),
@@ -52,6 +52,7 @@ module axi4s_fifo_top;
     .egr_tvalid           ( slv_vif.tvalid    ), // output
     .sr_fill_level        (                   ), // output
     .sr_max_fill_level    (                   ), // output
+    .sr_almost_full       (                   ), // output
     .cr_almost_full_level ( '0                )  // input
   );
 
@@ -60,6 +61,7 @@ module axi4s_fifo_top;
     uvm_config_db #(virtual clk_rst_if)::set(uvm_root::get(),                      "uvm_test_top.tb_env*",            "vif", clk_rst_vif);
     uvm_config_db #(virtual vip_axi4s_if #(VIP_AXI4S_CFG_C))::set(uvm_root::get(), "uvm_test_top.tb_env.mst_agent0*", "vif", mst_vif);
     uvm_config_db #(virtual vip_axi4s_if #(VIP_AXI4S_CFG_C))::set(uvm_root::get(), "uvm_test_top.tb_env.slv_agent0*", "vif", slv_vif);
+    uvm_root::get().set_timeout(150_000_000, 0);
     run_test();
     $stop();
   end
