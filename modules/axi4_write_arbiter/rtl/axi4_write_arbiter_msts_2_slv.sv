@@ -1,28 +1,25 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2020 Fredrik Åkerlund
+// Copyright (C) 2026 Fredrik Åkerlund
 // https://github.com/akerlund/RTL
 //
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
 //
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-//
-// Description:
-//
-// With the value of a counter labeled "wr_rotating_mst", this arbiter checks
-// the corresponding "mst_awvalid" port and allows for connection if found
-// high. The connection is closed when the handshake on the Write Response
-// Channel is detected and the counter will continue to increase until the next
-// asserted "mst_awvalid" is found.
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -143,31 +140,25 @@ module axi4_write_arbiter_msts_2_slv #(
 
         FIND_MST_AWVALID_E: begin
 
-          if (slv_awready) begin
+          if (wr_rotating_mst == NR_OF_MASTERS_C-1) begin
+            wr_rotating_mst <= '0;
+          end else begin
+            wr_rotating_mst <= wr_rotating_mst + 1;
+          end
 
-            if (wr_rotating_mst == NR_OF_MASTERS_C-1) begin
-              wr_rotating_mst <= '0;
-            end else begin
-              wr_rotating_mst <= wr_rotating_mst + 1;
-            end
-
-            if (mst_awvalid[wr_rotating_mst]) begin
-              write_state                  <= WAIT_MST_WLAST_E;
-              mst_awready[wr_rotating_mst] <= '1;
-              wr_selected_mst              <= wr_rotating_mst;
-              wr_mst_is_chosen             <= '1;
-            end
+          if (mst_awvalid[wr_rotating_mst]) begin
+            write_state                  <= WAIT_MST_WLAST_E;
+            mst_awready[wr_rotating_mst] <= slv_awready;
+            wr_selected_mst              <= wr_rotating_mst;
+            wr_mst_is_chosen             <= '1;
           end
         end
 
 
         WAIT_MST_WLAST_E: begin
 
-          if (slv_awready) begin
-            mst_awready <= '0;
-          end else begin
-            mst_awready <= mst_awready;
-          end
+          mst_awready                  <= '0;
+          mst_awready[wr_selected_mst] <= slv_awready;
 
           if (slv_wlast && slv_wvalid && slv_wready) begin
             write_state <= WAIT_FOR_BVALID_E;

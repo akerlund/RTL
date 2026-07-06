@@ -1,27 +1,27 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2020 Fredrik Åkerlund
+// Copyright (C) 2026 Fredrik Åkerlund
 // https://github.com/akerlund/RTL
 //
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
 //
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 //
-// Description:
-//
-// This arbiter uses the value of "arregion" to decide which slave is requested
-// by a master and thus this module supports up to 16 connections.
-//
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 `default_nettype none
 
@@ -82,16 +82,25 @@ module axi4_read_arbiter_mst_2_slvs #(
   );
 
   localparam int NR_OF_SLAVES_C = $clog2(NR_OF_SLAVES_P);
+  localparam bit ALL_REGIONS_VALID_C = NR_OF_SLAVES_P >= 16;
+  localparam logic [3 : 0] NR_OF_SLAVES_REGION_C = 4'(NR_OF_SLAVES_P);
 
   typedef enum {
     WAIT_MST_ARVALID_E,
     WAIT_SLV_ARREADY_E,
-    WAIT_SLV_RLAST_E
+    WAIT_SLV_RLAST_E,
+    WAIT_ERR_RREADY_E
   } read_state_t;
 
   read_state_t read_state;
 
   logic [NR_OF_SLAVES_C-1 : 0] arregion;
+  logic [NR_OF_SLAVES_C-1 : 0] current_arregion;
+  logic                        current_arregion_valid;
+  logic [AXI_ID_WIDTH_P-1 : 0] error_arid;
+
+  assign current_arregion = mst_arregion[NR_OF_SLAVES_C-1 : 0];
+  assign current_arregion_valid = ALL_REGIONS_VALID_C || (mst_arregion < NR_OF_SLAVES_REGION_C);
 
   // ---------------------------------------------------------------------------
   // Port assignments
@@ -114,6 +123,7 @@ module axi4_read_arbiter_mst_2_slvs #(
     if (!rst_n) begin
       read_state <= WAIT_MST_ARVALID_E;
       arregion   <= '0;
+      error_arid  <= '0;
     end
     else begin
 
@@ -122,8 +132,19 @@ module axi4_read_arbiter_mst_2_slvs #(
         WAIT_MST_ARVALID_E: begin
 
           if (mst_arvalid) begin
-            read_state <= WAIT_SLV_ARREADY_E;
-            arregion   <= mst_arregion[NR_OF_SLAVES_C-1 : 0];
+            if (current_arregion_valid) begin
+              arregion <= current_arregion;
+              if (slv_arready[current_arregion]) begin
+                read_state <= WAIT_SLV_RLAST_E;
+              end
+              else begin
+                read_state <= WAIT_SLV_ARREADY_E;
+              end
+            end
+            else begin
+              read_state <= WAIT_ERR_RREADY_E;
+              error_arid  <= mst_arid;
+            end
           end
         end
 
@@ -131,7 +152,7 @@ module axi4_read_arbiter_mst_2_slvs #(
 
           if (mst_arvalid && mst_arready) begin
             read_state <= WAIT_SLV_RLAST_E;
-            arregion   <= mst_arregion[NR_OF_SLAVES_C-1 : 0];
+            arregion   <= current_arregion;
           end
         end
 
@@ -139,6 +160,13 @@ module axi4_read_arbiter_mst_2_slvs #(
         WAIT_SLV_RLAST_E: begin
 
           if (mst_rlast && mst_rvalid && mst_rready) begin
+            read_state <= WAIT_MST_ARVALID_E;
+          end
+        end
+
+        WAIT_ERR_RREADY_E: begin
+
+          if (mst_rready) begin
             read_state <= WAIT_MST_ARVALID_E;
           end
         end
@@ -164,7 +192,18 @@ module axi4_read_arbiter_mst_2_slvs #(
 
     // A Read Address Channel transaction must have subsequent
     // Data Channel transaction(s)
-    if (read_state == WAIT_SLV_ARREADY_E) begin
+    if (read_state == WAIT_MST_ARVALID_E && mst_arvalid) begin
+
+      if (current_arregion_valid) begin
+        // Read Address Channel
+        mst_arready                   = slv_arready[current_arregion];
+        slv_arvalid[current_arregion] = mst_arvalid;
+      end
+      else begin
+        mst_arready = '1;
+      end
+
+    end else if (read_state == WAIT_SLV_ARREADY_E) begin
 
       // Read Address Channel
       mst_arready           = slv_arready[arregion];
@@ -178,6 +217,13 @@ module axi4_read_arbiter_mst_2_slvs #(
       mst_rlast            = slv_rlast  [arregion];
       mst_rvalid           = slv_rvalid [arregion];
       slv_rready[arregion] = mst_rready;
+    end else if (read_state == WAIT_ERR_RREADY_E) begin
+
+      mst_rid     = error_arid;
+      mst_rresp   = 2'b11;
+      mst_rdata   = '0;
+      mst_rlast   = '1;
+      mst_rvalid  = '1;
     end
   end
 endmodule

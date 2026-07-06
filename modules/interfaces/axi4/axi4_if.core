@@ -1,14 +1,35 @@
 CAPI=2:
 name: "akerlund::axi4_if:0"
-description: "AXI4 interface definition"
+description: "Reduced AXI4 interface definition with burst channels and monitor modport"
 
 filesets:
   rtl:
     files:
       - rtl/axi4_if.sv
+      - rtl/axi4_if_lint_top.sv
     file_type: systemVerilogSource
 
 targets:
   default:
     filesets:
       - rtl
+
+  rtl:
+    flow: lint
+    flow_options:
+      tool: verilator
+      verilator_options:
+        - -Wall
+        - -Wno-fatal
+        - --timing
+        - --error-limit
+        - "0"
+        - -Werror-IMPLICIT
+        - -Werror-BLKSEQ
+        - -Werror-LATCH
+        - -Werror-CASEINCOMPLETE
+        - -Wno-UNUSEDSIGNAL
+        - -Wno-PINCONNECTEMPTY
+    filesets:
+      - rtl
+    toplevel: axi4_if_lint_top

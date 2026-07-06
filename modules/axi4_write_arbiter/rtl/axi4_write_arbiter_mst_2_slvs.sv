@@ -1,27 +1,27 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2020 Fredrik Åkerlund
+// Copyright (C) 2026 Fredrik Åkerlund
 // https://github.com/akerlund/RTL
 //
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
 //
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 //
-// Description:
-//
-// This arbiter uses the value of "awregion" to decide which slave is requested
-// by a master and thus this module supports up to 16 connections.
-//
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 `default_nettype none
 
@@ -94,6 +94,8 @@ module axi4_write_arbiter_mst_2_slvs #(
 
 
   localparam int NR_OF_SLAVES_C = $clog2(NR_OF_SLAVES_P);
+  localparam bit ALL_REGIONS_VALID_C = NR_OF_SLAVES_P >= 16;
+  localparam logic [3 : 0] NR_OF_SLAVES_REGION_C = 4'(NR_OF_SLAVES_P);
 
   // ---------------------------------------------------------------------------
   // Write Channel signals
@@ -102,12 +104,20 @@ module axi4_write_arbiter_mst_2_slvs #(
   typedef enum {
     WAIT_MST_AWVALID_E,
     WAIT_FOR_BVALID_E,
-    WAIT_MST_WLAST_E
+    WAIT_MST_WLAST_E,
+    WAIT_ERR_WLAST_E,
+    WAIT_ERR_BREADY_E
   } write_state_t;
 
   write_state_t write_state;
 
   logic [NR_OF_SLAVES_C-1 : 0] awregion;
+  logic [NR_OF_SLAVES_C-1 : 0] current_awregion;
+  logic                        current_awregion_valid;
+  logic [AXI_ID_WIDTH_P-1 : 0] error_awid;
+
+  assign current_awregion = mst_awregion[NR_OF_SLAVES_C-1 : 0];
+  assign current_awregion_valid = ALL_REGIONS_VALID_C || (mst_awregion < NR_OF_SLAVES_REGION_C);
 
 
   // ---------------------------------------------------------------------------
@@ -137,6 +147,7 @@ module axi4_write_arbiter_mst_2_slvs #(
     if (!rst_n) begin
       write_state <= WAIT_MST_AWVALID_E;
       awregion    <= '0;
+      error_awid   <= '0;
     end
     else begin
 
@@ -144,8 +155,14 @@ module axi4_write_arbiter_mst_2_slvs #(
 
         WAIT_MST_AWVALID_E: begin
           if (mst_awvalid) begin
-            write_state <= WAIT_MST_WLAST_E;
-            awregion    <= mst_awregion[NR_OF_SLAVES_C-1 : 0];
+            if (current_awregion_valid) begin
+              write_state <= WAIT_MST_WLAST_E;
+              awregion    <= current_awregion;
+            end
+            else begin
+              write_state <= WAIT_ERR_WLAST_E;
+              error_awid  <= mst_awid;
+            end
           end
         end
 
@@ -156,9 +173,21 @@ module axi4_write_arbiter_mst_2_slvs #(
           end
         end
 
+        WAIT_ERR_WLAST_E: begin
+          if (mst_wlast && mst_wvalid && mst_wready) begin
+            write_state <= WAIT_ERR_BREADY_E;
+          end
+        end
+
 
         WAIT_FOR_BVALID_E: begin
           if (mst_bvalid && mst_bready) begin
+            write_state <= WAIT_MST_AWVALID_E;
+          end
+        end
+
+        WAIT_ERR_BREADY_E: begin
+          if (mst_bready) begin
             write_state <= WAIT_MST_AWVALID_E;
           end
         end
@@ -184,21 +213,52 @@ module axi4_write_arbiter_mst_2_slvs #(
     mst_bvalid  = '0;
     slv_bready  = '0;
 
-    if (write_state != WAIT_MST_AWVALID_E) begin
+    if (write_state == WAIT_MST_AWVALID_E && mst_awvalid) begin
 
-      // Write Address Channel
-      mst_awready           = slv_awready[awregion];
-      slv_awvalid[awregion] = mst_awvalid;
+      if (current_awregion_valid) begin
+        // Write Address Channel
+        mst_awready                   = slv_awready[current_awregion];
+        slv_awvalid[current_awregion] = mst_awvalid;
 
-      // Write Data Channel
-      mst_wready           = slv_wready [awregion];
-      slv_wvalid[awregion] = mst_wvalid;
+        // Write Data Channel
+        mst_wready                   = slv_wready [current_awregion];
+        slv_wvalid[current_awregion] = mst_wvalid;
 
-      // Write Response Channel
-      mst_bid              = slv_bid    [awregion];
-      mst_bresp            = slv_bresp  [awregion];
-      mst_bvalid           = slv_bvalid [awregion];
-      slv_bready[awregion] = mst_bready;
+        // Write Response Channel
+        mst_bid                      = slv_bid    [current_awregion];
+        mst_bresp                    = slv_bresp  [current_awregion];
+        mst_bvalid                   = slv_bvalid [current_awregion];
+        slv_bready[current_awregion] = mst_bready;
+      end
+      else begin
+        mst_awready = '1;
+      end
+
+    end else if (write_state != WAIT_MST_AWVALID_E) begin
+
+      if (write_state == WAIT_ERR_WLAST_E) begin
+        mst_wready = '1;
+      end
+      else if (write_state == WAIT_ERR_BREADY_E) begin
+        mst_bid    = error_awid;
+        mst_bresp  = 2'b11;
+        mst_bvalid = '1;
+      end
+      else begin
+        // Write Address Channel
+        mst_awready           = slv_awready[awregion];
+        slv_awvalid[awregion] = mst_awvalid;
+
+        // Write Data Channel
+        mst_wready           = slv_wready [awregion];
+        slv_wvalid[awregion] = mst_wvalid;
+
+        // Write Response Channel
+        mst_bid              = slv_bid    [awregion];
+        mst_bresp            = slv_bresp  [awregion];
+        mst_bvalid           = slv_bvalid [awregion];
+        slv_bready[awregion] = mst_bready;
+      end
     end
   end
 endmodule

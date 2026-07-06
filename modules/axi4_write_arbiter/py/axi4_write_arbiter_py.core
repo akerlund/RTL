@@ -1,0 +1,28 @@
+CAPI=2:
+name: "akerlund::axi4_write_arbiter_py:0"
+description: "AXI4 write arbiter cocotb tests"
+
+filesets:
+  tb:
+    files:
+      - ../rtl/axi4_write_arbiter_mst_2_slvs.sv
+      - ../rtl/axi4_write_arbiter_msts_2_slv.sv
+      - ../rtl/axi4_write_arbiter.sv
+      - tb/tb_top.sv
+    file_type: systemVerilogSource
+
+targets:
+  sim:
+    flow: sim
+    flow_options:
+      tool: verilator
+      cocotb_module: cocotb_entry
+      mode: cc
+      verilator_options:
+        - -Wno-fatal
+        - --public-flat-rw
+        - -Wno-WIDTHTRUNC
+        - -Wno-WIDTHEXPAND
+    filesets:
+      - tb
+    toplevel: tb_top
