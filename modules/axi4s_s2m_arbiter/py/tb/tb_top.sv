@@ -1,10 +1,26 @@
 ////////////////////////////////////////////////////////////////////////////////
-// cocotb entry point for axi4s_s2m_arbiter.
 //
-// Flattens the 3-way packed master tvalid/tready ports into per-master scalar
-// signals (mst0_*/mst1_*/mst2_*); the payload signals (tdata/tstrb/tkeep/
-// tlast/tid/tdest/tuser) are already flat/shared on the DUT (broadcast to all
-// masters), so they're just wired straight through to each mstN_* name.
+// Copyright (C) 2026 Fredrik Åkerlund
+// https://github.com/akerlund/RTL
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
 ////////////////////////////////////////////////////////////////////////////////
 
 module tb_top #(

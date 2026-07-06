@@ -1,6 +1,6 @@
 CAPI=2:
 name: "akerlund::fifo:0"
-description: "Synchronous FIFO with register and RAM backends"
+description: "RAM-backed synchronous FIFO"
 
 filesets:
   rtl:
@@ -27,13 +27,31 @@ parameters:
     datatype: int
     default: 3
     paramtype: vlogparam
-  MAX_REG_BYTES_P:
-    datatype: int
-    default: 256
-    paramtype: vlogparam
-
 targets:
   default:
     filesets:
       - rtl
       - sva
+
+  rtl:
+    flow: lint
+    flow_options:
+      tool: verilator
+      verilator_options:
+        - -Wall
+        - -Wno-fatal
+        - --timing
+        - --error-limit
+        - "0"
+        - -Werror-IMPLICIT
+        - -Werror-BLKSEQ
+        - -Werror-LATCH
+        - -Werror-CASEINCOMPLETE
+        - -Wno-UNUSEDSIGNAL
+        - -Wno-PINCONNECTEMPTY
+    filesets:
+      - rtl
+    parameters:
+      - DATA_WIDTH_P
+      - ADDR_WIDTH_P
+    toplevel: fifo
