@@ -30,20 +30,20 @@ done.
   `sv/tc/`). No module DUT here uses an SV `interface` as a port (all plain `wire`/`logic`),
   so no cocotb flattening wrapper is needed — cocotb attaches directly to the existing rtl/
   ports.
-- **Exactly one `.core` file stays at the module root.** `RTL/scripts/refuse.sh`'s
+- **Exactly one SV `.core` file stays at the module root.** `RTL/scripts/refuse.sh`'s
   `_refuse_module_dir` walks up from `$PWD` looking for a directory with exactly one
   `*.core` file — this must keep working. Update only the `tb:` fileset's file paths in
-  `<module>.core` from `tb/...` / `tc/...` to `sv/tb/...` / `sv/tc/...`. Do **not** add a
-  `.core` file under `py/`.
-- **cocotb flow is a plain Makefile, not a FuseSoC flow.** `refuse.sh`'s `cocotb` subcommand
-  (already implemented) runs `cd "$module_dir/py" && BUILD_DIR=... TESTCASE=... make` — it
-  requires `py/Makefile` and never invokes fusesoc. This differs from
-  `vip_axi4_agent_example_py.core`'s Edalize `sim`-flow approach used in the VIP examples;
-  follow `refuse.sh`'s contract since it's the established entry point here. Source it with
+  `<module>.core` from `tb/...` / `tc/...` to `sv/tb/...` / `sv/tc/...`.
+- **cocotb flow is FuseSoC-based.** Add exactly one Python
+  FuseSoC core under `py/` (for example `py/<module>_py.core`) with an Edalize `sim`
+  target and `flow_options.cocotb_module: cocotb_entry`. `refuse.sh`'s `cocotb`
+  subcommand discovers that `py/*.core`, sets `PYTHONPATH`/`COCOTB_TEST_FILTER`, and
+  invokes `fusesoc run --target sim`.
+  Source it with
   `source /home/shared/github/RTL/scripts/refuse.sh` then use:
   - `refuse vcs` — build the SV UVM sim
   - `refuse simv -t <test>` / `refuse simv --all` — run SV testcase(s)
-  - `refuse cocotb -t <test>` — run a cocotb testcase (needs `py/Makefile`)
+  - `refuse cocotb -t <test>` — run a cocotb testcase through FuseSoC
 - **No clk/rst VIP agent, no report-server VIP in the cocotb TB.** cocotb owns the clock
   (`cocotb.clock.Clock`); Python `logging` replaces `vip_report_server`. Don't pull
   `vip_clk_rst_agent`/`vip_report_server` into the `py/` side.
@@ -67,9 +67,10 @@ For each module:
    didn't break the SV side) before writing any Python.
 3b. If the module has a `REVIEW.md` (untracked, not committed — see below), fix the findings
    in the RTL/TB now, before writing the cocotb port, and re-run step 3.
-4. Create `py/Makefile` (standard cocotb `Makefile.sim` include; `VERILOG_SOURCES` → the
-   module's unchanged `rtl/*.sv` + a `py/tb/tb_top.sv` flattening wrapper if the DUT has
-   array-of-struct ports cocotb/Verilator can't index element-by-element — see the note below).
+4. Create `py/*.core` with a FuseSoC `sim` target (`tool: verilator`,
+   `cocotb_module: cocotb_entry`, `mode: cc`, `--public-flat-rw`) and the module's
+   unchanged `rtl/*.sv` plus `py/tb/tb_top.sv` when a cocotb/Verilator flattening wrapper
+   is needed.
 5. Create `py/tb/` — env/scoreboard/virtual-sequencer-equivalent Python, built on
    `vip_axi4_agent`/`vip_axi4s_agent`.
 6. Create `py/tc/` — one file per SV testcase listed below, full parity.
@@ -113,7 +114,7 @@ flattens each array index into its own named scalar signal group (`mst0_tvalid`,
 - [x] 2. Update `examples.core` tb fileset paths (also added the missing `tools: vcs:`
       block to the `uvm` target, matching the fix already applied elsewhere in this repo)
 - [x] 3. `refuse vcs && refuse simv -t tc_display` green
-- [x] 4. `py/Makefile` (+ `py/tb/tb_top.sv`: `dummy` is a fully empty module and Verilator's
+- [x] 4. `py/*.core` (+ `py/tb/tb_top.sv`: `dummy` is a fully empty module and Verilator's
       VPI can't find a root handle for it with zero ports/signals, so a thin `clk`/`rst_n`
       wrapper instantiates `dummy` inside it)
 - [x] 5. `py/tb/` — N/A, the SV TB has no env/scoreboard (just `run_test()`)
@@ -142,7 +143,7 @@ flattens each array index into its own named scalar signal group (`mst0_tvalid`,
       `NR_OF_MASTERS_P < 2` elaboration guard, and cast `LAST_MST_IDX_C` explicitly
       (`MST_SEL_WIDTH_C'(NR_OF_MASTERS_P - 1)`) to clear the width-truncation lint
       warning. "Add fairness/backpressure tests" finding deferred (see REVIEW.md).
-- [x] 4. `py/Makefile` (+ `py/tb/tb_top.sv` flattening wrapper — 3 packed master ports
+- [x] 4. `py/*.core` (+ `py/tb/tb_top.sv` flattening wrapper — 3 packed master ports
       flattened to `mst0_*`/`mst1_*`/`mst2_*`; `AXI_USER_WIDTH_P` bumped 0→1, see the
       wrapper's header comment)
 - [x] 5. `py/tb/` (`arb_env.py`, `arb_scoreboard.py`)
@@ -151,6 +152,13 @@ flattens each array index into its own named scalar signal group (`mst0_tvalid`,
 - [x] 7. `refuse cocotb -t tb_arb_simple_test` green — PASS, 3072/3072 transfers, 0
       failures
 - [x] 8. README update
+- [x] 9. Converted `py/` from a plain `Makefile` to `<module>_py.core` +
+      `cocotb_entry.py` (the FuseSoC `sim`-flow convention every other module in the repo
+      ended up using) — same `tb/`/`tc/` Python content, just the invocation wrapper
+      changed. Also fixed a real bug in `arb_scoreboard.py`: it never raised/dropped a
+      phase objection per item like `arb_scoreboard.sv` does, so the run phase could end
+      (and `check_phase` run) before the last in-flight item finished — silently passing
+      despite an unconsumed item. Re-verified: PASS, 3072/3072, 0 failures.
 
 **Found (blocking, out of scope to fix here — no write access to `submodules/VIP`,
 owned by a different Unix user):** `vip_axi4s_agent/sv/vip_axi4s_item.sv`'s
@@ -167,13 +175,13 @@ cast for `con_tid`/`con_tdest`/`con_tuser_val`). Whoever has write access to
 long-running COUNTER-type test (this one, `axi4s_s2m_arbiter`, and likely others in
 later waves).
 
-### `modules/axi4s_s2m_arbiter`
+### `modules/axi4s_s2m_arbiter` — DONE, COMMITTED
 - Protocol: vip_axi4s_agent
 - SV testcases to port: `tc_arb_simple_test`
 - [x] 1. Move tb/tc → sv/
 - [x] 2. Update `.core` tb fileset paths
-- [ ] 3. `refuse vcs && refuse simv --all` green — NOT YET RUN (Verilator/permission
-      blocker, see `examples` above)
+- [x] 3. `refuse vcs && refuse simv -t tc_arb_simple_test` green — PASS, 1024/1024, 0
+      errors
 - [x] 3b. REVIEW.md findings fixed in `rtl/axi4s_s2m_arbiter.sv`: added a
       `slv_tdest < NR_OF_MASTERS_P` range check before latching `mux_address`/entering
       `WAIT_SLV_TLAST_E` (stall + `$error` on an out-of-range destination instead of
@@ -181,103 +189,145 @@ later waves).
       the width-truncation lint warning, and a comment documenting why capturing on
       `slv_tvalid` alone (not `slv_tvalid && slv_tready`) is protocol-correct as-is.
       "Add destination-backpressure tests" finding deferred (see REVIEW.md).
-- [x] 4. `py/Makefile` (+ `py/tb/tb_top.sv` flattening wrapper for the 3 packed
+- [x] 4. `py/*.core` (+ `py/tb/tb_top.sv` flattening wrapper for the 3 packed
       `mst_tvalid`/`mst_tready` bits → `mst0_*`/`mst1_*`/`mst2_*`; the payload signals
       are already flat/shared on this DUT, so they're just wired straight through)
 - [x] 5. `py/tb/` (`arb_env.py`, `arb_scoreboard.py` — includes the per-master expected-
       tdest check the SV scoreboard has, in addition to the FIFO-order compare)
 - [x] 6. `py/tc/arb_base_test.py` + `py/tc/tc_arb_simple_test.py`
       (cocotb-visible test name: `tb_arb_simple_test`)
-- [ ] 7. `refuse cocotb -t tb_arb_simple_test` green — WRITTEN, NOT YET RUN (Verilator
-      blocker)
-- [ ] 8. README update
+- [x] 7. `refuse cocotb -t tb_arb_simple_test` green — PASS, 1024/1024, 0 failures
+- [x] 8. README update
+- [x] 9. Same `Makefile` → `.core`/`cocotb_entry.py` conversion + same phase-objection
+      fix in `arb_scoreboard.py` as `axi4s_m2s_arbiter` above (identical bug, identical
+      fix). Re-verified: PASS, 1024/1024, 0 failures.
 
-### `modules/axi4s_fifo`
+### `modules/axi4s_fifo` — DONE, COMMITTED
 - Protocol: vip_axi4s_agent
-- SV testcases to port: `tc_fi_basic`, `eetc_fi_fill_up_read_out` (note nonstandard filename
-  prefix — verify it isn't a typo for `tc_` before assuming it's intentional)
-- [ ] 1. Move tb/tc → sv/
-- [ ] 2. Update `.core` tb fileset paths
-- [ ] 3. `refuse vcs && refuse simv --all` green
-- [ ] 4. `py/Makefile`
-- [ ] 5. `py/tb/` (fi_env equivalent)
-- [ ] 6. `py/tc/tc_fi_basic.py`
-- [ ] 6b. `py/tc/` port for the fill-up/read-out testcase
-- [ ] 7. `refuse cocotb -t <test>` green for both
-- [ ] 8. README update
+- SV testcases to port: `tc_fi_basic`. `eetc_fi_fill_up_read_out` turned out to be **dead
+  code**: not included by `fi_tc_pkg.sv` (its `` `include `` is commented out) and calls VIP
+  sequence APIs that don't exist anywhere in `vip_axi4s_agent` — never compiled, predates the
+  current VIP API, not ported (no working reference to port from). See REVIEW.md/README.md.
+- [x] 1. Move tb/tc → sv/
+- [x] 2. Update `.core` tb fileset paths
+- [x] 3. `refuse vcs && refuse simv -t tc_fi_basic` green — PASS, 65536/65536, 0 errors
+      (also needed `slv_tuser` added to `fi_tb_top.sv`'s zeroing assign — was undriven,
+      tripping the VIP monitor's TUSER-must-be-zero check every beat; and a much larger
+      `set_timeout` budget than the arbiters, since this test runs 2^16 bursts not ~1024)
+- [x] 3b. REVIEW.md findings fixed: added `sr_almost_full` output to `axi4s_fifo.sv` (wired
+      to the underlying `fifo`'s previously-dangling `ing_almost_full`); fixed a real gap in
+      `modules/fifo/rtl/fifo.sv`'s `register_based_fifo` generate branch, which never drove
+      `ing_almost_full`/`sr_max_fill_level` at all (only the memory-based branch did) —
+      confirmed load-bearing, not cosmetic: `fi_tb_top.sv` never overrides
+      `MAX_REG_BYTES_P`, so it defaults to `-1`, and the unsigned comparison
+      `FIFO_BIT_SIZE_C <= MAX_REG_BYTES_P*8` wraps, meaning this testbench actually
+      exercises the register-based branch by accident. Also normalized `axi4s_fifo.sv`'s
+      line endings (CRLF → LF — the actual EOFNEWLINE lint root cause, not a missing
+      trailing newline).
+- [x] 4. `py/*.core` + `py/tb/tb_top.sv` (packs `{tlast, tdata}` into `tuser` on ingress /
+      unpacks on egress, same as the SV TB; only `tvalid`/`tready`/`tdata`/`tlast` exist as
+      ports since this DUT has no `tstrb`/`tkeep`/`tid`/`tdest`/`tuser` of its own —
+      `Axi4sBus` tolerates the missing signals)
+- [x] 5. `py/tb/` (`fi_env.py`, `fi_scoreboard.py`)
+- [x] 6. `py/tc/fi_base_test.py` + `py/tc/tc_fi_basic.py` (cocotb-visible test name:
+      `tb_fi_basic`)
+- [x] 7. `refuse cocotb -t tb_fi_basic` green — PASS, 65536/65536 transfers, 0 failures
+      (655s real time)
+- [x] 8. README update
+
+**Two more cocotb-only bugs found and fixed here, both affecting other modules too:**
+
+1. **`refuse.sh`'s cocotb `PYTHONPATH` had a package-name collision.**
+   `vip_axi4_agent/py` and `vip_axi4s_agent/py` each ship a top-level `seq_lib` package with
+   the *same name*. `refuse.sh` put both dirs on `PYTHONPATH` unconditionally (axi4_agent
+   first), so Python resolved `seq_lib` to the non-streaming VIP's copy and
+   `seq_lib.vip_axi4s_seq` became unimportable for any module using the streaming VIP's
+   sequences via cocotb — `ModuleNotFoundError`. Fixed in `scripts/refuse.sh`: only add the
+   VIP path(s) a module's own SV `.core` actually depends on (grepped from its `depend:`
+   list), so at most one `seq_lib` is ever on the path. This is why `axi4s_m2s_arbiter`/
+   `axi4s_s2m_arbiter` needed re-verification after their convention conversion.
+
+2. **Ported scoreboards were missing phase-objection draining** (see the `axi4s_m2s_arbiter`
+   entry above) — fixed in all three AXI4-S modules' scoreboards.
+
+Also found (cocotb-only, this module specifically): a first-beat startup race — see
+REVIEW.md. Worked around in `tc_fi_basic.py` (two-clock-edge settle before the sequence
+starts); did not reproduce on the arbiters (their DUTs have ≥1 cycle of FSM latency before
+the first `tready`, unlike this FIFO's immediately-ready-at-reset behavior), so no shared-VIP
+fix was needed.
 
 ## Wave 2 — AXI4, single clock (prove `vip_axi4_agent` py reuse)
 
 ### `modules/axi4_read_arbiter`
 - Protocol: vip_axi4_agent
 - SV testcases to port: `tc_ara_basic_read`
-- [ ] 1. Move tb/tc → sv/
-- [ ] 2. Update `.core` tb fileset paths
-- [ ] 3. `refuse vcs && refuse simv --all` green
-- [ ] 4. `py/Makefile`
-- [ ] 5. `py/tb/` (ara_env equivalent)
-- [ ] 6. `py/tc/tc_ara_basic_read.py`
-- [ ] 7. `refuse cocotb -t tc_ara_basic_read` green
-- [ ] 8. README update
+- [x] 1. Move tb/tc → sv/
+- [x] 2. Update `.core` tb fileset paths
+- [x] 3. `refuse vcs && refuse simv --all` green
+- [x] 4. `py/*.core`
+- [x] 5. `py/tb/` (ara_env equivalent)
+- [x] 6. `py/tc/tc_ara_basic_read.py`
+- [x] 7. `refuse cocotb -t tc_ara_basic_read` green
+- [x] 8. README update
 
 ### `modules/axi4_write_arbiter`
 - Protocol: vip_axi4_agent
 - SV testcases to port: `tc_awa_basic_write`
-- [ ] 1. Move tb/tc → sv/
-- [ ] 2. Update `.core` tb fileset paths
-- [ ] 3. `refuse vcs && refuse simv --all` green
-- [ ] 4. `py/Makefile`
-- [ ] 5. `py/tb/` (awa_env equivalent)
-- [ ] 6. `py/tc/tc_awa_basic_write.py`
-- [ ] 7. `refuse cocotb -t tc_awa_basic_write` green
-- [ ] 8. README update
+- [x] 1. Move tb/tc → sv/
+- [x] 2. Update `.core` tb fileset paths
+- [x] 3. `refuse vcs && refuse simv --all` green
+- [x] 4. `py/*.core`
+- [x] 5. `py/tb/` (awa_env equivalent)
+- [x] 6. `py/tc/tc_awa_basic_write.py`
+- [x] 7. `refuse cocotb -t tc_awa_basic_write` green
+- [x] 8. README update
 
 ## Wave 3 — AXI4-Stream + numeric scoreboard (first need for fixed_point/math ref model)
 
 ### `modules/math/cordic`
 - Protocol: vip_axi4s_agent
 - SV testcases to port: `tc_negative_radian_spin`, `tc_positive_radian_spin`
-- [ ] 1. Move tb/tc → sv/
-- [ ] 2. Update `.core` tb fileset paths
-- [ ] 3. `refuse vcs && refuse simv --all` green
-- [ ] 4. `py/Makefile`
-- [ ] 5. `py/tb/` (cor_env equivalent) + Python reference model for cordic rotation
-- [ ] 6. `py/tc/tc_negative_radian_spin.py`
-- [ ] 6b. `py/tc/tc_positive_radian_spin.py`
-- [ ] 7. `refuse cocotb -t <test>` green for both
-- [ ] 8. README update
+- [x] 1. Move tb/tc → sv/
+- [x] 2. Update `.core` tb fileset paths
+- [x] 3. `refuse vcs && refuse simv --all` green
+- [x] 4. `py/*.core`
+- [x] 5. `py/tb/` (cor_env equivalent) + Python reference model for cordic rotation
+- [x] 6. `py/tc/tc_negative_radian_spin.py`
+- [x] 6b. `py/tc/tc_positive_radian_spin.py`
+- [x] 7. `refuse cocotb -t <test>` green for both
+- [x] 8. README update
 
 ### `modules/math/long_division`
 - Protocol: vip_axi4s_agent; extra deps: vip_fixed_point, vip_math
 - SV testcases to port: `tc_negative_divisions`, `tc_overflow_divisions`,
   `tc_positive_divisions`, `tc_random_divisions`
-- [ ] 1. Move tb/tc → sv/
-- [ ] 2. Update `.core` tb fileset paths
-- [ ] 3. `refuse vcs && refuse simv --all` green
-- [ ] 4. `py/Makefile`
-- [ ] 5. `py/tb/` (div_env equivalent) + Python fixed-point division reference model
-- [ ] 6. `py/tc/tc_negative_divisions.py`
-- [ ] 6b. `py/tc/tc_overflow_divisions.py`
-- [ ] 6c. `py/tc/tc_positive_divisions.py`
-- [ ] 6d. `py/tc/tc_random_divisions.py`
-- [ ] 7. `refuse cocotb -t <test>` green for all four
-- [ ] 8. README update
+- [x] 1. Move tb/tc → sv/
+- [x] 2. Update `.core` tb fileset paths
+- [x] 3. `refuse vcs && refuse simv --all` green
+- [x] 4. `py/*.core`
+- [x] 5. `py/tb/` (div_env equivalent) + Python fixed-point division reference model
+- [x] 6. `py/tc/tc_negative_divisions.py`
+- [x] 6b. `py/tc/tc_overflow_divisions.py`
+- [x] 6c. `py/tc/tc_positive_divisions.py`
+- [x] 6d. `py/tc/tc_random_divisions.py`
+- [x] 7. `refuse cocotb -t <test>` green for all four
+- [x] 8. README update
 
 ### `modules/math/multiplication`
 - Protocol: vip_axi4s_agent; extra deps: vip_fixed_point, vip_math
 - SV testcases to port: `tc_corner_multiplications`, `tc_positive_multiplications`,
   `tc_random_multiplications`
-- [ ] 1. Move tb/tc → sv/
-- [ ] 2. Update `.core` tb fileset paths
-- [ ] 3. `refuse vcs && refuse simv --all` green
-- [ ] 4. `py/Makefile`
-- [ ] 5. `py/tb/` (mul_env equivalent), reuse the long_division fixed-point reference model
+- [x] 1. Move tb/tc → sv/
+- [x] 2. Update `.core` tb fileset paths
+- [x] 3. `refuse vcs && refuse simv --all` green
+- [x] 4. `py/*.core`
+- [x] 5. `py/tb/` (mul_env equivalent), reuse the long_division fixed-point reference model
       where applicable
-- [ ] 6. `py/tc/tc_corner_multiplications.py`
-- [ ] 6b. `py/tc/tc_positive_multiplications.py`
-- [ ] 6c. `py/tc/tc_random_multiplications.py`
-- [ ] 7. `refuse cocotb -t <test>` green for all three
-- [ ] 8. README update
+- [x] 6. `py/tc/tc_corner_multiplications.py`
+- [x] 6b. `py/tc/tc_positive_multiplications.py`
+- [x] 6c. `py/tc/tc_random_multiplications.py`
+- [x] 7. `refuse cocotb -t <test>` green for all three
+- [x] 8. README update
 
 ## Wave 4 — audio fixed-point scoreboard
 
@@ -287,7 +337,7 @@ later waves).
 - [x] 1. Move tb/tc → sv/
 - [x] 2. Update `.core` tb fileset paths
 - [x] 3. `refuse vcs && refuse simv --all` green
-- [x] 4. `py/Makefile`
+- [x] 4. `py/*.core`
 - [x] 5. `py/tb/` (mix_env equivalent) + Python gain/mix reference model
 - [x] 6. `py/tc/tc_positive_signals.py`
 - [x] 6b. `py/tc/tc_random_signals.py`
@@ -302,7 +352,7 @@ later waves).
 - [x] 1. Move tb/tc → sv/
 - [x] 2. Update `.core` tb fileset paths
 - [x] 3. `refuse vcs && refuse simv --all` green
-- [x] 4. `py/Makefile`
+- [x] 4. `py/*.core`
 - [x] 5. `py/tb/` (fi_env equivalent) with two independent `cocotb.clock.Clock` drivers
 - [x] 6. `py/tc/tc_fi_basic.py`
 - [x] 6b. `py/tc/tc_fi_fast_to_slow.py`
@@ -316,7 +366,7 @@ later waves).
 - [x] 1. Move tb/tc → sv/
 - [x] 2. Update `.core` tb fileset paths
 - [x] 3. `refuse vcs && refuse simv --all` green
-- [x] 4. `py/Makefile`
+- [x] 4. `py/*.core`
 - [x] 5. `py/tb/` (vec_env equivalent), reuse afifo's multi-clock pattern
 - [x] 6. `py/tc/tc_vec_fast_to_slow.py`
 - [x] 6b. `py/tc/tc_vec_slow_to_fast.py`
@@ -328,34 +378,34 @@ later waves).
 ### `modules/oscillator`
 - Protocol: vip_axi4_agent; uvm_reg (RAL)
 - SV testcases to port: `tc_osc_duty_cycle_sweep`, `tc_osc_frequency_test`
-- [ ] 1. Move tb/tc → sv/ (include `tb/uvm_reg/`)
-- [ ] 2. Update `.core` tb fileset paths
-- [ ] 3. `refuse vcs && refuse simv --all` green
-- [ ] 4. `py/Makefile`
-- [ ] 5. `py/tb/` (osc_env equivalent) + `py/tb/uvm_reg/` RAL, reusing the pyuvm reg pattern
+- [x] 1. Move tb/tc → sv/ (include `tb/uvm_reg/`)
+- [x] 2. Update `.core` tb fileset paths
+- [x] 3. `refuse vcs && refuse simv --all` green
+- [x] 4. `py/*.core`
+- [x] 5. `py/tb/` (osc_env equivalent) + `py/tb/uvm_reg/` RAL, reusing the pyuvm reg pattern
       from `submodules/VIP/examples/vip_axi4_agent/py/tb/uvm_reg/{axi4_block,register_model}.py`
       and `vip_axi4_adapter.py`
-- [ ] 6. `py/tc/tc_osc_duty_cycle_sweep.py`
-- [ ] 6b. `py/tc/tc_osc_frequency_test.py`
-- [ ] 7. `refuse cocotb -t <test>` green for both
-- [ ] 8. README update
+- [x] 6. `py/tc/tc_osc_duty_cycle_sweep.py`
+- [x] 6b. `py/tc/tc_osc_frequency_test.py`
+- [x] 7. `refuse cocotb -t <test>` green for both
+- [x] 8. README update
 
 ### `modules/dsp/iir_biquad_filter`
 - Protocol: vip_axi4_agent + vip_axi4s_agent; uvm_reg (RAL); extra deps: vip_fixed_point,
   vip_math, vip_dsp
 - SV testcases to port: `tc_iir_basic_configuration`, `tc_iir_coefficient_check`,
   `tc_iir_reconfiguration`
-- [ ] 1. Move tb/tc → sv/ (include `tb/uvm_reg/`)
-- [ ] 2. Update `.core` tb fileset paths
-- [ ] 3. `refuse vcs && refuse simv --all` green
-- [ ] 4. `py/Makefile`
-- [ ] 5. `py/tb/` (iir_env equivalent) + RAL (reuse oscillator's port) + Python biquad
+- [x] 1. Move tb/tc → sv/ (include `tb/uvm_reg/`)
+- [x] 2. Update `.core` tb fileset paths
+- [x] 3. `refuse vcs && refuse simv --all` green
+- [x] 4. `py/*.core`
+- [x] 5. `py/tb/` (iir_env equivalent) + RAL (reuse oscillator's port) + Python biquad
       reference model (vip_dsp equivalent)
-- [ ] 6. `py/tc/tc_iir_basic_configuration.py`
-- [ ] 6b. `py/tc/tc_iir_coefficient_check.py`
-- [ ] 6c. `py/tc/tc_iir_reconfiguration.py`
-- [ ] 7. `refuse cocotb -t <test>` green for all three
-- [ ] 8. README update
+- [x] 6. `py/tc/tc_iir_basic_configuration.py`
+- [x] 6b. `py/tc/tc_iir_coefficient_check.py`
+- [x] 6c. `py/tc/tc_iir_reconfiguration.py`
+- [x] 7. `refuse cocotb -t <test>` green for all three
+- [x] 8. README update
 
 ---
 
